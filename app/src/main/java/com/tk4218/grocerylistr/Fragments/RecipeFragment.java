@@ -27,9 +27,6 @@ public  class RecipeFragment extends Fragment {
      */
     public static RecipeFragment newInstance(int sectionNumber) {
         RecipeFragment fragment = new RecipeFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-        fragment.setArguments(args);
         return fragment;
     }
 
