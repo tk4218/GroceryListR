@@ -8,17 +8,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.tk4218.grocerylistr.Fragments.CalendarFragment">
 
-    <TextView
-        android:id="@+id/section_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
     <CalendarView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/calendarView"
-        android:layout_alignTop="@+id/section_label"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+
 
 </RelativeLayout>
