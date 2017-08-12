@@ -1,6 +1,7 @@
 package com.tk4218.grocerylistr.Model;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by tk4218 on 4/30/2017.
@@ -11,10 +12,24 @@ public class Recipe {
     private String recipeName;
     private String mealType;
     private String mealStyle;
+    private boolean favorite;
+    private Date lastMade;
+    private Date when;
     private ArrayList<Ingredient> ingredients;
 
     public Recipe(int RecipeKey){
+        //TODO: write query to retrieve recipe from tableRecipe
+    }
 
+    public Recipe (int recipeKey, String recipeName, String mealType, String mealStyle, boolean favorite, Date lastMade, Date when, ArrayList<Ingredient> ingredients){
+        setRecipeKey(recipeKey);
+        setRecipeName(recipeName);
+        setMealType(mealType);
+        setMealStyle(mealStyle);
+        setFavorite(favorite);
+        setLastMade(lastMade);
+        setWhen(when);
+        setIngredients(ingredients);
     }
 
     public int getRecipeKey(){
@@ -49,9 +64,24 @@ public class Recipe {
         this.mealStyle = mealStyle;
     }
 
+    public boolean getFavorite(){ return favorite; }
+
+    public void setFavorite(boolean favorite) { this.favorite = favorite; }
+
+    public Date getLastMade(){ return lastMade; }
+
+    public void setLastMade(Date lastMade){ this.lastMade = lastMade; }
+
+    public Date getWhen() { return when; }
+
+    public void setWhen(Date when){ this.when = when; }
+
     public ArrayList<Ingredient> getIngredients(){
         return ingredients;
     }
+
+    public void setIngredients(ArrayList<Ingredient> ingredients) {this.ingredients = ingredients; }
+
     public void addIngredient(Ingredient ingredient){
         ingredients.add(ingredient);
     }
