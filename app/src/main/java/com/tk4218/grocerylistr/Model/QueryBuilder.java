@@ -39,6 +39,17 @@ public class QueryBuilder {
         return false;
     }
 
+    public boolean updateRecipeFavorite(int recipeKey, boolean favorite){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "update tableRecipe set Favorite = " + (favorite ? 1 : 0) + " where RecipeKey = " + recipeKey));
+        try{
+            return jsonParser.makeHttpRequest(database_url_insert, parameters).getInt("success") == 1;
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     private ArrayList<String> addParameter(String paramName, String paramValue){
         ArrayList<String> param = new ArrayList<String>();
         param.add(paramName);
