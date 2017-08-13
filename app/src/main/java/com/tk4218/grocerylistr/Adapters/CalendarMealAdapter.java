@@ -56,14 +56,14 @@ public class CalendarMealAdapter extends BaseAdapter {
 
         ImageView recipeTypeImage = (ImageView) convertView.findViewById(R.id.calendar_meal_type_image);
 
-        switch(position){
-            case 0:
+        switch(mCalendarMeals.get(position).get(0).toLowerCase()){
+            case "breakfast":
                 recipeTypeImage.setImageResource(R.drawable.image_breakfast);
                 break;
-            case 1:
+            case "lunch":
                 recipeTypeImage.setImageResource(R.drawable.image_lunch);
                 break;
-            case 2:
+            case "dinner":
                 recipeTypeImage.setImageResource(R.drawable.image_dinner);
                 break;
         }

@@ -2,4 +2,23 @@
     <string name="app_name">GroceryListR</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="action_save">Save</string>
+    <string-array name="meal_types">
+        <item>Dinner</item>
+        <item>Lunch</item>
+        <item>Breakfast</item>
+    </string-array>
+    <string-array name="cuisine_type">
+        <item></item>
+        <item>American</item>
+        <item>Asian</item>
+        <item>Caribbean</item>
+        <item>Cajun</item>
+        <item>Chinese</item>
+        <item>Indian</item>
+        <item>Italian</item>
+        <item>Mexican</item>
+        <item>Thai</item>
+        <item>Vietnamese</item>
+    </string-array>
 </resources>

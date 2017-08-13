@@ -1,17 +1,20 @@
 package com.tk4218.grocerylistr.Fragments;
 
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Adapters.RecipeAdapter;
-import com.tk4218.grocerylistr.Model.Ingredient;
+import com.tk4218.grocerylistr.EditRecipeActivity;
+import com.tk4218.grocerylistr.Model.JSONResult;
+import com.tk4218.grocerylistr.Model.QueryBuilder;
 import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
 
@@ -20,13 +23,10 @@ import java.util.Date;
 
 
 public  class RecipeFragment extends Fragment {
-    /**
-     * The fragment argument representing the section number for this
-     * fragment.
-     */
-    private static final String ARG_SECTION_NUMBER = "section_number";
 
     private GridView mRecipeGridView;
+    private  ArrayList<Recipe> mRecipes;
+    QueryBuilder mQb = new QueryBuilder();
 
     public RecipeFragment() {
 
@@ -46,15 +46,14 @@ public  class RecipeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
 
+
         /*********************************
          *  Set recipes on grid view
          *********************************/
-        ArrayList<Recipe> recipes = setRecipes();
-
-        RecipeAdapter adapter = new RecipeAdapter(getContext(), recipes);
+        mRecipes = new ArrayList<>();
         mRecipeGridView = (GridView) rootView.findViewById(R.id.recipeGridView);
-        mRecipeGridView.setAdapter(adapter);
 
+        //new RetrieveRecipes().execute();
 
         /**********************************
         Set floating action button action
@@ -63,8 +62,8 @@ public  class RecipeFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(getContext(), EditRecipeActivity.class);
+                getActivity().startActivity(intent);
             }
         });
 
@@ -72,20 +71,55 @@ public  class RecipeFragment extends Fragment {
         return rootView;
     }
 
-    /*
-     * This is used to populate test data into gridview. this can be removes when connection to
-     * database is finished.
-     */
-    private ArrayList<Recipe> setRecipes(){
-        ArrayList<Recipe> recipes = new ArrayList<Recipe>();
-        recipes.add(new Recipe(1, "Spaghetti", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(2, "Burgers", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(3, "Fried Chicken", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(4, "Chicken Puff Pastries", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(5, "Steak and Asparagus", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(6, "Orange Chicken", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(7, "That One Recipe That We All Really Like", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        recipes.add(new Recipe(8, "More Food", "", "", false, new Date(), new Date(), new ArrayList<Ingredient>()));
-        return  recipes;
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        /*********************************************************************
+         * Retrieving Recipes from the database. Doing it in onResume
+         * guarantees the list will be updated upon returning to the fragment.
+         *********************************************************************/
+        new RetrieveRecipes().execute();
+    }
+
+    private class RetrieveRecipes extends AsyncTask<String, String, String>{
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            Log.d("DEBUG", "Attempting to retrieve recipes");
+            JSONResult recipes = mQb.getAllRecipes();
+
+            mRecipes.clear();
+
+            for(int i = 0; i < recipes.getCount(); i++){
+                addRecipe(recipes.getInt("RecipeKey"),
+                          recipes.getString("RecipeName"),
+                          recipes.getString("MealType"),
+                          recipes.getString("CuisineType"),
+                          recipes.getString("RecipeImage"),
+                          (recipes.getInt("Favorite") ==1),
+                          new Date(), new Date());
+                recipes.moveNext();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            getActivity().runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    RecipeAdapter adapter = new RecipeAdapter(RecipeFragment.this.getContext(), mRecipes);
+                    mRecipeGridView.setAdapter(adapter);
+                }
+            });
+        }
+
+        private void addRecipe(int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, Date lastMade, Date when){
+            mRecipes.add(new Recipe(recipeKey, recipeName, mealType, mealStyle, recipeImage, favorite, lastMade, when, null));
+        }
     }
 }

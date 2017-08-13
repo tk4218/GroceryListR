@@ -1,62 +1,66 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:fillViewport="true"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.tk4218.grocerylistr.Fragments.CalendarFragment">
 
-
-    <CalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-
-    <GridLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/calendarView"
-        android:background="@color/colorAccent"
-        android:id="@+id/gridLayout">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/weekdaySelected"
+        <CalendarView
+            android:id="@+id/calendarView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:text="Monday"
-            android:textColor="@color/colorTextAlternate"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
 
-        <TextView
-            android:id="@+id/dateSelected"
-            android:layout_width="wrap_content"
+
+        <GridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"
-            android:text="July 10, 2017"
-            android:textColor="@color/colorTextAlternate"
-            android:textSize="20sp" />
-    </GridLayout>
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/calendarView"
+            android:background="@color/colorAccent">
 
-    <ListView
-        android:id="@+id/listView"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/gridLayout" />
+            <TextView
+                android:id="@+id/weekdaySelected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:text="Monday"
+                android:textColor="@color/colorTextAlternate"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-</RelativeLayout>
+            <TextView
+                android:id="@+id/dateSelected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:text="July 10, 2017"
+                android:textColor="@color/colorTextAlternate"
+                android:textSize="20sp" />
+        </GridLayout>
+
+        <com.tk4218.grocerylistr.Model.NonScrollListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/gridLayout" />
+
+    </RelativeLayout>
+
+</ScrollView>

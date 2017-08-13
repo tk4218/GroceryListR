@@ -12,6 +12,7 @@ public class Recipe {
     private String recipeName;
     private String mealType;
     private String mealStyle;
+    private String recipeImage;
     private boolean favorite;
     private Date lastMade;
     private Date when;
@@ -21,11 +22,12 @@ public class Recipe {
         //TODO: write query to retrieve recipe from tableRecipe
     }
 
-    public Recipe (int recipeKey, String recipeName, String mealType, String mealStyle, boolean favorite, Date lastMade, Date when, ArrayList<Ingredient> ingredients){
+    public Recipe (int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, Date lastMade, Date when, ArrayList<Ingredient> ingredients){
         setRecipeKey(recipeKey);
         setRecipeName(recipeName);
         setMealType(mealType);
         setMealStyle(mealStyle);
+        setRecipeImage(recipeImage);
         setFavorite(favorite);
         setLastMade(lastMade);
         setWhen(when);
@@ -63,6 +65,10 @@ public class Recipe {
     public void setMealStyle(String mealStyle){
         this.mealStyle = mealStyle;
     }
+
+    public  String getRecipeImage(){ return recipeImage; }
+
+    public void setRecipeImage(String recipeImage) { this.recipeImage = recipeImage; }
 
     public boolean getFavorite(){ return favorite; }
 

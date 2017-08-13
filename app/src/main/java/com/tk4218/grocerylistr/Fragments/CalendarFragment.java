@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Adapters.CalendarMealAdapter;
 import com.tk4218.grocerylistr.R;
@@ -45,9 +44,9 @@ public  class CalendarFragment extends Fragment {
 
         HashMap<Integer, ArrayList<String>> meals = new HashMap<Integer, ArrayList<String>>();
 
-        ArrayList<String> breakfast = new ArrayList<String>();
-        ArrayList<String> lunch = new ArrayList<String>();
-        ArrayList<String> dinner = new ArrayList<String>();
+        ArrayList<String> breakfast = new ArrayList<>();
+        ArrayList<String> lunch = new ArrayList<>();
+        ArrayList<String> dinner = new ArrayList<>();
 
         breakfast.add("Breakfast");
         lunch.add("Lunch");

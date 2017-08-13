@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Model.Recipe;
@@ -49,6 +51,11 @@ public class RecipeAdapter extends BaseAdapter {
 
         TextView recipeName = (TextView) convertView.findViewById(R.id.gridRecipeName);
         recipeName.setText(mRecipes.get(position).getRecipeName());
+
+        ImageButton favorite = (ImageButton) convertView.findViewById(R.id.gridFavorite);
+        if(mRecipes.get(position).getFavorite()){
+            favorite.setImageResource(android.R.drawable.btn_star_big_on);
+        }
         return convertView;
     }
 }
