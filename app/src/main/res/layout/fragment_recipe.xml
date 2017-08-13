@@ -7,13 +7,10 @@
     tools:context="com.tk4218.grocerylistr.Fragments.RecipeFragment">
 
 
-    <GridView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/recipeGridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:horizontalSpacing="2dp"
-        android:verticalSpacing="2dp"
-        android:numColumns="2"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />

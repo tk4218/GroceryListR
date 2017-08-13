@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +26,7 @@ import java.util.Date;
 
 public  class RecipeFragment extends Fragment {
 
-    private GridView mRecipeGridView;
+    private RecyclerView mRecyclerView;
     private  ArrayList<Recipe> mRecipes;
     QueryBuilder mQb = new QueryBuilder();
 
@@ -51,7 +53,8 @@ public  class RecipeFragment extends Fragment {
          *  Set recipes on grid view
          *********************************/
         mRecipes = new ArrayList<>();
-        mRecipeGridView = (GridView) rootView.findViewById(R.id.recipeGridView);
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recipeGridView);
+        mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
         //new RetrieveRecipes().execute();
 
@@ -113,7 +116,7 @@ public  class RecipeFragment extends Fragment {
                 @Override
                 public void run() {
                     RecipeAdapter adapter = new RecipeAdapter(RecipeFragment.this.getContext(), mRecipes);
-                    mRecipeGridView.setAdapter(adapter);
+                    mRecyclerView.setAdapter(adapter);
                 }
             });
         }
