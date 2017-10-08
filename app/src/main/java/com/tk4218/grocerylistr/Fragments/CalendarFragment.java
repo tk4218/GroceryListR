@@ -1,16 +1,22 @@
 package com.tk4218.grocerylistr.Fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CalendarView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Adapters.CalendarMealAdapter;
 import com.tk4218.grocerylistr.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 public  class CalendarFragment extends Fragment {
@@ -41,6 +47,26 @@ public  class CalendarFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_calendar, container, false);
 
         ListView calendarMeals = (ListView) rootView.findViewById(R.id.listView);
+        final TextView weekDaySelected = (TextView) rootView.findViewById(R.id.weekdaySelected);
+        final TextView dateSelected = (TextView) rootView.findViewById(R.id.dateSelected);
+
+        Date now = new Date();
+        final SimpleDateFormat weekdayFormat = new SimpleDateFormat("EEEE");
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
+        weekDaySelected.setText(weekdayFormat.format(now));
+        dateSelected.setText(dateFormat.format(now));
+
+        CalendarView calendarView = (CalendarView) rootView.findViewById(R.id.calendarView);
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            @Override
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(year, month, dayOfMonth);
+
+                weekDaySelected.setText(weekdayFormat.format(calendar.getTime()));
+                dateSelected.setText(dateFormat.format(calendar.getTime()));
+            }
+        });
 
         HashMap<Integer, ArrayList<String>> meals = new HashMap<Integer, ArrayList<String>>();
 
