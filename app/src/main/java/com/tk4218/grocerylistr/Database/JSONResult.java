@@ -1,4 +1,4 @@
-package com.tk4218.grocerylistr.Model;
+package com.tk4218.grocerylistr.Database;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

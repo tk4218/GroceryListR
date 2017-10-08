@@ -11,12 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridView;
 
 import com.tk4218.grocerylistr.Adapters.RecipeAdapter;
 import com.tk4218.grocerylistr.EditRecipeActivity;
-import com.tk4218.grocerylistr.Model.JSONResult;
-import com.tk4218.grocerylistr.Model.QueryBuilder;
+import com.tk4218.grocerylistr.Database.JSONResult;
+import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
 

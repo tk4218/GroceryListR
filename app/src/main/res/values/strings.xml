@@ -21,4 +21,22 @@
         <item>Thai</item>
         <item>Vietnamese</item>
     </string-array>
+
+    <string-array name="measurements">
+        <item>tsp</item>
+        <item>Tbsp</item>
+        <item>cups</item>
+        <item>pints</item>
+        <item>quarts</item>
+        <item>milliliters</item>
+        <item>liters</item>
+        <item>gallons</item>
+        <item>fluid oz</item>
+        <item>lbs</item>
+        <item>oz</item>
+        <item>grams</item>
+        <item>count</item>
+        <item>cloves</item>
+        <item>leaves</item>
+    </string-array>
 </resources>

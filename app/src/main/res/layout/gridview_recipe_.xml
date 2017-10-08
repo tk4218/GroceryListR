@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="1dp"
     android:layout_marginLeft="1dp"
     android:layout_marginRight="1dp"
-    android:layout_marginBottom="1dp"
     android:layout_marginTop="1dp"
-    android:background="?attr/colorControlHighlight">
+    android:background="@color/recipeGridBackground">
 
     <TextView
         android:id="@+id/gridRecipeName"
@@ -29,7 +29,9 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/gridRecipeName"
         android:contentDescription="@string/app_name"
-        android:src="@android:drawable/ic_menu_gallery"
+        android:padding="25dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/recipe_default"
         tools:ignore="ContentDescription" />
 
     <LinearLayout
