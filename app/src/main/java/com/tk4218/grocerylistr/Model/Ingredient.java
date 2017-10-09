@@ -23,6 +23,15 @@ public class Ingredient {
         setShelfLife(shelfLife);
     }
 
+    public Ingredient(int ingredientKey, String ingredientName, String ingredientType, int shelfLife, double ingredientAmount, String ingredientMeasurement){
+        setIngredientKey(ingredientKey);
+        setIngredientName(ingredientName);
+        setIngredientType(ingredientType);
+        setShelfLife(shelfLife);
+        setIngredientAmount(ingredientAmount);
+        setIngredientMeasurement(ingredientMeasurement);
+    }
+
     public void setIngredientKey(int ingredientKey){
         mIngredientKey = ingredientKey;
     }

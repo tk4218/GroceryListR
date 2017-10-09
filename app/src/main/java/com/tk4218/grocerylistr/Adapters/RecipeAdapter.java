@@ -1,6 +1,7 @@
 package com.tk4218.grocerylistr.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.StrictMode;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
+import com.tk4218.grocerylistr.RecipeActivity;
 
 import java.util.ArrayList;
 
@@ -45,6 +47,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
+        holder.recipeKey = mRecipes.get(position).getRecipeKey();
         holder.recipeName.setText(mRecipes.get(position).getRecipeName());
 
         holder.favorite.setTag(mRecipes.get(position));
@@ -87,6 +90,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         public TextView recipeName;
         public ImageView recipeImage;
         public ImageButton favorite;
+        public int recipeKey;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -98,6 +102,13 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
         @Override
         public void onClick(View v) {
+            if(recipeKey != 0){
+                Toast.makeText(v.getContext(), "Recipe Key: " + recipeKey, Toast.LENGTH_SHORT).show();
+            }
+
+            Intent recipeIntent = new Intent(v.getContext(), RecipeActivity.class);
+            recipeIntent.putExtra("recipeKey", recipeKey);
+            v.getContext().startActivity(recipeIntent);
         }
     }
 }

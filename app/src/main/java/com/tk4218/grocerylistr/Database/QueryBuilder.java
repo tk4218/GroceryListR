@@ -107,6 +107,18 @@ public class QueryBuilder {
         return false;
     }
 
+    public JSONResult getRecipeIngredients(int recipeKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select r.RecipeName, ri.IngredientAmount, ri.IngredientUnit, i.IngredientName from tableRecipeToIngredient ri, tableIngredient i, tableRecipe r where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey and r.RecipeKey = ri.RecipeKey"));
+        parameters.add(addParameter("return_cols", "RecipeName,IngredientAmount,IngredientUnit,IngredientName"));
+        try{
+            return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private ArrayList<String> addParameter(String paramName, String paramValue){
         ArrayList<String> param = new ArrayList<String>();
         param.add(paramName);

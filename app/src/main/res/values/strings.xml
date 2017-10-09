@@ -39,4 +39,6 @@
         <item>cloves</item>
         <item>leaves</item>
     </string-array>
+    <string name="title_activity_recipe">RecipeActivity</string>
+    <string name="recipe_last_made">Recipe Last Made</string>
 </resources>

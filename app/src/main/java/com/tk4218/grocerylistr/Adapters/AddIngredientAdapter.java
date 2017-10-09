@@ -73,7 +73,12 @@ public class AddIngredientAdapter extends BaseAdapter{
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
                 @Override
                 public void afterTextChanged(Editable s) {
-                    mIngredients.get(position).setIngredientAmount(Double.parseDouble(s.toString()));
+                    if(!s.toString().equals("")){
+                        try{
+                            mIngredients.get(position).setIngredientAmount(Double.parseDouble(s.toString()));
+                        } catch(Exception e){
+                        }
+                    }
                 }
             });
 
