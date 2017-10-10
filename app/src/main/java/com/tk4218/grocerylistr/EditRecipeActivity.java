@@ -57,7 +57,7 @@ public class EditRecipeActivity extends AppCompatActivity {
         mRecipeImage = (ImageButton) findViewById(R.id.edit_recipe_image);
 
         mIngredientListView = (ListView) findViewById(R.id.edit_ingredient_list);
-        mIngredientList = new ArrayList<Ingredient>();
+        mIngredientList = new ArrayList<>();
         mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
     }
 
@@ -249,16 +249,15 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         if(recipeKey != 0){
             for(int i = 0; i < mIngredientList.size(); i++){
-                JSONResult ingredient = mQb.getIngredientByName(mIngredientList.get(i).getIngredientName().trim());
+                Ingredient ingredient = new Ingredient(mIngredientList.get(i).getIngredientName().trim());
                 int ingredientKey = 0;
-                if(ingredient.getCount() == 0){
+                if(ingredient.getIngredientKey() == 0){
                     ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName().trim(), "");
-
                 } else {
-                    ingredientKey = ingredient.getInt("IngredientKey");
+                    ingredientKey = ingredient.getIngredientKey();
                 }
 
-                mQb.insertRecipeToIngredient(recipeKey, ingredientKey, mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientMeasurement(), "", "", false);
+                mQb.insertRecipeToIngredient(recipeKey, ingredientKey, mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
             }
         }
 

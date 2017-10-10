@@ -1,5 +1,8 @@
 package com.tk4218.grocerylistr.Model;
 
+import com.tk4218.grocerylistr.Database.JSONResult;
+import com.tk4218.grocerylistr.Database.QueryBuilder;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -7,89 +10,122 @@ import java.util.Date;
  * Created by tk4218 on 4/30/2017.
  */
 public class Recipe {
+    private QueryBuilder mQb = new QueryBuilder();
 
-    private int recipeKey;
-    private String recipeName;
-    private String mealType;
-    private String mealStyle;
-    private String recipeImage;
-    private boolean favorite;
-    private Date lastMade;
-    private Date when;
-    private ArrayList<Ingredient> ingredients;
+    private int mRecipeKey;
+    private String mRecipeName;
+    private String mMealType;
+    private String mCuisineType;
+    private String mRecipeImage;
+    private boolean mFavorite;
+    private int mRating;
+    private Date mLastMade;
+    private Date mLastEdited;
+    private ArrayList<Ingredient> mIngredients;
 
-    public Recipe(int RecipeKey){
-        //TODO: write query to retrieve recipe from tableRecipe
+    public Recipe(int recipeKey){
+        JSONResult recipe = mQb.getRecipe(recipeKey);
+        if(recipe.getCount() > 0){
+            setRecipeKey(recipeKey);
+            setRecipeName(recipe.getString("RecipeName"));
+            setMealType(recipe.getString("MealType"));
+            setCuisineType(recipe.getString("CuisineType"));
+            setRecipeImage(recipe.getString("RecipeImage"));
+            setFavorite(recipe.getBoolean("Favorite"));
+            setRating(recipe.getInt("Rating"));
+            setLastMade(recipe.getDate("LastMade"));
+            setLastEdited(recipe.getDate("LastEdited"));
+        }
+
+        JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
+        setIngredients(recipeIngredients);
     }
 
-    public Recipe (int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, Date lastMade, Date when, ArrayList<Ingredient> ingredients){
+    public Recipe (int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastMade, Date lastEdited, ArrayList<Ingredient> ingredients){
         setRecipeKey(recipeKey);
         setRecipeName(recipeName);
         setMealType(mealType);
-        setMealStyle(mealStyle);
+        setCuisineType(mealStyle);
         setRecipeImage(recipeImage);
         setFavorite(favorite);
+        setRating(rating);
         setLastMade(lastMade);
-        setWhen(when);
+        setLastEdited(lastEdited);
         setIngredients(ingredients);
     }
 
     public int getRecipeKey(){
-        return recipeKey;
+        return mRecipeKey;
     }
 
     public void setRecipeKey(int recipeKey){
-        this.recipeKey = recipeKey;
+        mRecipeKey = recipeKey;
     }
 
     public String getRecipeName(){
-        return recipeName;
+        return mRecipeName;
     }
 
     public void setRecipeName(String recipeName){
-        this.recipeName = recipeName;
+        mRecipeName = recipeName;
     }
 
     public String getMealType(){
-        return mealType;
+        return mMealType;
     }
 
     public void setMealType(String mealType){
-        this.mealType = mealType;
+        mMealType = mealType;
     }
 
-    public String getMealStyle(){
-        return mealStyle;
+    public String getCuisineType(){
+        return mCuisineType;
     }
 
-    public void setMealStyle(String mealStyle){
-        this.mealStyle = mealStyle;
+    public void setCuisineType(String cuisineType){
+        mCuisineType = cuisineType;
     }
 
-    public  String getRecipeImage(){ return recipeImage; }
+    public  String getRecipeImage(){ return mRecipeImage; }
 
-    public void setRecipeImage(String recipeImage) { this.recipeImage = recipeImage; }
+    public void setRecipeImage(String recipeImage) { mRecipeImage = recipeImage; }
 
-    public boolean getFavorite(){ return favorite; }
+    public boolean getFavorite(){ return mFavorite; }
 
-    public void setFavorite(boolean favorite) { this.favorite = favorite; }
+    public void setFavorite(boolean favorite) { mFavorite = favorite; }
 
-    public Date getLastMade(){ return lastMade; }
+    public int getRating(){ return mRating; }
 
-    public void setLastMade(Date lastMade){ this.lastMade = lastMade; }
+    public void setRating(int rating){ mRating = rating;}
 
-    public Date getWhen() { return when; }
+    public Date getLastMade(){ return mLastMade; }
 
-    public void setWhen(Date when){ this.when = when; }
+    public void setLastMade(Date lastMade){ mLastMade = lastMade; }
+
+    public Date getLastEdited() { return mLastEdited; }
+
+    public void setLastEdited(Date lastEdited){ mLastEdited = lastEdited; }
 
     public ArrayList<Ingredient> getIngredients(){
-        return ingredients;
+        return mIngredients;
     }
 
-    public void setIngredients(ArrayList<Ingredient> ingredients) {this.ingredients = ingredients; }
+    public void setIngredients(ArrayList<Ingredient> ingredients) {this.mIngredients = ingredients; }
+
+    public void setIngredients(JSONResult ingredients){
+        this.mIngredients.clear();
+
+        for(int i = 0; i < ingredients.getCount(); i++){
+            this.mIngredients.add(new Ingredient(ingredients.getInt(i, "IngredientKey"),
+                                                 ingredients.getString(i, "IngredientName"),
+                                                 ingredients.getString(i, "IngredientType"),
+                                                 ingredients.getInt(i, "ShelfLife"),
+                                                 ingredients.getDouble(i, "IngredientAmount"),
+                                                 ingredients.getString(i, "IngredientUnit")));
+        }
+    }
 
     public void addIngredient(Ingredient ingredient){
-        ingredients.add(ingredient);
+        mIngredients.add(ingredient);
     }
-
 }

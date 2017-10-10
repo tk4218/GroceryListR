@@ -100,8 +100,10 @@ public  class RecipeFragment extends Fragment {
                           recipes.getString("MealType"),
                           recipes.getString("CuisineType"),
                           recipes.getString("RecipeImage"),
-                          (recipes.getInt("Favorite") ==1),
-                          new Date(), new Date());
+                          recipes.getBoolean("Favorite"),
+                          recipes.getInt("Rating"),
+                          recipes.getDate("LastMade"),
+                          recipes.getDate("LastEdited"));
                 recipes.moveNext();
             }
 
@@ -120,8 +122,8 @@ public  class RecipeFragment extends Fragment {
             });
         }
 
-        private void addRecipe(int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, Date lastMade, Date when){
-            mRecipes.add(new Recipe(recipeKey, recipeName, mealType, mealStyle, recipeImage, favorite, lastMade, when, null));
+        private void addRecipe(int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastMade, Date lastEdited){
+            mRecipes.add(new Recipe(recipeKey, recipeName, mealType, mealStyle, recipeImage, favorite, rating, lastMade, lastEdited, null));
         }
     }
 }

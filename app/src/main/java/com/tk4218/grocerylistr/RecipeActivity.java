@@ -13,20 +13,19 @@ import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.Ingredient;
 import com.tk4218.grocerylistr.Model.NonScrollListView;
+import com.tk4218.grocerylistr.Model.Recipe;
 
 import java.util.ArrayList;
 
 public class RecipeActivity extends AppCompatActivity {
 
     private int mRecipeKey;
-    private QueryBuilder mQb = new QueryBuilder();
+    private Recipe mRecipe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
-
-
 
         /*************************************************
          * Populate recipe details
@@ -37,9 +36,9 @@ public class RecipeActivity extends AppCompatActivity {
 
         if(extras != null){
             mRecipeKey = extras.getInt("recipeKey");
-            JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
-            recipeIngredientsList.setAdapter(new RecipeIngredientAdapter(this, recipeIngredients));
-            toolbar.setTitle(recipeIngredients.getString("RecipeName"));
+            mRecipe = new Recipe(mRecipeKey);
+            recipeIngredientsList.setAdapter(new RecipeIngredientAdapter(this, mRecipe.getIngredients()));
+            toolbar.setTitle(mRecipe.getRecipeName());
         }
 
         setSupportActionBar(toolbar);

@@ -90,9 +90,9 @@ public class AddIngredientAdapter extends BaseAdapter{
             final String [] measurements = mContext.getResources().getStringArray(R.array.measurements);
             final int ingredientPosition = position;
 
-            if(mIngredients.get(position).getIngredientMeasurement() != null){
+            if(mIngredients.get(position).getIngredientUnit() != null){
                 for(int i = 0; i < measurements.length; i++){
-                    if(measurements[i].equals(mIngredients.get(position).getIngredientMeasurement())){
+                    if(measurements[i].equals(mIngredients.get(position).getIngredientUnit())){
                         ingredientMeasurement.setSelection(i);
                         break;
                     }
@@ -102,11 +102,11 @@ public class AddIngredientAdapter extends BaseAdapter{
             ingredientMeasurement.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    mIngredients.get(ingredientPosition).setIngredientMeasurement(measurements[position]);
+                    mIngredients.get(ingredientPosition).setIngredientUnit(measurements[position]);
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
-                    mIngredients.get(ingredientPosition).setIngredientMeasurement("");
+                    mIngredients.get(ingredientPosition).setIngredientUnit("");
                 }
             });
 

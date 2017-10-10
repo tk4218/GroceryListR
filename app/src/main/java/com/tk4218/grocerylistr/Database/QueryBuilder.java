@@ -21,9 +21,36 @@ public class QueryBuilder {
 
     }
 
+    private ArrayList<String> addParameter(String paramName, String paramValue){
+        ArrayList<String> param = new ArrayList<String>();
+        param.add(paramName);
+        param.add(paramValue);
+
+        return param;
+    }
+
+    /********************************************************
+     * Queries
+     ********************************************************/
+
+    /**********************************
+     * Recipe Queries
+     **********************************/
     public JSONResult getAllRecipes(){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "select * from tableRecipe"));
+        parameters.add(addParameter("return_cols", "RecipeKey,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastMade,LastEdited"));
+        try{
+            return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public JSONResult getRecipe(int recipeKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select * from tableRecipe where RecipeKey = " + recipeKey));
         parameters.add(addParameter("return_cols", "RecipeKey,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastMade,LastEdited"));
         try{
             return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
@@ -61,10 +88,25 @@ public class QueryBuilder {
         return false;
     }
 
+    /**********************************
+     * Ingredient Queries
+     **********************************/
     public JSONResult getIngredientByName(String ingredientName){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "select * from tableIngredient where IngredientName = '" + ingredientName + "'"));
-        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType"));
+        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife"));
+        try{
+            return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public JSONResult getIngredient(int ingredientKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select * from tableIngredient where IngredientKey = '" + ingredientKey + "'"));
+        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife"));
         try{
             return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
         }catch (Exception e){
@@ -90,6 +132,9 @@ public class QueryBuilder {
         return 0;
     }
 
+    /**********************************
+     * RecipeToIngredient Queries
+     **********************************/
     public boolean insertRecipeToIngredient(int recipeKey, int ingredientKey, double ingredientAmount, String ingredientUnit, String preparation1, String preparation2, boolean optional){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "insert into tableRecipeToIngredient (RecipeKey,IngredientKey,IngredientAmount,IngredientUnit,Preparation1,Preparation2,Optional)" +
@@ -109,8 +154,8 @@ public class QueryBuilder {
 
     public JSONResult getRecipeIngredients(int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "select r.RecipeName, ri.IngredientAmount, ri.IngredientUnit, i.IngredientName from tableRecipeToIngredient ri, tableIngredient i, tableRecipe r where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey and r.RecipeKey = ri.RecipeKey"));
-        parameters.add(addParameter("return_cols", "RecipeName,IngredientAmount,IngredientUnit,IngredientName"));
+        parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey"));
+        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit"));
         try{
             return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
         }catch (Exception e){
@@ -119,11 +164,16 @@ public class QueryBuilder {
         return null;
     }
 
-    private ArrayList<String> addParameter(String paramName, String paramValue){
-        ArrayList<String> param = new ArrayList<String>();
-        param.add(paramName);
-        param.add(paramValue);
-
-        return param;
+    public JSONResult getRecipeIngredient(int recipeKey, String ingredientName){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey and i.IngredientName = '" + ingredientName + "'"));
+        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit"));
+        try{
+            return new JSONResult(jsonParser.makeHttpRequest(database_url_retrieve, parameters).getJSONArray("data"));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
+
 }

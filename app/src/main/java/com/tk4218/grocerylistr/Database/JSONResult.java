@@ -3,6 +3,9 @@ package com.tk4218.grocerylistr.Database;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by Tk4218 on 8/12/2017.
  */
@@ -87,10 +90,50 @@ public class JSONResult {
         return "";
     }
 
-    public JSONObject getRow(int position){
+    public boolean getBoolean(String columnName){
         try{
+            return result.getJSONObject(index).getBoolean(columnName);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean getBoolean(int position, String columnName){
+        try{
+            return result.getJSONObject(position).getBoolean(columnName);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public Date getDate(String columnName){
+        try{
+            String date = result.getJSONObject(index).getString(columnName);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return dateFormat.parse(date);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return new Date();
+    }
+
+    public Date getDate(int position, String columnName){
+        try{
+            String date = result.getJSONObject(position).getString(columnName);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return dateFormat.parse(date);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return new Date();
+    }
+
+    public JSONObject getRow(int position) {
+        try {
             return result.getJSONObject(position);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

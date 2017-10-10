@@ -23,9 +23,9 @@ import java.util.ArrayList;
 public class RecipeIngredientAdapter extends BaseAdapter {
 
     private Context mContext;
-    private JSONResult mIngredients;
+    private ArrayList<Ingredient> mIngredients;
 
-    public RecipeIngredientAdapter(Context context,JSONResult ingredients){
+    public RecipeIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
         mIngredients = ingredients;
 
@@ -35,12 +35,12 @@ public class RecipeIngredientAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mIngredients.getCount();
+        return mIngredients.size();
     }
 
     @Override
-    public JSONObject getItem(int position) {
-        return mIngredients.getRow(position);
+    public Ingredient getItem(int position) {
+        return mIngredients.get(position);
     }
 
     @Override
@@ -57,8 +57,8 @@ public class RecipeIngredientAdapter extends BaseAdapter {
             TextView ingredientAmount = (TextView) convertView.findViewById(R.id.recipe_ingredient_amount);
             TextView ingredientName = (TextView) convertView.findViewById(R.id.recipe_ingredient_name);
 
-            ingredientAmount.setText(mIngredients.getDouble(position, "IngredientAmount") + " " + mIngredients.getString(position, "IngredientUnit"));
-            ingredientName.setText(mIngredients.getString(position, "IngredientName"));
+            ingredientAmount.setText(mIngredients.get(position).getIngredientAmount() + " " + mIngredients.get(position).getIngredientUnit());
+            ingredientName.setText(mIngredients.get(position).getIngredientName());
         }
 
         return convertView;
