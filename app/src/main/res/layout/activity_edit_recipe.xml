@@ -44,7 +44,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:text="Meal" />
+                android:text="Meal"
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/edit_meal_type"
@@ -65,7 +66,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:text="Cuisine" />
+                android:text="Cuisine"
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/edit_meal_style"
@@ -86,7 +88,7 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <com.tk4218.grocerylistr.Model.NonScrollListView
+        <com.tk4218.grocerylistr.CustomLayout.NonScrollListView
             android:id="@+id/edit_ingredient_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -94,11 +96,14 @@
 
         <Button
             android:id="@+id/button_add_ingredient"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
+            android:layout_marginLeft="5dp"
+            android:background="@android:color/transparent"
             android:onClick="addIngredient"
-            android:text="Add Ingredient" />
+            android:text="+ Add Ingredient"
+            android:textColor="@android:color/darker_gray" />
 
     </LinearLayout>
 

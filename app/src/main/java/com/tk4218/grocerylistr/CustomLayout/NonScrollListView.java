@@ -1,4 +1,4 @@
-package com.tk4218.grocerylistr.Model;
+package com.tk4218.grocerylistr.CustomLayout;
 
 import android.content.Context;
 import android.util.AttributeSet;

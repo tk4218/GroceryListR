@@ -2,20 +2,16 @@ package com.tk4218.grocerylistr;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ListView;
 
 import com.tk4218.grocerylistr.Adapters.RecipeIngredientAdapter;
-import com.tk4218.grocerylistr.Database.JSONResult;
-import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Model.Ingredient;
-import com.tk4218.grocerylistr.Model.NonScrollListView;
-import com.tk4218.grocerylistr.Model.Recipe;
+import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 
-import java.util.ArrayList;
+import com.tk4218.grocerylistr.Model.Recipe;
 
 public class RecipeActivity extends AppCompatActivity {
 
@@ -47,8 +43,11 @@ public class RecipeActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                DialogFragment datePicker = new DatePickerFragment();
+                Bundle arguments = new Bundle();
+                arguments.putInt("recipeKey", mRecipeKey);
+                datePicker.setArguments(arguments);
+                datePicker.show(getSupportFragmentManager(), "datePicker");
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

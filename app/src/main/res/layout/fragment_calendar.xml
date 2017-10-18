@@ -52,7 +52,7 @@
                 android:textSize="20sp" />
         </GridLayout>
 
-        <com.tk4218.grocerylistr.Model.NonScrollListView
+        <com.tk4218.grocerylistr.CustomLayout.NonScrollListView
             android:id="@+id/listView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

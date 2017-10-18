@@ -46,7 +46,8 @@
         android:layout_marginLeft="10dp"
         android:layout_toEndOf="@+id/calendar_meal_type_image"
         android:layout_toRightOf="@+id/calendar_meal_type_image"
-        android:text="TextView" />
+        android:text="TextView"
+        android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/imageView3"

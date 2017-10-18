@@ -113,6 +113,9 @@ public class Recipe {
     public void setIngredients(ArrayList<Ingredient> ingredients) {this.mIngredients = ingredients; }
 
     public void setIngredients(JSONResult ingredients){
+        if(mIngredients == null)
+            mIngredients = new ArrayList<>();
+
         this.mIngredients.clear();
 
         for(int i = 0; i < ingredients.getCount(); i++){

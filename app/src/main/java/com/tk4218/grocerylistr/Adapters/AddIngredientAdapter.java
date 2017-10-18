@@ -9,11 +9,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.tk4218.grocerylistr.Database.JSONResult;
+import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.Ingredient;
 import com.tk4218.grocerylistr.R;
 
@@ -24,9 +30,11 @@ import java.util.ArrayList;
  */
 
 public class AddIngredientAdapter extends BaseAdapter{
+    private QueryBuilder mQb = new QueryBuilder();
 
     private Context mContext;
     private ArrayList<Ingredient> mIngredients;
+    private JSONResult mAllIngredients;
 
     public AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
@@ -34,6 +42,8 @@ public class AddIngredientAdapter extends BaseAdapter{
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        mAllIngredients = mQb.getAllIngredients();
     }
 
     @Override
@@ -113,7 +123,8 @@ public class AddIngredientAdapter extends BaseAdapter{
             /***********************************************
              * Ingredient Name
              ***********************************************/
-            EditText ingredientName = (EditText) convertView.findViewById(R.id.edit_ingredient_name);
+            AutoCompleteTextView ingredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
+            ingredientName.setAdapter(new ArrayAdapter<String>(mContext, android.R.layout.simple_dropdown_item_1line, mAllIngredients.getStringColumnArray("IngredientName")));
 
             if(mIngredients.get(position).getIngredientName() != null){
                 ingredientName.setText(mIngredients.get(position).getIngredientName());
@@ -125,10 +136,14 @@ public class AddIngredientAdapter extends BaseAdapter{
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
                 @Override
                 public void afterTextChanged(Editable s) {
-                    mIngredients.get(position).setIngredientName(s.toString());
+                    //mIngredients.get(position).setIngredientName(s.toString());
+                    double ingredientAmount = mIngredients.get(position).getIngredientAmount();
+                    String ingredientUnit = mIngredients.get(position).getIngredientUnit();
+                    mIngredients.set(position, new Ingredient(s.toString()));
+                    mIngredients.get(position).setIngredientAmount(ingredientAmount);
+                    mIngredients.get(position).setIngredientUnit(ingredientUnit);
                 }
             });
-
 
             /***********************************************
              * Delete Button

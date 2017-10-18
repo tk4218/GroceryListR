@@ -1,6 +1,8 @@
 package com.tk4218.grocerylistr;
 
 import android.support.design.widget.TabLayout;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -9,8 +11,10 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
+import com.tk4218.grocerylistr.Model.GroceryListItem;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +41,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Create the adapter that will return a fragment for each of the three
+        /****************************************************
+         * Set up Navigation Drawer
+         ****************************************************/
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        // Create the adapter that will return a fragment for each of the two
         // primary sections of the activity.
         mMainViewPagerAdapter = new MainViewPagerAdapter(getSupportFragmentManager());
 
@@ -48,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+
+        GroceryListItem groceryListItem = new GroceryListItem();
+        groceryListItem.setIngredientAmount(0.166666666666666);
+
+        Toast.makeText(this, groceryListItem.getFormattedIngredientAmount(), Toast.LENGTH_LONG).show();
     }
 
     @Override

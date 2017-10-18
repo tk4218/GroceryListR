@@ -50,13 +50,13 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <com.tk4218.grocerylistr.Model.NonScrollListView
+    <com.tk4218.grocerylistr.CustomLayout.NonScrollListView
         android:id="@+id/recipe_ingredient_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingLeft="10dp">
 
-    </com.tk4218.grocerylistr.Model.NonScrollListView>
+    </com.tk4218.grocerylistr.CustomLayout.NonScrollListView>
 
 
 </LinearLayout>
