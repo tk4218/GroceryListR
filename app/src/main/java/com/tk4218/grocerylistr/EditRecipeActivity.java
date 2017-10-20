@@ -252,7 +252,7 @@ public class EditRecipeActivity extends AppCompatActivity {
                 Ingredient ingredient = new Ingredient(mIngredientList.get(i).getIngredientName().trim());
                 int ingredientKey = 0;
                 if(ingredient.getIngredientKey() == 0){
-                    ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName().trim(), "");
+                    ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName().trim(), "", 0);
                 } else {
                     ingredientKey = ingredient.getIngredientKey();
                 }

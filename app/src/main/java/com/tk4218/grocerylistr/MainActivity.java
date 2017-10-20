@@ -1,5 +1,6 @@
 package com.tk4218.grocerylistr;
 
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
          * Set up Navigation Drawer
          ****************************************************/
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
+        navView.setItemIconTintList(null);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
@@ -60,11 +64,6 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-
-        GroceryListItem groceryListItem = new GroceryListItem();
-        groceryListItem.setIngredientAmount(0.166666666666666);
-
-        Toast.makeText(this, groceryListItem.getFormattedIngredientAmount(), Toast.LENGTH_LONG).show();
     }
 
     @Override

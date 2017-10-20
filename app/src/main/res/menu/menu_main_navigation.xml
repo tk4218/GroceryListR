@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_grocerylist"
+        android:title = "Grocery List"
+        android:icon="@drawable/grocerylist_icon"/>
+
+    <item
+        android:id="@+id/nav_pantry"
+        android:title="Pantry"
+        android:icon="@drawable/pantry_icon"/>
+
+    <item
+        android:id="@+id/nav_ingredients"
+        android:icon="@drawable/ingredient_icon"
+        android:title="Ingredients" />
+
+    <item
+        android:id="@+id/nav_grocerylist_history"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="Grocery List History" />
+
+</menu>

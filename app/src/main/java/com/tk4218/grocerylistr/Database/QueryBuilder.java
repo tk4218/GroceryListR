@@ -121,9 +121,9 @@ public class QueryBuilder {
         return getResults(parameters);
     }
 
-    public int insertIngredient(String ingredientName, String ingredientType){
+    public int insertIngredient(String ingredientName, String ingredientType, int shelfLife){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "insert into tableIngredient (IngredientName,IngredientType) values('" + ingredientName + "','" + ingredientType + "')"));
+        parameters.add(addParameter("sql_query", "insert into tableIngredient (IngredientName,IngredientType,ShelfLife) values('" + ingredientName + "','" + ingredientType + "'," + shelfLife + ")"));
         try{
             JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
             if(result.getInt("success") == 1){

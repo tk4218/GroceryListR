@@ -1,6 +1,8 @@
 package com.tk4218.grocerylistr.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.StrictMode;
 
 import android.text.Editable;
@@ -64,13 +66,13 @@ public class AddIngredientAdapter extends BaseAdapter{
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         if (convertView == null){
-            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.listview_add_ingredient, null);
 
             /***********************************************
              * Ingredient Amount
              ***********************************************/
-            EditText ingredientAmount = (EditText) convertView.findViewById(R.id.edit_ingredient_amount);
+            final EditText ingredientAmount = (EditText) convertView.findViewById(R.id.edit_ingredient_amount);
 
             if(mIngredients.get(position).getIngredientAmount() != 0){
                 ingredientAmount.setText(mIngredients.get(position).getIngredientAmount() + "");
@@ -123,25 +125,65 @@ public class AddIngredientAdapter extends BaseAdapter{
             /***********************************************
              * Ingredient Name
              ***********************************************/
-            AutoCompleteTextView ingredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
-            ingredientName.setAdapter(new ArrayAdapter<String>(mContext, android.R.layout.simple_dropdown_item_1line, mAllIngredients.getStringColumnArray("IngredientName")));
+            final AutoCompleteTextView ingredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
+            ingredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, mAllIngredients.getStringColumnArray("IngredientName")));
 
             if(mIngredients.get(position).getIngredientName() != null){
                 ingredientName.setText(mIngredients.get(position).getIngredientName());
+                ingredientName.setTag(mIngredients.get(position).getIngredientKey());
             }
             ingredientName.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    mIngredients.get(position).setIngredientName(s.toString());
+                }
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {}
                 @Override
                 public void afterTextChanged(Editable s) {
-                    //mIngredients.get(position).setIngredientName(s.toString());
-                    double ingredientAmount = mIngredients.get(position).getIngredientAmount();
-                    String ingredientUnit = mIngredients.get(position).getIngredientUnit();
-                    mIngredients.set(position, new Ingredient(s.toString()));
-                    mIngredients.get(position).setIngredientAmount(ingredientAmount);
-                    mIngredients.get(position).setIngredientUnit(ingredientUnit);
+                    final double ingredientAmount = mIngredients.get(position).getIngredientAmount();
+                    final String ingredientUnit = mIngredients.get(position).getIngredientUnit();
+                    if(s.toString().equals("+ New Ingredient")){
+                        ingredientName.setText(mIngredients.get(position).getIngredientName());
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                        builder.setTitle("Add New Ingredient");
+                        builder.setIcon(android.R.drawable.ic_input_add);
+                        View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
+                        builder.setView(dialogView);
+                        final EditText newIngredientName  = (EditText) dialogView.findViewById(R.id.new_ingredient_name);
+                        newIngredientName.setText(mIngredients.get(position).getIngredientName());
+                        final Spinner newIngredientType = (Spinner) dialogView.findViewById(R.id.new_ingredient_type);
+                        final EditText newIngredientExpAmount = (EditText) dialogView.findViewById(R.id.new_ingredient_exp_amount);
+                        final Spinner newIngredientExpInterval = (Spinner) dialogView.findViewById(R.id.new_ingredient_exp_interval);
+                        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String ingredientType = newIngredientType.getSelectedItem().toString();
+                                String interval = newIngredientExpInterval.getSelectedItem().toString();
+                                int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
+                                if(interval.equals("Weeks")) expiration *= 7;
+                                if(interval.equals("Months")) expiration *= 30;
+                                int ingredientKey = mQb.insertIngredient(newIngredientName.getText().toString(), ingredientType, expiration);
+                                mIngredients.set(position, new Ingredient(ingredientKey));
+                                mIngredients.get(position).setIngredientAmount(ingredientAmount);
+                                mIngredients.get(position).setIngredientUnit(ingredientUnit);
+                                ingredientName.setTag(mIngredients.get(position).getIngredientKey());
+                                mAllIngredients = mQb.getAllIngredients();
+                                ingredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, mAllIngredients.getStringColumnArray("IngredientName")));
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {}
+                        });
+                        builder.show();
+                    } else {
+                        mIngredients.set(position, new Ingredient(s.toString()));
+                        mIngredients.get(position).setIngredientAmount(ingredientAmount);
+                        mIngredients.get(position).setIngredientUnit(ingredientUnit);
+                        ingredientName.setTag(mIngredients.get(position).getIngredientKey());
+                    }
+
                 }
             });
 

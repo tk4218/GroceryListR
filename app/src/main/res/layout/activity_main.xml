@@ -9,9 +9,10 @@
     tools:openDrawer="start">
 
     <include
+        style="@style/AppTheme"
         layout="@layout/content_main"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"
@@ -19,6 +20,9 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:theme="@style/AppTheme"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/menu_main" />
+        app:menu="@menu/menu_main_navigation"
+        app:itemIconTint="@android:color/black"
+        />
 </android.support.v4.widget.DrawerLayout>

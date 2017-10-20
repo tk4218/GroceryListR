@@ -39,6 +39,24 @@
         <item>cloves</item>
         <item>leaves</item>
     </string-array>
+
+    <string-array name="ingredient_type">
+        <item>Bakery</item>
+        <item>Dairy</item>
+        <item>Deli</item>
+        <item>Dry/Canned Foods</item>
+        <item>Frozen</item>
+        <item>Meats</item>
+        <item>Non-Foods</item>
+        <item>Produce</item>
+    </string-array>
+
+    <string-array name="expiration_interval">
+        <item>Days</item>
+        <item>Weeks</item>
+        <item>Months</item>
+    </string-array>
+
     <string name="title_activity_recipe">RecipeActivity</string>
     <string name="recipe_last_made">Recipe Last Made</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
