@@ -219,4 +219,11 @@ public class QueryBuilder {
         parameters.add(addParameter("return_cols", "GroceryListItemKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart"));
         return getResults(parameters);
     }
+
+    public JSONResult getGroceryListItem(int groceryListItemKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select GroceryListItemKey,GroceryListKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart from tableGroceryListItem where GroceryListItemKey = " + groceryListItemKey));
+        parameters.add(addParameter("return_cols", "GroceryListItemKey,GroceryListKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart"));
+        return getResults(parameters);
+    }
 }

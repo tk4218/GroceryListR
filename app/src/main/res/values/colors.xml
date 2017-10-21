@@ -6,4 +6,5 @@
     <color name="colorTextAlternate">#4163fc</color>
     <color name="background_material_light">#fdfdfd</color>
     <color name="recipeGridBackground">#f4f3f3</color>
+    <color name="light_grey">#bdbdbd</color>
 </resources>
