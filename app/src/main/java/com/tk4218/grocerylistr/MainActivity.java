@@ -123,9 +123,13 @@ public class MainActivity extends AppCompatActivity
 
         switch(id){
             case R.id.nav_grocerylist:
+
+                Intent intent = new Intent(this, GroceryListActivity.class);
+                intent.putExtra("groceryListKey", 1);
+                startActivity(intent);
+                break;
+            case R.id.nav_add_grocerylist:
                 createNewGroceryList();
-                //Intent intent = new Intent(this, GroceryListActivity.class);
-                //startActivity(intent);
                 break;
             case R.id.nav_pantry:
                 Toast.makeText(this, "Feature Not Available Yet", Toast.LENGTH_SHORT).show();
@@ -233,9 +237,14 @@ public class MainActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which) {
                 GroceryList newGroceryList = new GroceryList();
                 int groceryListKey = newGroceryList.generateGroceryList(mMealPlanDateStart, mMealPlanDateEnd);
-                Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
-                intent.putExtra("groceryListKey", groceryListKey);
-                startActivity(intent);
+
+                if (groceryListKey == 0){
+                    Toast.makeText(getApplicationContext(), "No Meals Planned Between These Dates", Toast.LENGTH_SHORT).show();
+                } else{
+                    Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
+                    intent.putExtra("groceryListKey", groceryListKey);
+                    startActivity(intent);
+                }
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

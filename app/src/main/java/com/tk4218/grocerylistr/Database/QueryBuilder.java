@@ -36,6 +36,35 @@ public class QueryBuilder {
         return null;
     }
 
+    private boolean insert(ArrayList<ArrayList<String>> parameters){
+        try{
+            JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
+            if(result.getInt("success") != 1){
+                Log.e("Insert Error", result.getString("message"));
+                return false;
+            }
+            return true;
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private int insertReturnKey(ArrayList<ArrayList<String>> parameters){
+        try{
+            JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
+            if(result.getInt("success") == 1){
+                return result.getInt("insert_key");
+            } else{
+                Log.e("Insert Error", result.getString("message"));
+                return -1;
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     private ArrayList<String> addParameter(String paramName, String paramValue){
         ArrayList<String> param = new ArrayList<String>();
         param.add(paramName);
@@ -72,29 +101,13 @@ public class QueryBuilder {
     public int insertRecipe(String recipeName, String mealType, String cuisineType, String recipeImage){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "insert into tableRecipe (RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastMade,LastEdited) values('" + recipeName + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0,'0000-00-00', current_timestamp())"));
-        try{
-            JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
-            if(result.getInt("success") == 1){
-                return result.getInt("insert_key");
-            } else{
-                Log.e("Insert Error", result.getString("message"));
-                return -1;
-            }
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return 0;
+        return insertReturnKey(parameters);
     }
 
     public boolean updateRecipeFavorite(int recipeKey, boolean favorite){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "update tableRecipe set Favorite = " + (favorite ? 1 : 0) + " where RecipeKey = " + recipeKey));
-        try{
-            return jsonParser.makeHttpRequest(database_url_insert, parameters).getInt("success") == 1;
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return false;
+        return insert(parameters);
     }
 
     /**********************************
@@ -124,18 +137,7 @@ public class QueryBuilder {
     public int insertIngredient(String ingredientName, String ingredientType, int shelfLife){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "insert into tableIngredient (IngredientName,IngredientType,ShelfLife) values('" + ingredientName + "','" + ingredientType + "'," + shelfLife + ")"));
-        try{
-            JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
-            if(result.getInt("success") == 1){
-                return result.getInt("insert_key");
-            } else{
-                Log.e("Insert Error", result.getString("message"));
-                return -1;
-            }
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return 0;
+        return insertReturnKey(parameters);
     }
 
     /**********************************
@@ -145,17 +147,7 @@ public class QueryBuilder {
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "insert into tableRecipeToIngredient (RecipeKey,IngredientKey,IngredientAmount,IngredientUnit,Preparation1,Preparation2,Optional)" +
                                                  "values(" + recipeKey + "," + ingredientKey + "," + ingredientAmount + ",'" + ingredientUnit + "','" + preparation1 + "','" + preparation2 + "'," + (optional ? 1 : 0) + ")"));
-        try{
-            JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
-            if(result.getInt("success") != 1){
-                Log.e("Insert Error", result.getString("message"));
-                return false;
-            }
-            return true;
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return false;
+        return insert(parameters);
     }
 
     public JSONResult getRecipeIngredients(int recipeKey){
@@ -179,18 +171,7 @@ public class QueryBuilder {
     public boolean insertMealPlan(Date mealPlanDate, String mealType, int sequence, int recipeKey, int groceryListKey, boolean mealCompleted){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "insert into tableMealPlan (MealPlanDate,MealType,Sequence,RecipeKey,GroceryListKey,MealCompleted) values('" + dateString(mealPlanDate) + "','" + mealType + "'," + sequence + ","+ recipeKey+ ","+ groceryListKey + "," + mealCompleted + ")"));
-        try{
-            JSONObject result = jsonParser.makeHttpRequest(database_url_insert, parameters);
-            if(result.getInt("success") == 1){
-                return true;
-            } else{
-                Log.e("Insert Error", result.getString("message"));
-                return false;
-            }
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return false;
+        return insert(parameters);
     }
 
     public JSONResult getMealPlan(Date mealPlanDate){
@@ -210,6 +191,19 @@ public class QueryBuilder {
         return getResults(parameters);
     }
 
+    public int insertGroceryList(Date mealPlanDateStart, Date mealPlanDateEnd, boolean groceryListCompleted, Date completedDate){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "insert into tableGroceryList (MealPlanDateStart,MealPlanDateEnd,GroceryListCompleted,CompletedDate) values('"+ dateString(mealPlanDateStart) +"','"+ dateString(mealPlanDateEnd) +"',"+ (groceryListCompleted ? 1 : 0) +",'"+ dateString(completedDate) +"')"));
+        return insertReturnKey(parameters);
+    }
+
+    public JSONResult getIngredientsForGroceryList(Date mealPlanDateStart, Date mealPlanDateEnd){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "Select i.IngredientType, ri.IngredientAmount, ri.IngredientUnit, i.IngredientName , i.IngredientKey from tableMealPlan mp, tableRecipeToIngredient ri, tableIngredient i where mp.MealPlanDate >= '"+ dateString(mealPlanDateStart) +"' and mp.MealPlanDate <= '"+ dateString(mealPlanDateEnd) +"' and ri.RecipeKey = mp.RecipeKey and i.IngredientKey = ri.IngredientKey"));
+        parameters.add(addParameter("return_cols", "IngredientType,IngredientAmount,IngredientUnit,IngredientName,IngredientKey"));
+        return getResults(parameters);
+    }
+
     /**********************************
      * Grocery List Item Queries
      **********************************/
@@ -218,6 +212,12 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "select GroceryListItemKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart from tableGroceryListItem where GroceryListKey = " + groceryListKey));
         parameters.add(addParameter("return_cols", "GroceryListItemKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart"));
         return getResults(parameters);
+    }
+
+    public int insertGroceryListItem(int groceryListKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean addedToCart){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "insert into tableGroceryListItem (GroceryListKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart) values("+ groceryListKey +","+ ingredientKey +","+ ingredientAmount +",'"+ ingredientUnit +"',"+ (addedToCart ? 1 : 0) +")"));
+        return insertReturnKey(parameters);
     }
 
     public JSONResult getGroceryListItem(int groceryListItemKey){

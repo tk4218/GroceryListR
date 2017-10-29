@@ -29,7 +29,7 @@ public class GroceryListItem {
         }
     }
 
-    public GroceryListItem(int groceryListItemKey,  int groceryListKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean addedToCart){
+    public GroceryListItem(int groceryListItemKey, int groceryListKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean addedToCart){
         setGroceryListItemKey(groceryListItemKey);
         setGroceryListKey(groceryListKey);
         setIngredient(ingredientKey);
@@ -50,6 +50,7 @@ public class GroceryListItem {
     public void setIngredientAmount(double amount){
         mIngredientAmount = amount;
     }
+    public void addIngredientAmount(double amount) { mIngredientAmount += amount; }
     public double getIngredientAmount(){
         return mIngredientAmount;
     }

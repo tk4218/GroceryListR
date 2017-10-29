@@ -36,8 +36,12 @@
         <item>oz</item>
         <item>grams</item>
         <item>count</item>
+        <item>cans</item>
+        <item>bags</item>
+        <item>boxes</item>
         <item>cloves</item>
         <item>leaves</item>
+
     </string-array>
 
     <string-array name="ingredient_type">

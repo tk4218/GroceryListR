@@ -3,8 +3,13 @@
 
     <item
         android:id="@+id/nav_grocerylist"
-        android:title = "Grocery List"
+        android:title = "Current Grocery List"
         android:icon="@drawable/grocerylist_icon"/>
+
+    <item
+        android:id="@+id/nav_add_grocerylist"
+        android:title="Create New Grocery List"
+        android:icon="@android:drawable/ic_menu_add"/>
 
     <item
         android:id="@+id/nav_pantry"
