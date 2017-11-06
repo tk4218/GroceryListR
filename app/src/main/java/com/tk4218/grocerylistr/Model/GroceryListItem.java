@@ -82,8 +82,10 @@ public class GroceryListItem {
                 bestDenominator = i;
             }
         }
-        if (bestDenominator > 1)
-            sb.append(' ').append(Math.round(d * bestDenominator)).append('/') .append(bestDenominator);
+        if (bestDenominator > 1) {
+            if (l != 0) sb.append(' ');
+            sb.append(Math.round(d * bestDenominator)).append('/').append(bestDenominator);
+        }
         return sb.toString();
     }
 

@@ -27,7 +27,6 @@ public  class RecipeFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private  ArrayList<Recipe> mRecipes;
-    QueryBuilder mQb = new QueryBuilder();
 
     public RecipeFragment() {
 
@@ -37,9 +36,8 @@ public  class RecipeFragment extends Fragment {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static RecipeFragment newInstance(int sectionNumber) {
-        RecipeFragment fragment = new RecipeFragment();
-        return fragment;
+    public static RecipeFragment newInstance() {
+        return new RecipeFragment();
     }
 
     @Override
@@ -48,18 +46,18 @@ public  class RecipeFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
 
 
-        /*********************************
+        /*--------------------------------
          *  Set recipes on grid view
-         *********************************/
+         *--------------------------------*/
         mRecipes = new ArrayList<>();
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recipeGridView);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
         //new RetrieveRecipes().execute();
 
-        /**********************************
-        Set floating action button action
-         **********************************/
+        /*-----------------------------------
+         *Set floating action button action
+         *-----------------------------------*/
         FloatingActionButton fab = (FloatingActionButton)rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,14 +75,15 @@ public  class RecipeFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        /*********************************************************************
+        /*-------------------------------------------------------------------
          * Retrieving Recipes from the database. Doing it in onResume
          * guarantees the list will be updated upon returning to the fragment.
-         *********************************************************************/
+         *-------------------------------------------------------------------*/
         new RetrieveRecipes().execute();
     }
 
     private class RetrieveRecipes extends AsyncTask<String, String, String>{
+        QueryBuilder mQb = new QueryBuilder();
 
         @Override
         protected String doInBackground(String... params) {

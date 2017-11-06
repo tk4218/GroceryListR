@@ -25,11 +25,11 @@ public class MainViewPagerAdapter extends FragmentPagerAdapter {
         Log.d("Tab Number", position+"");
         switch(position){
             case 0:
-                return CalendarFragment.newInstance(position+1);
+                return CalendarFragment.newInstance();
             case 1:
-                return RecipeFragment.newInstance(position+1);
+                return RecipeFragment.newInstance();
         }
-        return RecipeFragment.newInstance(position + 1);
+        return RecipeFragment.newInstance();
     }
 
     @Override

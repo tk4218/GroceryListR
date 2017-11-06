@@ -1,11 +1,13 @@
 package com.tk4218.grocerylistr;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.StrictMode;
 import android.provider.MediaStore;
@@ -23,10 +25,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.tk4218.grocerylistr.Adapters.AddIngredientAdapter;
-import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Image.ImageManager;
 import com.tk4218.grocerylistr.Model.Ingredient;
+import com.tk4218.grocerylistr.Model.Recipe;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,10 +41,14 @@ public class EditRecipeActivity extends AppCompatActivity {
 
     ImageButton mRecipeImage;
     ImageManager mImageManager = new ImageManager();
+    EditText mRecipeName;
+    Spinner mMealType;
+    Spinner mCuisineType;
     ListView mIngredientListView;
-    ArrayList<Ingredient> mIngredientList;
 
-    QueryBuilder mQb = new QueryBuilder();
+    int mRecipeKey;
+    Recipe mRecipe;
+    ArrayList<Ingredient> mIngredientList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +58,23 @@ public class EditRecipeActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
         setContentView(R.layout.activity_edit_recipe);
-        setTitle("Add New Recipe");
 
         mRecipeImage = (ImageButton) findViewById(R.id.edit_recipe_image);
-
+        mRecipeName = (EditText) findViewById(R.id.edit_recipe_name);
+        mMealType = (Spinner) findViewById(R.id.edit_meal_type);
+        mCuisineType = (Spinner) findViewById(R.id.edit_meal_style);
         mIngredientListView = (ListView) findViewById(R.id.edit_ingredient_list);
-        mIngredientList = new ArrayList<>();
-        mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
+
+        Bundle extras = getIntent().getExtras();
+        if(extras != null){
+            mRecipeKey = extras.getInt("recipeKey");
+            new GetRecipeInfo().execute(mRecipeKey);
+        } else {
+            setTitle("Add New Recipe");
+            mIngredientList = new ArrayList<>();
+            mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
+        }
+
     }
 
     @Override
@@ -77,9 +93,7 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_save) {
-            if(saveRecipe()){
-                finish();
-            }
+            saveRecipe();
             return true;
         }
 
@@ -181,11 +195,14 @@ public class EditRecipeActivity extends AppCompatActivity {
 
                 Cursor cursor = getContentResolver().query(selectedImage,
                         filePathColumn, null, null, null);
-                cursor.moveToFirst();
+                if(cursor != null){
+                    cursor.moveToFirst();
 
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                mCurrentPhotoPath = cursor.getString(columnIndex);
-                cursor.close();
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    mCurrentPhotoPath = cursor.getString(columnIndex);
+                    cursor.close();
+                }
+
                 break;
             case ImageManager.REQUEST_CROP_PHOTO:
                 break;
@@ -199,11 +216,13 @@ public class EditRecipeActivity extends AppCompatActivity {
 
             Cursor cursor = getContentResolver().query(selectedImage,
                     filePathColumn, null, null, null);
-            cursor.moveToFirst();
+            if(cursor != null){
+                cursor.moveToFirst();
 
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            mCurrentPhotoPath = cursor.getString(columnIndex);
-            cursor.close();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                mCurrentPhotoPath = cursor.getString(columnIndex);
+                cursor.close();
+            }
         }
        // mRecipeImage.setImageBitmap(mImageManager.setPic(mCurrentPhotoPath, mRecipeImage.getLayoutParams().width, mRecipeImage.getLayoutParams().height));
     }
@@ -231,36 +250,167 @@ public class EditRecipeActivity extends AppCompatActivity {
     /************************************************
      * Save Recipe
      ************************************************/
-    public boolean saveRecipe(){
-        EditText recipeName = (EditText) findViewById(R.id.edit_recipe_name);
-        Spinner mealType = (Spinner) findViewById(R.id.edit_meal_type);
-        Spinner cuisineType = (Spinner) findViewById(R.id.edit_meal_style);
-
-        if(recipeName.getText().toString().equals("")){
+    public void saveRecipe(){
+        if(mRecipeName.getText().toString().equals("")){
             Toast.makeText(this, "Please Add a Name for This Recipe", Toast.LENGTH_SHORT).show();
-            return false;
+            return;
         }
         if(mIngredientList.size() ==0){
             Toast.makeText(this, "Please Add At Least One Ingredient", Toast.LENGTH_SHORT).show();
-            return false;
+            return;
         }
 
-        int recipeKey = mQb.insertRecipe(recipeName.getText().toString(), mealType.getSelectedItem().toString(), cuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
+        if(mRecipeKey == 0){
+            new SaveRecipe().execute(mRecipeName.getText().toString(), mMealType.getSelectedItem().toString(), mCuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
+        } else {
+            new UpdateRecipe().execute(mRecipeName.getText().toString(), mMealType.getSelectedItem().toString(), mCuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
+        }
+    }
 
-        if(recipeKey != 0){
-            for(int i = 0; i < mIngredientList.size(); i++){
-                Ingredient ingredient = new Ingredient(mIngredientList.get(i).getIngredientName().trim());
-                int ingredientKey = 0;
-                if(ingredient.getIngredientKey() == 0){
-                    ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName().trim(), "", 0);
-                } else {
-                    ingredientKey = ingredient.getIngredientKey();
+    private class SaveRecipe extends AsyncTask<String, Void, Void> {
+        QueryBuilder mQb = new QueryBuilder();
+
+        private ProgressDialog mDialog;
+
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+            mDialog = new ProgressDialog(EditRecipeActivity.this);
+            mDialog.setMessage("Creating Recipe...");
+            mDialog.setIndeterminate(false);
+            mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            int recipeKey = mQb.insertRecipe(params[0], params[1], params[2], params[3]);
+
+            if(recipeKey != 0){
+                int ingredientKey;
+                for(int i = 0; i < mIngredientList.size(); i++){
+                    Ingredient ingredient = new Ingredient(mIngredientList.get(i).getIngredientName().trim());
+                    if(ingredient.getIngredientKey() == 0){
+                        ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName().trim(), "", 0);
+                    } else {
+                        ingredientKey = ingredient.getIngredientKey();
+                    }
+
+                    mQb.insertRecipeToIngredient(recipeKey, ingredientKey, mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected  void onPostExecute(Void result){
+            mDialog.dismiss();
+            finish();
+        }
+    }
+
+    private class UpdateRecipe extends  AsyncTask<String, Void, Void>{
+        QueryBuilder mQb = new QueryBuilder();
+
+        private ProgressDialog mDialog;
+
+        @Override
+        protected void onPreExecute(){
+            super.onPreExecute();
+            mDialog = new ProgressDialog(EditRecipeActivity.this);
+            mDialog.setMessage("Updating Recipe...");
+            mDialog.setIndeterminate(false);
+            mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            if(!mRecipe.getRecipeName().equals(params[0]) ||
+                    !mRecipe.getMealType().equals(params[1]) ||
+                    !mRecipe.getCuisineType().equals(params[2]) ||
+                    !mRecipe.getRecipeImage().equals(params[3])){
+                mQb.updateRecipeInfo(mRecipeKey, params[0], params[1], params[2], params[3]);
+            }
+
+            ArrayList<Ingredient> currentIngredients = new Recipe(mRecipeKey).getIngredients();
+
+
+            //Update/Delete any current ingredients that have been updated or removed.
+            boolean delete;
+            for(int i = 0; i < currentIngredients.size(); i++){
+                delete = true;
+                for(int j = 0; j < mIngredientList.size(); j++){
+                    if(currentIngredients.get(i).getIngredientKey() == mIngredientList.get(j).getIngredientKey()){
+                        if(currentIngredients.get(i).getIngredientAmount() != mIngredientList.get(j).getIngredientAmount() ||
+                            !currentIngredients.get(i).getIngredientUnit().equals(mIngredientList.get(j).getIngredientUnit())){
+                            mQb.updateRecipeToIngredient(mRecipeKey, currentIngredients.get(i).getIngredientKey(),
+                                    mIngredientList.get(j).getIngredientAmount(), mIngredientList.get(j).getIngredientUnit());
+                        }
+                        mIngredientList.remove(j);
+                        delete = false;
+                        break;
+                    }
+                }
+                if(delete){
+                    mQb.deleteRecipeToIngredient(mRecipeKey, currentIngredients.get(i).getIngredientKey());
                 }
 
-                mQb.insertRecipeToIngredient(recipeKey, ingredientKey, mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
             }
+
+            //Insert any new ingredients added.
+            for(int i = 0; i < mIngredientList.size(); i++){
+                mQb.insertRecipeToIngredient(mRecipeKey, mIngredientList.get(i).getIngredientKey(),
+                        mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
+            }
+
+            return null;
         }
 
-        return true;
+        @Override
+        protected  void onPostExecute(Void result){
+            mDialog.dismiss();
+            finish();
+        }
+    }
+
+    private class GetRecipeInfo extends AsyncTask<Integer, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            mRecipe = new Recipe(params[0]);
+            return null;
+        }
+
+        @Override
+        protected  void onPostExecute(Void result){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle(mRecipe.getRecipeName());
+
+                    mRecipeName.setText(mRecipe.getRecipeName());
+
+                    final String [] cuisineTypes = getResources().getStringArray(R.array.cuisine_type);
+                    for(int i = 0; i < cuisineTypes.length; i++){
+                        if(cuisineTypes[i].equals(mRecipe.getCuisineType())) {
+                            mCuisineType.setSelection(i);
+                            break;
+                        }
+                    }
+
+                    final String [] mealTypes = getResources().getStringArray(R.array.meal_types);
+                    for(int i = 0; i < mealTypes.length; i++){
+                        if(mealTypes[i].equals(mRecipe.getMealType())){
+                            mMealType.setSelection(i);
+                            break;
+                        }
+                    }
+
+                    mIngredientList = mRecipe.getIngredients();
+                    mIngredientListView.setAdapter(new AddIngredientAdapter(EditRecipeActivity.this, mIngredientList));
+                }
+            });
+        }
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.ContactsContract;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
+import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
 import com.tk4218.grocerylistr.RecipeActivity;
@@ -87,6 +89,15 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 datePicker.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "datePicker");
             }
         });
+
+        holder.editRecipe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, EditRecipeActivity.class);
+                intent.putExtra("recipeKey", holder.recipe.getRecipeKey());
+                mContext.startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -104,6 +115,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         public ImageView recipeImage;
         public ImageButton favorite;
         public ImageButton scheduleRecipe;
+        public ImageButton editRecipe;
         public Recipe recipe;
 
         public ViewHolder(View itemView) {
@@ -112,6 +124,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
             recipeImage = (ImageView) itemView.findViewById(R.id.gridRecipeImage);
             favorite = (ImageButton) itemView.findViewById(R.id.gridFavorite);
             scheduleRecipe = (ImageButton) itemView.findViewById(R.id.gridSchedule);
+            editRecipe = (ImageButton) itemView.findViewById(R.id.gridEdit);
             itemView.setOnClickListener(this);
         }
 

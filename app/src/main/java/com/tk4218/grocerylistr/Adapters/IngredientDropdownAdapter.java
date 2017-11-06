@@ -10,12 +10,8 @@ import android.widget.TextView;
 
 import com.tk4218.grocerylistr.R;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-/**
- * Created by Tk4218 on 10/18/2017.
- */
 
 public class IngredientDropdownAdapter extends ArrayAdapter<String> {
     private Context mContext;
@@ -55,7 +51,7 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> {
             if(constraint!= null){
                 mFilteredIngredients.clear();
                 for(String ingredient : mAllIngredients){
-                    if(ingredient.toLowerCase().startsWith(constraint.toString().toLowerCase())){
+                    if(ingredient.toLowerCase().contains(constraint.toString().toLowerCase())){
                         mFilteredIngredients.add(ingredient);
                     }
                 }

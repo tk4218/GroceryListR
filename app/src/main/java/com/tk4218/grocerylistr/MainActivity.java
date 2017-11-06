@@ -1,9 +1,10 @@
 package com.tk4218.grocerylistr;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -14,7 +15,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.view.Menu;
@@ -22,44 +22,32 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
+import com.tk4218.grocerylistr.Database.JSONResult;
+import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.GroceryList;
-import com.tk4218.grocerylistr.Model.GroceryListItem;
-import com.tk4218.grocerylistr.Model.Ingredient;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private MainViewPagerAdapter mMainViewPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
 
     private boolean mFromDateSelected;
-    private boolean mToDateSelected;
     private Date mMealPlanDateStart;
     private Date mMealPlanDateEnd;
-    final SimpleDateFormat weekdayFormat = new SimpleDateFormat("EEEE");
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd");
-    final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+
+    final SimpleDateFormat weekdayFormat = new SimpleDateFormat("EEEE" , Locale.getDefault());
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd", Locale.getDefault());
+    final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +57,9 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /****************************************************
+        /*---------------------------------------------------
          * Set up Navigation Drawer
-         ****************************************************/
+         *---------------------------------------------------*/
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
         navView.setItemIconTintList(null);
@@ -123,10 +111,7 @@ public class MainActivity extends AppCompatActivity
 
         switch(id){
             case R.id.nav_grocerylist:
-
-                Intent intent = new Intent(this, GroceryListActivity.class);
-                intent.putExtra("groceryListKey", 1);
-                startActivity(intent);
+                new GetCurrentGroceryList().execute();
                 break;
             case R.id.nav_add_grocerylist:
                 createNewGroceryList();
@@ -162,7 +147,6 @@ public class MainActivity extends AppCompatActivity
         fromDate.setText(dateFormat.format(mMealPlanDateStart));
         fromYear.setText(yearFormat.format(mMealPlanDateStart));
 
-        mToDateSelected = false;
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.add(Calendar.DATE, 14);
@@ -182,7 +166,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 mFromDateSelected = true;
-                mToDateSelected = false;
                 fromDayOfWeek.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.recipeGridBackground));
                 fromDate.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.recipeGridBackground));
                 fromYear.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.recipeGridBackground));
@@ -199,7 +182,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 mFromDateSelected = false;
-                mToDateSelected = true;
                 fromDayOfWeek.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.light_grey));
                 fromDate.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.light_grey));
                 fromYear.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.light_grey));
@@ -235,16 +217,7 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                GroceryList newGroceryList = new GroceryList();
-                int groceryListKey = newGroceryList.generateGroceryList(mMealPlanDateStart, mMealPlanDateEnd);
-
-                if (groceryListKey == 0){
-                    Toast.makeText(getApplicationContext(), "No Meals Planned Between These Dates", Toast.LENGTH_SHORT).show();
-                } else{
-                    Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
-                    intent.putExtra("groceryListKey", groceryListKey);
-                    startActivity(intent);
-                }
+                new CreateGroceryList().execute(mMealPlanDateStart, mMealPlanDateEnd);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -253,4 +226,66 @@ public class MainActivity extends AppCompatActivity
         });
         builder.show();
     }
+
+
+   /*********************************************************************
+    * Async Tasks
+    *********************************************************************/
+   private class GetCurrentGroceryList extends AsyncTask<Void, Void, Integer> {
+       private QueryBuilder mQb = new QueryBuilder();
+
+       @Override
+       protected Integer doInBackground(Void... params) {
+           JSONResult currentGroceryList = mQb.getCurrentGroceryList();
+           if(currentGroceryList.getCount() == 0){
+               return 0;
+           }
+           return currentGroceryList.getInt("GroceryListKey");
+       }
+
+       @Override
+       protected void onPostExecute(Integer result){
+           if(result == 0)
+               Toast.makeText(getApplicationContext(), "No current grocery list. Go ahead and make one!", Toast.LENGTH_SHORT).show();
+
+           Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
+           intent.putExtra("groceryListKey", result);
+           startActivity(intent);
+       }
+   }
+
+
+    private class CreateGroceryList extends AsyncTask<Date, Void, Integer> {
+       ProgressDialog mDialog;
+
+       @Override
+       protected void onPreExecute(){
+           super.onPreExecute();
+           mDialog = new ProgressDialog(MainActivity.this);
+           mDialog.setMessage("Creating Grocery List...");
+           mDialog.setIndeterminate(false);
+           mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+           mDialog.show();
+       }
+
+        @Override
+        protected Integer doInBackground(Date... params) {
+            GroceryList newGroceryList = new GroceryList();
+            return newGroceryList.generateGroceryList(params[0], params[1]);
+        }
+
+
+        @Override
+        protected void onPostExecute(Integer result){
+            if (result == 0){
+                Toast.makeText(getApplicationContext(), "No Meals Planned Between These Dates", Toast.LENGTH_SHORT).show();
+            } else{
+                Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
+                intent.putExtra("groceryListKey", result);
+                startActivity(intent);
+                mDialog.dismiss();
+            }
+        }
+    }
+
 }

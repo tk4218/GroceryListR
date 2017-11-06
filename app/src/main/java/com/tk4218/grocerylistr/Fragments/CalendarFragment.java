@@ -13,7 +13,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Adapters.CalendarMealAdapter;
-import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.Model.MealPlan;
 import com.tk4218.grocerylistr.R;
@@ -22,15 +21,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
+
 
 public  class CalendarFragment extends Fragment {
-    /**
-     * The fragment argument representing the section number for this
-     * fragment.
-     */
-    private static final String ARG_SECTION_NUMBER = "section_number";
+
     private ListView mCalendarMeals;
     private MealPlan mMealPlan;
     private Date mCurrentDate;
@@ -42,12 +37,8 @@ public  class CalendarFragment extends Fragment {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static CalendarFragment newInstance(int sectionNumber) {
-        CalendarFragment fragment = new CalendarFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-        fragment.setArguments(args);
-        return fragment;
+    public static CalendarFragment newInstance() {
+        return new CalendarFragment();
     }
 
     @Override
@@ -60,8 +51,8 @@ public  class CalendarFragment extends Fragment {
         final TextView dateSelected = (TextView) rootView.findViewById(R.id.dateSelected);
 
         mCurrentDate = new Date();
-        final SimpleDateFormat weekdayFormat = new SimpleDateFormat("EEEE");
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
+        final SimpleDateFormat weekdayFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
         weekDaySelected.setText(weekdayFormat.format(mCurrentDate));
         dateSelected.setText(dateFormat.format(mCurrentDate));
 
@@ -86,10 +77,10 @@ public  class CalendarFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        /*********************************************************************
+        /*--------------------------------------------------------------------
          * Retrieving Recipes from the database. Doing it in onResume
          * guarantees the list will be updated upon returning to the fragment.
-         *********************************************************************/
+         *--------------------------------------------------------------------*/
         new RetrieveCalendar().execute(mCurrentDate);
     }
 

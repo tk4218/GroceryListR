@@ -3,40 +3,34 @@ package com.tk4218.grocerylistr.Adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.StrictMode;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Model.Ingredient;
 import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;
 
-/**
- * Created by Tk4218 on 9/26/2017.
- */
-
 public class AddIngredientAdapter extends BaseAdapter{
-    private QueryBuilder mQb = new QueryBuilder();
 
     private Context mContext;
     private ArrayList<Ingredient> mIngredients;
-    private JSONResult mAllIngredients;
+    private AutoCompleteTextView mIngredientName;
 
     public AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
@@ -44,8 +38,6 @@ public class AddIngredientAdapter extends BaseAdapter{
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
-        mAllIngredients = mQb.getAllIngredients();
     }
 
     @Override
@@ -69,13 +61,13 @@ public class AddIngredientAdapter extends BaseAdapter{
             final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.listview_add_ingredient, null);
 
-            /***********************************************
+            /*----------------------------------------------
              * Ingredient Amount
-             ***********************************************/
+             *----------------------------------------------*/
             final EditText ingredientAmount = (EditText) convertView.findViewById(R.id.edit_ingredient_amount);
 
             if(mIngredients.get(position).getIngredientAmount() != 0){
-                ingredientAmount.setText(mIngredients.get(position).getIngredientAmount() + "");
+                ingredientAmount.setText(String.valueOf(mIngredients.get(position).getIngredientAmount()));
             }
 
             ingredientAmount.addTextChangedListener(new TextWatcher() {
@@ -89,15 +81,16 @@ public class AddIngredientAdapter extends BaseAdapter{
                         try{
                             mIngredients.get(position).setIngredientAmount(Double.parseDouble(s.toString()));
                         } catch(Exception e){
+                            Log.e("ERROR", "Error Setting Ingredient Amount.");
                         }
                     }
                 }
             });
 
 
-            /***********************************************
+            /*----------------------------------------------
              * Ingredient Measurement
-             ***********************************************/
+             *----------------------------------------------*/
             Spinner ingredientMeasurement = (Spinner) convertView.findViewById(R.id.edit_ingredient_measurement);
             final String [] measurements = mContext.getResources().getStringArray(R.array.measurements);
             final int ingredientPosition = position;
@@ -122,29 +115,39 @@ public class AddIngredientAdapter extends BaseAdapter{
                 }
             });
 
-            /***********************************************
+            /*----------------------------------------------
              * Ingredient Name
-             ***********************************************/
-            final AutoCompleteTextView ingredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
-            ingredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, mAllIngredients.getStringColumnArray("IngredientName")));
+             *----------------------------------------------*/
+            mIngredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
 
             if(mIngredients.get(position).getIngredientName() != null){
-                ingredientName.setText(mIngredients.get(position).getIngredientName());
-                ingredientName.setTag(mIngredients.get(position).getIngredientKey());
+                mIngredientName.setText(mIngredients.get(position).getIngredientName());
+                mIngredientName.setTag(mIngredients.get(position).getIngredientKey());
             }
-            ingredientName.addTextChangedListener(new TextWatcher() {
+            mIngredientName.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     mIngredients.get(position).setIngredientName(s.toString());
                 }
                 @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    ArrayList<String> filterIngredients = new ArrayList<String>();
+                    if(s.length() == 3){
+                        try{
+                            filterIngredients = new SetIngredientFilter().execute(s.toString()).get();
+                        } catch(Exception e){
+                            Log.e("ERROR", "Error Loading Ingredients");
+                        }
+                        mIngredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, filterIngredients));
+                        mIngredientName.showDropDown();
+                    }
+                }
                 @Override
                 public void afterTextChanged(Editable s) {
                     final double ingredientAmount = mIngredients.get(position).getIngredientAmount();
                     final String ingredientUnit = mIngredients.get(position).getIngredientUnit();
                     if(s.toString().equals("+ New Ingredient")){
-                        ingredientName.setText(mIngredients.get(position).getIngredientName());
+                        mIngredientName.setText(mIngredients.get(position).getIngredientName());
                         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                         builder.setTitle("Add New Ingredient");
                         builder.setIcon(android.R.drawable.ic_input_add);
@@ -163,13 +166,7 @@ public class AddIngredientAdapter extends BaseAdapter{
                                 int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
                                 if(interval.equals("Weeks")) expiration *= 7;
                                 if(interval.equals("Months")) expiration *= 30;
-                                int ingredientKey = mQb.insertIngredient(newIngredientName.getText().toString(), ingredientType, expiration);
-                                mIngredients.set(position, new Ingredient(ingredientKey));
-                                mIngredients.get(position).setIngredientAmount(ingredientAmount);
-                                mIngredients.get(position).setIngredientUnit(ingredientUnit);
-                                ingredientName.setTag(mIngredients.get(position).getIngredientKey());
-                                mAllIngredients = mQb.getAllIngredients();
-                                ingredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, mAllIngredients.getStringColumnArray("IngredientName")));
+                                new AddIngredient().execute(position, true, newIngredientName.getText().toString(), ingredientType, expiration, ingredientAmount, ingredientUnit);
                             }
                         });
                         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -178,22 +175,60 @@ public class AddIngredientAdapter extends BaseAdapter{
                         });
                         builder.show();
                     } else {
-                        mIngredients.set(position, new Ingredient(s.toString()));
-                        mIngredients.get(position).setIngredientAmount(ingredientAmount);
-                        mIngredients.get(position).setIngredientUnit(ingredientUnit);
-                        ingredientName.setTag(mIngredients.get(position).getIngredientKey());
+                        new AddIngredient().execute(position, false, s.toString(), ingredientAmount, ingredientUnit);
                     }
 
                 }
             });
 
-            /***********************************************
+            /*----------------------------------------------
              * Delete Button
-             ***********************************************/
+             *----------------------------------------------*/
             ImageButton deleteIngredient = (ImageButton) convertView.findViewById(R.id.edit_ingredient_delete);
             deleteIngredient.setTag(position);
         }
         return convertView;
+    }
+
+    private class SetIngredientFilter extends AsyncTask<String, Void, ArrayList<String>> {
+        private QueryBuilder mQb = new QueryBuilder();
+
+        @Override
+        protected ArrayList<String> doInBackground(String... params) {
+                return mQb.getIngredientsFilter(params[0]).getStringColumnArray("IngredientName");
+        }
+    }
+
+    private class AddIngredient extends AsyncTask<Object, Void, Integer> {
+        private QueryBuilder mQb = new QueryBuilder();
+
+        @Override
+        protected Integer doInBackground(Object... params) {
+
+            if((boolean)params[1]) {
+                int ingredientKey = mQb.insertIngredient((String)params[2], (String)params[3], (int)params[4]);
+                mIngredients.set((int)params[0], new Ingredient(ingredientKey));
+                mIngredients.get((int)params[0]).setIngredientAmount((double)params[5]);
+                mIngredients.get((int)params[0]).setIngredientUnit((String)params[6]);
+            }else{
+                mIngredients.set((int)params[0], new Ingredient((String)params[2]));
+                mIngredients.get((int)params[0]).setIngredientAmount((double)params[3]);
+                mIngredients.get((int)params[0]).setIngredientUnit((String)params[4]);
+            }
+
+            return (int)params[0];
+        }
+
+        @Override
+        protected void onPostExecute(Integer result){
+            final int position  = result;
+            ((EditRecipeActivity) mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mIngredientName.setTag(mIngredients.get(position).getIngredientKey());
+                }
+            });
+        }
     }
 }
 

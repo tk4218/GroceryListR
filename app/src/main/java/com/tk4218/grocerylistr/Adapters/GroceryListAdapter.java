@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Model.GroceryList;
@@ -14,10 +13,6 @@ import com.tk4218.grocerylistr.Model.GroceryListItem;
 import com.tk4218.grocerylistr.R;
 
 import java.util.List;
-
-/**
- * Created by Tk4218 on 10/19/2017.
- */
 
 public class GroceryListAdapter extends BaseExpandableListAdapter {
 
@@ -71,10 +66,6 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         if(convertView == null){
             final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.expandlist_grocerylist_header, null);
-
-            //ImageView expandIcon = (ImageView)convertView.findViewById(R.id.imageView7);
-            //if(isExpanded) expandIcon.setImageResource(R.drawable.collapse_icon);
-            //if(!isExpanded) expandIcon.setImageResource(R.drawable.expand_icon);
         }
 
         TextView ingredientType = (TextView) convertView.findViewById(R.id.header_ingredient_type);

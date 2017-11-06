@@ -2,6 +2,7 @@ package com.tk4218.grocerylistr.CustomLayout;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.widget.DatePicker;
@@ -13,14 +14,9 @@ import com.tk4218.grocerylistr.Model.Recipe;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- * Created by Tk4218 on 10/10/2017.
- */
-
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
     private int mRecipeKey;
-    private QueryBuilder mQb = new QueryBuilder();
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -39,14 +35,24 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     }
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        Recipe recipe = new Recipe(mRecipeKey);
+        new InsertMealPlan().execute(year, monthOfYear, dayOfMonth);
+    }
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year, monthOfYear, dayOfMonth);
+    private class InsertMealPlan extends AsyncTask<Integer, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
 
-        Date mealPlanDate = calendar.getTime();
-        MealPlan mealPlan = new MealPlan(mealPlanDate);
+        @Override
+        protected Void doInBackground(Integer... params) {
+            Recipe recipe = new Recipe(mRecipeKey);
 
-        mQb.insertMealPlan(mealPlanDate, recipe.getMealType(), mealPlan.getMealTypeMeals(recipe.getMealType()).size(), recipe.getRecipeKey(), 0, false);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(params[0], params[1], params[2]);
+
+            Date mealPlanDate = calendar.getTime();
+            MealPlan mealPlan = new MealPlan(mealPlanDate);
+
+            mQb.insertMealPlan(mealPlanDate, recipe.getMealType(), mealPlan.getMealTypeMeals(recipe.getMealType()).size(), recipe.getRecipeKey(), 0, false);
+            return null;
+        }
     }
 }

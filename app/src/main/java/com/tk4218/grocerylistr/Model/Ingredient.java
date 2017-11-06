@@ -3,9 +3,6 @@ package com.tk4218.grocerylistr.Model;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
-/**
- * Created by tk4218 on 4/30/2017.
- */
 public class Ingredient {
     private QueryBuilder mQb = new QueryBuilder();
 
@@ -89,8 +86,34 @@ public class Ingredient {
     public double getIngredientAmount(){
         return  mIngredientAmount;
     }
+    public String getFormattedIngredientAmount() { return toFraction(mIngredientAmount, 1000);}
     public void setIngredientUnit(String ingredientUnit){ mIngredientUnit = ingredientUnit; }
     public String getIngredientUnit(){
         return mIngredientUnit;
+    }
+
+    private String toFraction(double d, int factor) {
+        StringBuilder sb = new StringBuilder();
+        if (d < 0) {
+            sb.append('-');
+            d = -d;
+        }
+        long l = (long) d;
+        if (l != 0) sb.append(l);
+        d -= l;
+        double error = Math.abs(d);
+        int bestDenominator = 1;
+        for(int i=2;i<=factor;i++) {
+            double error2 = Math.abs(d - (double) Math.round(d * i) / i);
+            if (error2 < error) {
+                error = error2;
+                bestDenominator = i;
+            }
+        }
+        if (bestDenominator > 1) {
+            if (l != 0) sb.append(' ');
+            sb.append(Math.round(d * bestDenominator)).append('/').append(bestDenominator);
+        }
+        return sb.toString();
     }
 }

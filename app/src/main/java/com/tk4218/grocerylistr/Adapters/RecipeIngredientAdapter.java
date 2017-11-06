@@ -57,7 +57,7 @@ public class RecipeIngredientAdapter extends BaseAdapter {
             TextView ingredientAmount = (TextView) convertView.findViewById(R.id.recipe_ingredient_amount);
             TextView ingredientName = (TextView) convertView.findViewById(R.id.recipe_ingredient_name);
 
-            ingredientAmount.setText(mIngredients.get(position).getIngredientAmount() + " " + mIngredients.get(position).getIngredientUnit());
+            ingredientAmount.setText(mIngredients.get(position).getFormattedIngredientAmount() + " " + mIngredients.get(position).getIngredientUnit());
             ingredientName.setText(mIngredients.get(position).getIngredientName());
         }
 

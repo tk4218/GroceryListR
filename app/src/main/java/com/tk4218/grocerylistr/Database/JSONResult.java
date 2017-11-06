@@ -117,7 +117,8 @@ public class JSONResult {
     public Date getDate(String columnName){
         try{
             String date = result.getJSONObject(index).getString(columnName);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if(date.equals("0000-00-00 00:00:00") || date.equals("null")) return new Date(0);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             return dateFormat.parse(date);
         } catch (Exception e){
             e.printStackTrace();
@@ -128,6 +129,7 @@ public class JSONResult {
     public Date getDate(int position, String columnName){
         try{
             String date = result.getJSONObject(position).getString(columnName);
+            if(date.equals("0000-00-00 00:00:00") || date.equals("null")) return new Date(0);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             return dateFormat.parse(date);
         } catch (Exception e){

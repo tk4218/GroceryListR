@@ -12,11 +12,6 @@ import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
-/**
- * Created by Tk4218 on 8/11/2017.
- */
 
 public class CalendarMealAdapter extends BaseAdapter {
 

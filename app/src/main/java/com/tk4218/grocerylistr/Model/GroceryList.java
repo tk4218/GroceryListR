@@ -125,7 +125,12 @@ public class GroceryList {
         int groceryListKey = 0;
 
         if(mGroceryListItems.size() > 0){
-            groceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, false, new Date(0));
+
+            JSONResult currentGroceryList = mQb.getCurrentGroceryList();
+            if(currentGroceryList.getCount() > 0)
+                mQb.setGroceryListCurrent(false, currentGroceryList.getInt("GroceryListKey"));
+
+            groceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
 
             if(groceryListKey != 0){
                 int groceryListItemKey;
