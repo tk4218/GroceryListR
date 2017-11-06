@@ -69,9 +69,9 @@ public class GroceryList {
 
     public void addGroceryListItem(int ingredientKey, double ingredientAmount, String ingredientUnit, boolean sortList){
         for(GroceryListItem item : mGroceryListItems){
-            if(item.getIngredient().getIngredientKey() == ingredientKey && item.getIngredientUnit().equals(ingredientUnit)){
-                item.addIngredientAmount(ingredientAmount);
-                return;
+            if(item.getIngredient().getIngredientKey() == ingredientKey){
+                if(item.addIngredientAmount(ingredientAmount, ingredientUnit))
+                    return;
             }
         }
         mGroceryListItems.add(new GroceryListItem(0, mGroceryListKey, ingredientKey, ingredientAmount, ingredientUnit, false));

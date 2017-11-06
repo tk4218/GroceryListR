@@ -86,7 +86,7 @@ public class Ingredient {
     public double getIngredientAmount(){
         return  mIngredientAmount;
     }
-    public String getFormattedIngredientAmount() { return toFraction(mIngredientAmount, 1000);}
+    public String getFormattedIngredientAmount() { return toFraction(mIngredientAmount, 10);}
     public void setIngredientUnit(String ingredientUnit){ mIngredientUnit = ingredientUnit; }
     public String getIngredientUnit(){
         return mIngredientUnit;

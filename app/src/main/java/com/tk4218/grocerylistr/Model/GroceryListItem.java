@@ -1,11 +1,10 @@
 package com.tk4218.grocerylistr.Model;
 
+import android.util.Log;
+
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
-/**
- * Created by Tk4218 on 10/14/2017.
- */
 
 public class GroceryListItem {
     private QueryBuilder mQb = new QueryBuilder();
@@ -13,8 +12,7 @@ public class GroceryListItem {
     private int mGroceryListItemKey;
     private int mGroceryListKey;
     private Ingredient mIngredient;
-    private double mIngredientAmount;
-    private String mIngredientUnit;
+    private MeasurementConverter mIngredientAmount = new MeasurementConverter();
     private boolean mAddedToCart;
 
     public GroceryListItem(int groceryListItemKey){
@@ -23,8 +21,8 @@ public class GroceryListItem {
             setGroceryListItemKey(groceryListItemKey);
             setGroceryListKey(groceryListItem.getInt("GroceryListKey"));
             setIngredient(groceryListItem.getInt("IngredientKey"));
-            setIngredientAmount(groceryListItem.getDouble("IngredientAmount"));
             setIngredientUnit(groceryListItem.getString("IngredientUnit"));
+            setIngredientAmount(groceryListItem.getDouble("IngredientAmount"));
             setAddedToCart(groceryListItem.getBoolean("AddedToCart"));
         }
     }
@@ -33,8 +31,8 @@ public class GroceryListItem {
         setGroceryListItemKey(groceryListItemKey);
         setGroceryListKey(groceryListKey);
         setIngredient(ingredientKey);
-        setIngredientAmount(ingredientAmount);
         setIngredientUnit(ingredientUnit);
+        setIngredientAmount(ingredientAmount);
         setAddedToCart(addedToCart);
     }
 
@@ -48,18 +46,24 @@ public class GroceryListItem {
     public Ingredient getIngredient(){ return mIngredient; }
 
     public void setIngredientAmount(double amount){
-        mIngredientAmount = amount;
+        mIngredientAmount.setmMeasurementAmount(amount);
     }
-    public void addIngredientAmount(double amount) { mIngredientAmount += amount; }
+    public boolean addIngredientAmount(double amount, String unit) {
+        return mIngredientAmount.add(amount, unit);
+    }
     public double getIngredientAmount(){
-        return mIngredientAmount;
+        return mIngredientAmount.getMeasurementAmount();
     }
     public String getFormattedIngredientAmount(){
-        return toFraction(mIngredientAmount, 1000);
+        return toFraction(getIngredientAmount(), 10);
     }
 
-    public void setIngredientUnit(String ingredientUnit){ mIngredientUnit = ingredientUnit; }
-    public String getIngredientUnit(){ return  mIngredientUnit; }
+    public void setIngredientUnit(String ingredientUnit){
+        mIngredientAmount.setMesurementUnit(ingredientUnit);
+    }
+    public String getIngredientUnit(){
+        return mIngredientAmount.getMeasurementUnit();
+    }
 
     public void setAddedToCart(boolean addedToCart){ mAddedToCart = addedToCart;}
     public boolean getAddedToCart(){ return mAddedToCart; }
