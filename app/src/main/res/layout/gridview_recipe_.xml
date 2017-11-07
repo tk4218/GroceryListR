@@ -8,7 +8,8 @@
     android:layout_marginLeft="1dp"
     android:layout_marginRight="1dp"
     android:layout_marginTop="1dp"
-    android:background="@color/recipeGridBackground">
+    android:background="@color/recipeGridBackground"
+    android:theme="@style/AppTheme">
 
     <TextView
         android:id="@+id/gridRecipeName"
@@ -16,10 +17,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="4dp"
         android:text="TextView"
         android:textAlignment="center"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/gridRecipeImage"
@@ -28,8 +30,10 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/gridRecipeName"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="5dp"
+        android:adjustViewBounds="false"
         android:contentDescription="@string/app_name"
-        android:padding="25dp"
         android:scaleType="fitCenter"
         android:src="@drawable/recipe_default"
         tools:ignore="ContentDescription" />
@@ -39,7 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/gridRecipeImage"
         android:layout_marginBottom="10dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:id="@+id/linearLayout">
 
         <ImageButton
             android:id="@+id/gridFavorite"
@@ -68,5 +73,16 @@
             android:src="@android:drawable/ic_menu_edit" />
 
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/gridPinterest"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/gridRecipeName"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        app:srcCompat="@drawable/pinterest_icon_red" />
 
 </RelativeLayout>

@@ -9,12 +9,16 @@ import android.widget.ExpandableListView;
 import com.tk4218.grocerylistr.Adapters.GroceryListAdapter;
 import com.tk4218.grocerylistr.Model.GroceryList;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 public class GroceryListActivity extends AppCompatActivity {
 
     private int mGroceryListKey;
     private GroceryList mGroceryList;
     private ExpandableListView mGroceryListView;
 
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +63,8 @@ public class GroceryListActivity extends AppCompatActivity {
                 mGroceryListView = (ExpandableListView) findViewById(R.id.list_grocerylist);
                 mGroceryListView.setAdapter(new GroceryListAdapter(GroceryListActivity.this, mGroceryList.getIngredientTypes(), mGroceryList));
                 mGroceryListView.expandGroup(0);
+
+                setTitle(dateFormat.format(mGroceryList.getMealPlanDateStart()) + " To " + dateFormat.format(mGroceryList.getMealPlanDateEnd()));
                 mDialog.dismiss();
         }
     }

@@ -1,7 +1,5 @@
 package com.tk4218.grocerylistr.Model;
 
-import android.util.Log;
-
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 

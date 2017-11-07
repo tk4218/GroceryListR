@@ -170,6 +170,32 @@ public class JSONResult {
         return new JSONResult(filter);
     }
 
+    public boolean findFirst(String findColumn, Object findValue){
+        try{
+            for(index = 0; index < getCount(); index++){
+                if(equalValues(result.getJSONObject(index).get(findColumn), findValue)){
+                    return true;
+                }
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean findNext(String findColumn, Object findValue){
+        try{
+            for(; index < getCount(); index++){
+                if(equalValues(result.getJSONObject(index).get(findColumn), findValue)){
+                    return true;
+                }
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public void sort(final String sortColumn, final int sortOrder){
         JSONArray sortedResult = new JSONArray();
 

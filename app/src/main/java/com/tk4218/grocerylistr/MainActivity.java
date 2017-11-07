@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,9 +32,16 @@ import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.GroceryList;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+
+import com.pinterest.android.pdk.PDKCallback;
+import com.pinterest.android.pdk.PDKClient;
+import com.pinterest.android.pdk.PDKException;
+import com.pinterest.android.pdk.PDKResponse;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -49,6 +57,9 @@ public class MainActivity extends AppCompatActivity
     final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd", Locale.getDefault());
     final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.getDefault());
 
+    private static String PINTEREST_APP_ID = "4932556460807699958";
+    private PDKClient mPDKClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +68,9 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mPDKClient = PDKClient.configureInstance(this, PINTEREST_APP_ID);
+        mPDKClient.onConnect(this);
+
         /*---------------------------------------------------
          * Set up Navigation Drawer
          *---------------------------------------------------*/
@@ -64,6 +78,19 @@ public class MainActivity extends AppCompatActivity
         NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
         navView.setItemIconTintList(null);
         navView.setNavigationItemSelectedListener(this);
+        final Menu navigationMenu = navView.getMenu();
+        mPDKClient.getMe("id,image,counts,created_at,first_name,last_name,bio,username", new PDKCallback(){
+            @Override
+            public void onSuccess(PDKResponse response) {
+                navigationMenu.findItem(R.id.nav_pinterest_login).setVisible(false);
+                navigationMenu.findItem(R.id.nav_pinterest_logout).setVisible(true);
+            }
+            @Override
+            public void onFailure(PDKException exception) {
+                navigationMenu.findItem(R.id.nav_pinterest_login).setVisible(true);
+                navigationMenu.findItem(R.id.nav_pinterest_logout).setVisible(false);
+            }
+        });
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -124,6 +151,18 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_grocerylist_history:
                 Toast.makeText(this, "Feature Not Available Yet", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_pinterest_login:
+                pinterestLogin();
+                break;
+            case R.id.nav_pinterest_logout:
+                mPDKClient.logout();
+                Intent intent = getIntent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(intent);
+                Toast.makeText(this, "Logged out of Pinterest", Toast.LENGTH_SHORT).show();
                 break;
         }
 
@@ -227,6 +266,50 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
+    /*------------------------------
+     * Pinterest Login
+     *------------------------------*/
+    private void pinterestLogin(){
+        List scopes = new ArrayList<String>();
+        scopes.add(PDKClient.PDKCLIENT_PERMISSION_READ_PUBLIC);
+        scopes.add(PDKClient.PDKCLIENT_PERMISSION_WRITE_PUBLIC);
+
+        mPDKClient.login(this, scopes, new PDKCallback() {
+            @Override
+            public void onSuccess(PDKResponse response) {
+                Log.d(getClass().getName(), response.getData().toString());
+                //user logged in, use response.getUser() to get PDKUser object
+            }
+
+            @Override
+            public void onFailure(PDKException exception) {
+                Log.e(getClass().getName(), exception.getDetailMessage());
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mPDKClient.onOauthResponse(requestCode, resultCode, data);
+        mPDKClient.getMe("id,image,counts,created_at,first_name,last_name,bio,username", new PDKCallback(){
+            @Override
+            public void onSuccess(PDKResponse response) {
+                Toast.makeText(MainActivity.this, "Welcome, " + response.getUser().getUsername(), Toast.LENGTH_SHORT).show();
+                Intent intent = getIntent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                finish();
+                overridePendingTransition(0, 0);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onFailure(PDKException exception) {
+                exception.printStackTrace();
+                Toast.makeText(MainActivity.this, "Failed to Login!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
    /*********************************************************************
     * Async Tasks
@@ -245,8 +328,10 @@ public class MainActivity extends AppCompatActivity
 
        @Override
        protected void onPostExecute(Integer result){
-           if(result == 0)
+           if(result == 0) {
                Toast.makeText(getApplicationContext(), "No current grocery list. Go ahead and make one!", Toast.LENGTH_SHORT).show();
+               return;
+           }
 
            Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
            intent.putExtra("groceryListKey", result);
@@ -279,6 +364,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(Integer result){
             if (result == 0){
                 Toast.makeText(getApplicationContext(), "No Meals Planned Between These Dates", Toast.LENGTH_SHORT).show();
+                mDialog.dismiss();
             } else{
                 Intent intent = new Intent(getApplicationContext(), GroceryListActivity.class);
                 intent.putExtra("groceryListKey", result);

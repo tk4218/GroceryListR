@@ -28,10 +28,10 @@ public class Ingredient {
     }
 
     public Ingredient(String ingredientName){
-        setIngredientName(ingredientName);
         JSONResult ingredient = mQb.getIngredientByName(ingredientName);
         if(ingredient.getCount() > 0){
             setIngredientKey(ingredient.getInt("IngredientKey"));
+            setIngredientName(ingredient.getString("IngredientName"));
             setIngredientType(ingredient.getString("IngredientType"));
             setShelfLife(ingredient.getInt("ShelfLife"));
         }
@@ -41,7 +41,7 @@ public class Ingredient {
         JSONResult ingredient = mQb.getRecipeIngredient(recipeKey, ingredientName);
         if(ingredient.getCount() > 0){
             setIngredientKey(ingredient.getInt("IngredientKey"));
-            setIngredientName(ingredientName);
+            setIngredientName(ingredient.getString("IngredientName"));
             setIngredientType(ingredient.getString("IngredientType"));
             setShelfLife(ingredient.getInt("ShelfLife"));
             setIngredientAmount(ingredient.getDouble("IngredientAmount"));

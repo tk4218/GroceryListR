@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.provider.ContactsContract;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 import com.tk4218.grocerylistr.EditRecipeActivity;
@@ -25,10 +25,6 @@ import com.tk4218.grocerylistr.R;
 import com.tk4218.grocerylistr.RecipeActivity;
 
 import java.util.ArrayList;
-
-/**
- * Created by Tk4218 on 8/11/2017.
- */
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> {
     private Context mContext;
@@ -47,8 +43,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.gridview_recipe_, parent, false);
-        ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
+        return new ViewHolder(view);
     }
 
     @Override
@@ -98,6 +93,20 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 mContext.startActivity(intent);
             }
         });
+
+        if(!holder.recipe.getPinterestId().equals("")){
+            holder.pinterestIcon.setImageResource(R.drawable.pinterest_icon_red);
+        } else {
+            holder.pinterestIcon.setImageResource(android.R.color.transparent);
+        }
+
+        if(!holder.recipe.getRecipeImage().equals("")){
+            Picasso.with(mContext)
+                    .load(holder.recipe.getRecipeImage())
+                    .fit()
+                    .centerCrop()
+                    .into(holder.recipeImage);
+        }
     }
 
     @Override
@@ -105,26 +114,24 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         return mRecipes.size();
     }
 
-    public Recipe getItem(int position) {
-        return mRecipes.get(position);
-    }
+    class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener {
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener {
-
-        public TextView recipeName;
-        public ImageView recipeImage;
-        public ImageButton favorite;
-        public ImageButton scheduleRecipe;
-        public ImageButton editRecipe;
+        TextView recipeName;
+        ImageView recipeImage;
+        ImageButton favorite;
+        ImageButton scheduleRecipe;
+        ImageButton editRecipe;
+        ImageView pinterestIcon;
         public Recipe recipe;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             recipeName = (TextView) itemView.findViewById(R.id.gridRecipeName);
             recipeImage = (ImageView) itemView.findViewById(R.id.gridRecipeImage);
             favorite = (ImageButton) itemView.findViewById(R.id.gridFavorite);
             scheduleRecipe = (ImageButton) itemView.findViewById(R.id.gridSchedule);
             editRecipe = (ImageButton) itemView.findViewById(R.id.gridEdit);
+            pinterestIcon = (ImageView) itemView.findViewById(R.id.gridPinterest);
             itemView.setOnClickListener(this);
         }
 

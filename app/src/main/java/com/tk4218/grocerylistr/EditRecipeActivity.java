@@ -284,7 +284,7 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... params) {
-            int recipeKey = mQb.insertRecipe(params[0], params[1], params[2], params[3]);
+            int recipeKey = mQb.insertRecipe("", params[0], params[1], params[2], params[3]);
 
             if(recipeKey != 0){
                 int ingredientKey;

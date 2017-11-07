@@ -87,20 +87,27 @@ public class QueryBuilder {
     public JSONResult getAllRecipes(){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "select * from tableRecipe"));
-        parameters.add(addParameter("return_cols", "RecipeKey,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastMade,LastEdited"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
         return getResults(parameters);
     }
 
     public JSONResult getRecipe(int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "select * from tableRecipe where RecipeKey = " + recipeKey));
-        parameters.add(addParameter("return_cols", "RecipeKey,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastMade,LastEdited"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
         return getResults(parameters);
     }
 
-    public int insertRecipe(String recipeName, String mealType, String cuisineType, String recipeImage){
+    public JSONResult getPinterestRecipe(String pinterestId){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "insert into tableRecipe (RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastMade,LastEdited) values('" + recipeName + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0,'0000-00-00', current_timestamp())"));
+        parameters.add(addParameter("sql_query", "select * from tableRecipe where PinterestId = '"+ pinterestId +"'"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
+        return getResults(parameters);
+    }
+
+    public int insertRecipe(String pinterestId, String recipeName, String mealType, String cuisineType, String recipeImage){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0, current_timestamp())"));
         return insertReturnKey(parameters);
     }
 

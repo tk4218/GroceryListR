@@ -26,4 +26,14 @@
         android:icon="@android:drawable/ic_menu_recent_history"
         android:title="Grocery List History" />
 
+    <item
+        android:id="@+id/nav_pinterest_login"
+        android:icon="@drawable/pinterest_icon"
+        android:title="Login with Pinterest" />
+
+    <item
+        android:id="@+id/nav_pinterest_logout"
+        android:icon="@drawable/pinterest_icon"
+        android:title="Logout" />
+
 </menu>

@@ -1,8 +1,15 @@
 package com.tk4218.grocerylistr.Model;
 
+import android.util.Log;
+
+import com.pinterest.android.pdk.PDKCallback;
+import com.pinterest.android.pdk.PDKClient;
+import com.pinterest.android.pdk.PDKException;
+import com.pinterest.android.pdk.PDKResponse;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -13,45 +20,143 @@ public class Recipe {
     private QueryBuilder mQb = new QueryBuilder();
 
     private int mRecipeKey;
+    private String mPinterestId;
     private String mRecipeName;
     private String mMealType;
     private String mCuisineType;
     private String mRecipeImage;
     private boolean mFavorite;
     private int mRating;
-    private Date mLastMade;
     private Date mLastEdited;
     private ArrayList<Ingredient> mIngredients;
 
     public Recipe(int recipeKey){
-        JSONResult recipe = mQb.getRecipe(recipeKey);
+        final JSONResult recipe = mQb.getRecipe(recipeKey);
         if(recipe.getCount() > 0){
             setRecipeKey(recipeKey);
+            setPinterestId(recipe.getString("PinterestId"));
             setRecipeName(recipe.getString("RecipeName"));
             setMealType(recipe.getString("MealType"));
             setCuisineType(recipe.getString("CuisineType"));
             setRecipeImage(recipe.getString("RecipeImage"));
             setFavorite(recipe.getBoolean("Favorite"));
             setRating(recipe.getInt("Rating"));
-            setLastMade(recipe.getDate("LastMade"));
             setLastEdited(recipe.getDate("LastEdited"));
-        }
 
-        JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
-        setIngredients(recipeIngredients);
+            if(mPinterestId.equals("")){
+                JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
+                setIngredients(recipeIngredients);
+            } else {
+                PDKClient.getInstance().getPin(mPinterestId, "image,metadata", new PDKCallback(){
+                    @Override
+                    public void onSuccess(PDKResponse response) {
+                        Log.d("RECIPE URL", response.getPin().getImageUrl());
+                        setRecipeImage(response.getPin().getImageUrl());
+                    }
+
+                    @Override
+                    public void onFailure(PDKException exception) {
+                        Log.e("Error", "Pinterest Recipe Not Found");
+                    }
+                });
+
+            }
+        }
     }
 
-    public Recipe (int recipeKey, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastMade, Date lastEdited, ArrayList<Ingredient> ingredients){
+    public Recipe(final String pinterestId){
+        JSONResult recipe = mQb.getPinterestRecipe(pinterestId);
+        if(recipe.getCount() > 0){
+            setPinterestId(pinterestId);
+            setRecipeKey(recipe.getInt("RecipeKey"));
+            setMealType(recipe.getString("MealType"));
+            setCuisineType(recipe.getString("CuisineType"));
+            setFavorite(recipe.getBoolean("Favorite"));
+            setRating(recipe.getInt("Rating"));
+
+            PDKClient.getInstance().getPin(pinterestId, "id,image,metadata", new PDKCallback() {
+                @Override
+                public void onSuccess(PDKResponse response) {
+                    RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
+                    if(parser.isValidRecipe()){
+                        setRecipeName(parser.getRecipeName());
+                        Log.d("RECIPE URL", response.getPin().getImageUrl());
+                        setRecipeImage(response.getPin().getImageUrl());
+                        ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
+                    }
+                }
+
+                @Override
+                public void onFailure(PDKException exception) {
+                    Log.e("Error", "Pinterest Recipe Not Found");
+                }
+            });
+        } else {
+            PDKClient.getInstance().getPin(pinterestId, "id,image,metadata", new PDKCallback(){
+                @Override
+                public void onSuccess(PDKResponse response) {
+                    RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
+                    if(parser.isValidRecipe()){
+                        setRecipeName(parser.getRecipeName());
+                        mPinterestId = pinterestId;
+                        mRecipeKey = mQb.insertRecipe(pinterestId, getRecipeName(), "", "", "");
+                        Log.d("RECIPE URL", response.getPin().getImageUrl());
+                        setRecipeImage(response.getPin().getImageUrl());
+                        ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
+                    }
+                }
+
+                @Override
+                public void onFailure(PDKException exception) {
+                    Log.e("Error", "Pinterest Recipe Not Found");
+                }
+            });
+        }
+    }
+
+    public Recipe (int recipeKey, final String pinterestId, final String recipeName, final String mealType, final String cuisineType, String recipeImage, boolean favorite, int rating, Date lastEdited, ArrayList<Ingredient> ingredients){
         setRecipeKey(recipeKey);
+        setPinterestId(pinterestId);
         setRecipeName(recipeName);
         setMealType(mealType);
-        setCuisineType(mealStyle);
+        setCuisineType(cuisineType);
         setRecipeImage(recipeImage);
         setFavorite(favorite);
         setRating(rating);
-        setLastMade(lastMade);
         setLastEdited(lastEdited);
         setIngredients(ingredients);
+
+        if(mRecipeKey == 0 && !mPinterestId.equals("")){
+            PDKClient.getInstance().getPin(pinterestId, "id,image,metadata", new PDKCallback(){
+                @Override
+                public void onSuccess(PDKResponse response) {
+                    mPinterestId = pinterestId;
+                    mRecipeKey = mQb.insertRecipe(pinterestId, recipeName, mealType, cuisineType, "");
+                    Log.d("RECIPE URL", response.getPin().getImageUrl());
+                    setRecipeImage(response.getPin().getImageUrl());
+                }
+
+                @Override
+                public void onFailure(PDKException exception) {
+                    Log.e("Error", "Pinterest Recipe Not Found");
+                }
+            });
+        }
+
+        if(!mPinterestId.equals("")){
+            PDKClient.getInstance().getPin(mPinterestId, "image,metadata", new PDKCallback(){
+                @Override
+                public void onSuccess(PDKResponse response) {
+                    Log.d("RECIPE URL", response.getPin().getImageUrl());
+                    setRecipeImage(response.getPin().getImageUrl());
+                }
+
+                @Override
+                public void onFailure(PDKException exception) {
+                    Log.e("Error", "Pinterest Recipe Not Found");
+                }
+            });
+        }
     }
 
     public int getRecipeKey(){
@@ -61,6 +166,10 @@ public class Recipe {
     public void setRecipeKey(int recipeKey){
         mRecipeKey = recipeKey;
     }
+
+    public String getPinterestId() { return mPinterestId; }
+
+    public void setPinterestId(String pinterestId){ mPinterestId = pinterestId; }
 
     public String getRecipeName(){
         return mRecipeName;
@@ -97,10 +206,6 @@ public class Recipe {
     public int getRating(){ return mRating; }
 
     public void setRating(int rating){ mRating = rating;}
-
-    public Date getLastMade(){ return mLastMade; }
-
-    public void setLastMade(Date lastMade){ mLastMade = lastMade; }
 
     public Date getLastEdited() { return mLastEdited; }
 
