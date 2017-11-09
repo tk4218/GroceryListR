@@ -1,4 +1,5 @@
 package com.tk4218.grocerylistr.Model;
+import android.text.style.TtsSpan;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class RecipePinParser {
     private boolean mValidRecipe;
 
     private Pattern mPattern;
+
     private Matcher mMatch;
 
 
@@ -58,10 +60,12 @@ public class RecipePinParser {
                 String ingredients[] = ingredientDetail[1].split("\\},\\{");
 
                 for(String ingredient : ingredients){
-
-                    Pattern namePattern = Pattern.compile("(?<=\"name\":\").*(?=\"\\})");
-                    Matcher nameMatch = namePattern.matcher(ingredient);
                     String ingredientName = "";
+                    double amount = 0;
+                    String unit = "";
+
+                    Pattern namePattern = Pattern.compile("(?<=\"name\":\").*(?=\")");
+                    Matcher nameMatch = namePattern.matcher(ingredient);
                     if(nameMatch.find()){
                         ingredientName = nameMatch.group();
                         Log.d("PARSER", "Ingredient Name: " + ingredientName);
@@ -72,13 +76,46 @@ public class RecipePinParser {
                     String ingredientAmount = "";
                     if(amountMatch.find()){
                         ingredientAmount = amountMatch.group().replaceFirst("\\\\\\/", "/");
-                        Log.d("PARSER", "Ingredient Amount: " + ingredientAmount);
-
+                        Log.d("PARSER", "Ingredient Amount and Unit: " + ingredientAmount);
+                        String amountRegex = "[0-9]+\\s([0-9]+\\/[0-9]+)*|([0-9]+\\/[0-9]+)|[0-9]+";
+                        amountPattern = Pattern.compile(amountRegex);
+                        amountMatch = amountPattern.matcher(ingredientAmount);
+                        if(amountMatch.find()){
+                            Log.d("PARSER", "Ingredient Amount: " + amountMatch.group());
+                            amount = convertToDouble(amountMatch.group());
+                            Log.d("PARSER", "Ingredient Actual Amount: " + amount);
+                        }
+                        unit = ingredientAmount.replaceFirst(amountRegex, "");
+                        if(unit.equals(""))
+                            unit = "count";
+                        Log.d("PARSER", "Ingredient Unit: " + unit);
                     }
+                    if(!ingredientName.equals("") && amount != 0 && !unit.equals(""))
+                        recipeIngredients.add(new Ingredient(0, ingredientName, ingredientCategory, 0, amount, unit));
                 }
             }
         }
+        Log.d("PARSER", "Total Number of Ingredients: " + recipeIngredients.size());
         return  recipeIngredients;
+    }
+
+    private double convertToDouble(String fraction){
+        double amount = 0;
+        String fractionRegex = "[0-9]+\\s*\\/\\s*[0-9]+";
+
+        String wholeNumber = fraction.replaceFirst(fractionRegex, "").trim();
+        if(!wholeNumber.equals(""))
+            amount += Double.parseDouble(wholeNumber);
+
+        Pattern fractionPattern = Pattern.compile("[0-9]+\\s*\\/\\s*[0-9]+");
+        Matcher fractionMatch = fractionPattern.matcher(fraction);
+        if(fractionMatch.find()){
+            String fractionNumber[] = fractionMatch.group().split("\\/");
+            int numerator = Integer.parseInt(fractionNumber[0]);
+            int denominator = Integer.parseInt(fractionNumber[1]);
+            amount += ((double)numerator / (double)denominator);
+        }
+        return amount;
     }
 }
 

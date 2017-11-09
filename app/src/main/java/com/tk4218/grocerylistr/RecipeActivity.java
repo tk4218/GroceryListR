@@ -12,9 +12,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Adapters.RecipeIngredientAdapter;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 
@@ -32,6 +34,7 @@ public class RecipeActivity extends AppCompatActivity {
     private CollapsingToolbarLayout mCollapseToolbar;
     private ListView mRecipeIngredientList;
     private TextView mRecipeLastMade;
+    private ImageView mRecipeImage;
 
     private int mRecipeKey;
     private Recipe mRecipe;
@@ -50,6 +53,7 @@ public class RecipeActivity extends AppCompatActivity {
         mCollapseToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         mRecipeIngredientList = (ListView) findViewById(R.id.recipe_ingredient_list);
         mRecipeLastMade = (TextView) findViewById(R.id.recipe_last_made);
+        mRecipeImage = (ImageView) findViewById(R.id.recipe_image);
         Bundle extras = getIntent().getExtras();
         setSupportActionBar(mToolbar);
 
@@ -146,6 +150,14 @@ public class RecipeActivity extends AppCompatActivity {
                             mRecipeLastMade.setText("Scheduled on " + dateFormat.format(mLastMade));
                         }
                     }
+                    if(!mRecipe.getRecipeImage().equals("")){
+                        Picasso.with(RecipeActivity.this)
+                                .load(mRecipe.getRecipeImage())
+                                .fit()
+                                .centerCrop()
+                                .into(mRecipeImage);
+                    }
+
                 }
             });
             mDialog.dismiss();

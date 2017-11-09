@@ -30,6 +30,8 @@ public class Recipe {
     private Date mLastEdited;
     private ArrayList<Ingredient> mIngredients;
 
+    private boolean mRetrieved;
+
     public Recipe(int recipeKey){
         final JSONResult recipe = mQb.getRecipe(recipeKey);
         if(recipe.getCount() > 0){
@@ -47,11 +49,21 @@ public class Recipe {
                 JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
                 setIngredients(recipeIngredients);
             } else {
+                mRetrieved = false;
                 PDKClient.getInstance().getPin(mPinterestId, "image,metadata", new PDKCallback(){
                     @Override
                     public void onSuccess(PDKResponse response) {
                         Log.d("RECIPE URL", response.getPin().getImageUrl());
                         setRecipeImage(response.getPin().getImageUrl());
+                        RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
+                        if(parser.isValidRecipe()){
+                            setRecipeName(parser.getRecipeName());
+                            Log.d("RECIPE URL", response.getPin().getImageUrl());
+                            setRecipeImage(response.getPin().getImageUrl());
+                            ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
+                            setIngredients(ingredients);
+                            mRetrieved = true;
+                        }
                     }
 
                     @Override
@@ -60,6 +72,12 @@ public class Recipe {
                     }
                 });
 
+                while(!mRetrieved){
+                    Log.d("RECIPE", "Retrieving Recipe from Pinterest...");
+                    try {
+                        Thread.sleep(10);
+                    } catch(Exception e){ e.printStackTrace(); }
+                }
             }
         }
     }
@@ -83,6 +101,7 @@ public class Recipe {
                         Log.d("RECIPE URL", response.getPin().getImageUrl());
                         setRecipeImage(response.getPin().getImageUrl());
                         ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
+                        setIngredients(ingredients);
                     }
                 }
 
@@ -103,6 +122,7 @@ public class Recipe {
                         Log.d("RECIPE URL", response.getPin().getImageUrl());
                         setRecipeImage(response.getPin().getImageUrl());
                         ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
+                        setIngredients(ingredients);
                     }
                 }
 
@@ -149,6 +169,15 @@ public class Recipe {
                 public void onSuccess(PDKResponse response) {
                     Log.d("RECIPE URL", response.getPin().getImageUrl());
                     setRecipeImage(response.getPin().getImageUrl());
+
+                    RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
+                    if(parser.isValidRecipe()){
+                        setRecipeName(parser.getRecipeName());
+                        Log.d("RECIPE URL", response.getPin().getImageUrl());
+                        setRecipeImage(response.getPin().getImageUrl());
+                        ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
+                        setIngredients(ingredients);
+                    }
                 }
 
                 @Override
