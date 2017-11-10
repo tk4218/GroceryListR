@@ -1,110 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin"
     android:fillViewport="true"
     tools:context="com.tk4218.grocerylistr.EditRecipeActivity">
 
-    <LinearLayout
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:minHeight="0dp"
+        android:fitsSystemWindows="true"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary" />
+    </android.support.design.widget.AppBarLayout>
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <ImageButton
-            android:id="@+id/edit_recipe_image"
-            android:layout_width="220dp"
-            android:layout_height="180dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="10dp"
-            android:adjustViewBounds="true"
-            android:cropToPadding="false"
-            android:onClick="changePicture"
-            android:scaleType="fitCenter"
-            android:src="@drawable/recipe_default" />
-
-        <EditText
-            android:id="@+id/edit_recipe_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:ems="10"
-            android:hint="Recipe Name"
-            android:inputType="textCapWords" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/edit_recipe_image"
+                android:layout_width="220dp"
+                android:layout_height="180dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="10dp"
+                android:adjustViewBounds="true"
+                android:cropToPadding="false"
+                android:onClick="changePicture"
+                android:scaleType="fitCenter"
+                android:src="@drawable/recipe_default" />
+
+            <EditText
+                android:id="@+id/edit_recipe_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:ems="10"
+                android:hint="Recipe Name"
+                android:inputType="textCapWords" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="Meal"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/edit_meal_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginLeft="25dp"
+                    android:entries="@array/meal_types" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="Cuisine"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/edit_meal_style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:entries="@array/cuisine_type" />
+            </LinearLayout>
+
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/edit_ingredients"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
-                android:text="Meal"
+                android:text="Add Ingredients"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/edit_meal_type"
+            <com.tk4218.grocerylistr.CustomLayout.NonScrollListView
+                android:id="@+id/edit_ingredient_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/button_add_ingredient"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:layout_marginLeft="25dp"
-                android:entries="@array/meal_types" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
                 android:layout_marginLeft="5dp"
-                android:text="Cuisine"
-                android:textStyle="bold" />
+                android:background="@android:color/transparent"
+                android:onClick="addIngredient"
+                android:text="+ Add Ingredient"
+                android:textColor="@android:color/darker_gray" />
 
-            <Spinner
-                android:id="@+id/edit_meal_style"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:layout_marginLeft="10dp"
-                android:entries="@array/cuisine_type" />
         </LinearLayout>
+    </ScrollView>
 
 
-        <TextView
-            android:id="@+id/edit_ingredients"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="Add Ingredients"
-            android:textSize="18sp"
-            android:textStyle="bold" />
 
-        <com.tk4218.grocerylistr.CustomLayout.NonScrollListView
-            android:id="@+id/edit_ingredient_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp" />
-
-        <Button
-            android:id="@+id/button_add_ingredient"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="5dp"
-            android:background="@android:color/transparent"
-            android:onClick="addIngredient"
-            android:text="+ Add Ingredient"
-            android:textColor="@android:color/darker_gray" />
-
-    </LinearLayout>
-
-</ScrollView>
+</android.support.design.widget.CoordinatorLayout>

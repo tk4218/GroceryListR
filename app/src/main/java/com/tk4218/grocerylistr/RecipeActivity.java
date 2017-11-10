@@ -8,6 +8,8 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,7 +34,7 @@ public class RecipeActivity extends AppCompatActivity {
 
     private Toolbar mToolbar;
     private CollapsingToolbarLayout mCollapseToolbar;
-    private ListView mRecipeIngredientList;
+    private RecyclerView mRecipeIngredientList;
     private TextView mRecipeLastMade;
     private ImageView mRecipeImage;
 
@@ -51,7 +53,8 @@ public class RecipeActivity extends AppCompatActivity {
          *------------------------------------------------*/
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mCollapseToolbar = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
-        mRecipeIngredientList = (ListView) findViewById(R.id.recipe_ingredient_list);
+        mRecipeIngredientList = (RecyclerView) findViewById(R.id.recipe_ingredient_list);
+        mRecipeIngredientList.setLayoutManager(new LinearLayoutManager(this));
         mRecipeLastMade = (TextView) findViewById(R.id.recipe_last_made);
         mRecipeImage = (ImageView) findViewById(R.id.recipe_image);
         Bundle extras = getIntent().getExtras();
@@ -134,12 +137,13 @@ public class RecipeActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result){
-            mRecipeIngredientList.setAdapter(new RecipeIngredientAdapter(RecipeActivity.this, mRecipe.getIngredients()));
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     mToolbar.setTitle(mRecipe.getRecipeName());
                     mCollapseToolbar.setTitle(mRecipe.getRecipeName());
+                    mRecipeIngredientList.setAdapter(new RecipeIngredientAdapter(RecipeActivity.this, mRecipe.getIngredients()));
+
 
                     if(mLastMade.getTime() == 0){
                         mRecipeLastMade.setText("You have not made this recipe yet");
