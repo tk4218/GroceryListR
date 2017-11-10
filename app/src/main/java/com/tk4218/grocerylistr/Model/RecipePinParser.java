@@ -1,13 +1,9 @@
 package com.tk4218.grocerylistr.Model;
-import android.text.style.TtsSpan;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.regex.*;
 
-/**
- * Created by Tk4218 on 11/6/2017.
- */
 
 public class RecipePinParser {
     private String mMetadata;
@@ -61,6 +57,7 @@ public class RecipePinParser {
 
                 for(String ingredient : ingredients){
                     String ingredientName = "";
+                    String preparation1 = "";
                     double amount = 0;
                     String unit = "";
 
@@ -68,14 +65,19 @@ public class RecipePinParser {
                     Matcher nameMatch = namePattern.matcher(ingredient);
                     if(nameMatch.find()){
                         ingredientName = nameMatch.group();
+                        String nameDetail [] = ingredientName.split(",");
+                        if(nameDetail.length > 1){
+                            ingredientName = nameDetail[0].trim();
+                            preparation1 = nameDetail[1].trim();
+                        }
+
                         Log.d("PARSER", "Ingredient Name: " + ingredientName);
                     }
 
                     Pattern amountPattern = Pattern.compile("(?<=\"amount\":\").*(?=\",\")");
                     Matcher amountMatch = amountPattern.matcher(ingredient);
-                    String ingredientAmount = "";
                     if(amountMatch.find()){
-                        ingredientAmount = amountMatch.group().replaceFirst("\\\\\\/", "/");
+                        String ingredientAmount = amountMatch.group().replaceFirst("\\\\\\/", "/");
                         Log.d("PARSER", "Ingredient Amount and Unit: " + ingredientAmount);
                         String amountRegex = "[0-9]+\\s([0-9]+\\/[0-9]+)*|([0-9]+\\/[0-9]+)|[0-9]+";
                         amountPattern = Pattern.compile(amountRegex);
@@ -85,13 +87,13 @@ public class RecipePinParser {
                             amount = convertToDouble(amountMatch.group());
                             Log.d("PARSER", "Ingredient Actual Amount: " + amount);
                         }
-                        unit = ingredientAmount.replaceFirst(amountRegex, "");
+                        unit = ingredientAmount.replaceFirst(amountRegex, "").trim();
                         if(unit.equals(""))
                             unit = "count";
                         Log.d("PARSER", "Ingredient Unit: " + unit);
                     }
                     if(!ingredientName.equals("") && amount != 0 && !unit.equals(""))
-                        recipeIngredients.add(new Ingredient(0, ingredientName, ingredientCategory, 0, amount, unit));
+                        recipeIngredients.add(new Ingredient(0, ingredientName, ingredientCategory, 0, amount, unit, preparation1, ""));
                 }
             }
         }

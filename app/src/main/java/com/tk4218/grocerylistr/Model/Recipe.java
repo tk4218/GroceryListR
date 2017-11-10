@@ -30,11 +30,9 @@ public class Recipe {
     private Date mLastEdited;
     private ArrayList<Ingredient> mIngredients;
 
-    private boolean mRetrieved;
-
     public Recipe(int recipeKey){
         final JSONResult recipe = mQb.getRecipe(recipeKey);
-        if(recipe.getCount() > 0){
+        if(recipe.getCount() > 0) {
             setRecipeKey(recipeKey);
             setPinterestId(recipe.getString("PinterestId"));
             setRecipeName(recipe.getString("RecipeName"));
@@ -45,92 +43,26 @@ public class Recipe {
             setRating(recipe.getInt("Rating"));
             setLastEdited(recipe.getDate("LastEdited"));
 
-            if(mPinterestId.equals("")){
-                JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
-                setIngredients(recipeIngredients);
-            } else {
-                mRetrieved = false;
-                PDKClient.getInstance().getPin(mPinterestId, "image,metadata", new PDKCallback(){
-                    @Override
-                    public void onSuccess(PDKResponse response) {
-                        Log.d("RECIPE URL", response.getPin().getImageUrl());
-                        setRecipeImage(response.getPin().getImageUrl());
-                        RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
-                        if(parser.isValidRecipe()){
-                            setRecipeName(parser.getRecipeName());
-                            Log.d("RECIPE URL", response.getPin().getImageUrl());
-                            setRecipeImage(response.getPin().getImageUrl());
-                            ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
-                            setIngredients(ingredients);
-                            mRetrieved = true;
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(PDKException exception) {
-                        Log.e("Error", "Pinterest Recipe Not Found");
-                    }
-                });
-
-                while(!mRetrieved){
-                    Log.d("RECIPE", "Retrieving Recipe from Pinterest...");
-                    try {
-                        Thread.sleep(10);
-                    } catch(Exception e){ e.printStackTrace(); }
-                }
-            }
+            JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
+            setIngredients(recipeIngredients);
         }
     }
 
     public Recipe(final String pinterestId){
         JSONResult recipe = mQb.getPinterestRecipe(pinterestId);
-        if(recipe.getCount() > 0){
-            setPinterestId(pinterestId);
+        if(recipe.getCount() > 0) {
             setRecipeKey(recipe.getInt("RecipeKey"));
+            setPinterestId(pinterestId);
+            setRecipeName(recipe.getString("RecipeName"));
             setMealType(recipe.getString("MealType"));
             setCuisineType(recipe.getString("CuisineType"));
+            setRecipeImage(recipe.getString("RecipeImage"));
             setFavorite(recipe.getBoolean("Favorite"));
             setRating(recipe.getInt("Rating"));
+            setLastEdited(recipe.getDate("LastEdited"));
 
-            PDKClient.getInstance().getPin(pinterestId, "id,image,metadata", new PDKCallback() {
-                @Override
-                public void onSuccess(PDKResponse response) {
-                    RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
-                    if(parser.isValidRecipe()){
-                        setRecipeName(parser.getRecipeName());
-                        Log.d("RECIPE URL", response.getPin().getImageUrl());
-                        setRecipeImage(response.getPin().getImageUrl());
-                        ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
-                        setIngredients(ingredients);
-                    }
-                }
-
-                @Override
-                public void onFailure(PDKException exception) {
-                    Log.e("Error", "Pinterest Recipe Not Found");
-                }
-            });
-        } else {
-            PDKClient.getInstance().getPin(pinterestId, "id,image,metadata", new PDKCallback(){
-                @Override
-                public void onSuccess(PDKResponse response) {
-                    RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
-                    if(parser.isValidRecipe()){
-                        setRecipeName(parser.getRecipeName());
-                        mPinterestId = pinterestId;
-                        mRecipeKey = mQb.insertRecipe(pinterestId, getRecipeName(), "", "", "");
-                        Log.d("RECIPE URL", response.getPin().getImageUrl());
-                        setRecipeImage(response.getPin().getImageUrl());
-                        ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
-                        setIngredients(ingredients);
-                    }
-                }
-
-                @Override
-                public void onFailure(PDKException exception) {
-                    Log.e("Error", "Pinterest Recipe Not Found");
-                }
-            });
+            JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
+            setIngredients(recipeIngredients);
         }
     }
 
@@ -145,47 +77,6 @@ public class Recipe {
         setRating(rating);
         setLastEdited(lastEdited);
         setIngredients(ingredients);
-
-        if(mRecipeKey == 0 && !mPinterestId.equals("")){
-            PDKClient.getInstance().getPin(pinterestId, "id,image,metadata", new PDKCallback(){
-                @Override
-                public void onSuccess(PDKResponse response) {
-                    mPinterestId = pinterestId;
-                    mRecipeKey = mQb.insertRecipe(pinterestId, recipeName, mealType, cuisineType, "");
-                    Log.d("RECIPE URL", response.getPin().getImageUrl());
-                    setRecipeImage(response.getPin().getImageUrl());
-                }
-
-                @Override
-                public void onFailure(PDKException exception) {
-                    Log.e("Error", "Pinterest Recipe Not Found");
-                }
-            });
-        }
-
-        if(!mPinterestId.equals("")){
-            PDKClient.getInstance().getPin(mPinterestId, "image,metadata", new PDKCallback(){
-                @Override
-                public void onSuccess(PDKResponse response) {
-                    Log.d("RECIPE URL", response.getPin().getImageUrl());
-                    setRecipeImage(response.getPin().getImageUrl());
-
-                    RecipePinParser parser = new RecipePinParser(response.getPin().getMetadata());
-                    if(parser.isValidRecipe()){
-                        setRecipeName(parser.getRecipeName());
-                        Log.d("RECIPE URL", response.getPin().getImageUrl());
-                        setRecipeImage(response.getPin().getImageUrl());
-                        ArrayList<Ingredient> ingredients = parser.getRecipeIngredients();
-                        setIngredients(ingredients);
-                    }
-                }
-
-                @Override
-                public void onFailure(PDKException exception) {
-                    Log.e("Error", "Pinterest Recipe Not Found");
-                }
-            });
-        }
     }
 
     public int getRecipeKey(){
@@ -258,7 +149,9 @@ public class Recipe {
                                                  ingredients.getString(i, "IngredientType"),
                                                  ingredients.getInt(i, "ShelfLife"),
                                                  ingredients.getDouble(i, "IngredientAmount"),
-                                                 ingredients.getString(i, "IngredientUnit")));
+                                                 ingredients.getString(i, "IngredientUnit"),
+                                                 ingredients.getString(i, "Preparation1"),
+                                                 ingredients.getString(i, "Preparation2")));
         }
     }
 

@@ -12,6 +12,8 @@ public class Ingredient {
     private int mShelfLife;
     private double mIngredientAmount;
     private String mIngredientUnit;
+    private String mPreparation1;
+    private String mPreparation2;
 
     public Ingredient(){
 
@@ -49,14 +51,17 @@ public class Ingredient {
         }
     }
 
-    public Ingredient(int ingredientKey, String ingredientName, String ingredientType, int shelfLife, double ingredientAmount, String ingredientUnit){
+    public Ingredient(int ingredientKey, String ingredientName, String ingredientType, int shelfLife, double ingredientAmount, String ingredientUnit, String preparation1, String preparation2) {
         setIngredientKey(ingredientKey);
         setIngredientName(ingredientName);
         setIngredientType(ingredientType);
         setShelfLife(shelfLife);
         setIngredientAmount(ingredientAmount);
         setIngredientUnit(ingredientUnit);
+        setPreparation1(preparation1);
+        setPreparation2(preparation2);
     }
+
 
     public void setIngredientKey(int ingredientKey){
         mIngredientKey = ingredientKey;
@@ -64,33 +69,42 @@ public class Ingredient {
     public int getIngredientKey(){
         return mIngredientKey;
     }
+
     public void setIngredientName(String ingredientName){
         mIngredientName = ingredientName;
     }
     public String getIngredientName(){
         return mIngredientName;
     }
+
     public void setIngredientType(String ingredientType){
         mIngredientType = ingredientType;
     }
     public String getIngredientType(){
         return mIngredientType;
     }
+
     public void setShelfLife(int shelfLife){
         mShelfLife = shelfLife;
     }
     public int getShelfLife(){
         return mShelfLife;
     }
+
     public void setIngredientAmount(double ingredientAmount){ mIngredientAmount = ingredientAmount; }
     public double getIngredientAmount(){
         return  mIngredientAmount;
     }
     public String getFormattedIngredientAmount() { return toFraction(mIngredientAmount, 10);}
+
     public void setIngredientUnit(String ingredientUnit){ mIngredientUnit = ingredientUnit; }
-    public String getIngredientUnit(){
-        return mIngredientUnit;
-    }
+    public String getIngredientUnit(){ return mIngredientUnit; }
+
+    public void setPreparation1(String preparation1){ mPreparation1 = preparation1; }
+    public String getPreparation1(){ return mPreparation1; }
+
+    public void setPreparation2(String preparation2){ mPreparation2 = preparation2; }
+    public String getPreparation2(){ return mPreparation2; }
 
     private String toFraction(double d, int factor) {
         StringBuilder sb = new StringBuilder();

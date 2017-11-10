@@ -105,6 +105,13 @@ public class QueryBuilder {
         return getResults(parameters);
     }
 
+    public JSONResult getPinterestRecipes(){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select * from tableRecipe where PinterestId <> ''"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
+        return getResults(parameters);
+    }
+
     public int insertRecipe(String pinterestId, String recipeName, String mealType, String cuisineType, String recipeImage){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0, current_timestamp())"));
@@ -172,15 +179,15 @@ public class QueryBuilder {
 
     public JSONResult getRecipeIngredients(int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey"));
-        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit"));
+        parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit, ri.Preparation1, ri.Preparation2 from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey"));
+        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit,Preparation1,Preparation2"));
         return getResults(parameters);
     }
 
     public JSONResult getRecipeIngredient(int recipeKey, String ingredientName){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey and i.IngredientName = '" + ingredientName + "'"));
-        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit"));
+        parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit, ri.Preparation1, ri.Preparation2 from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey and i.IngredientName = '" + ingredientName + "'"));
+        parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit,Preparation1,Preparation2"));
         return getResults(parameters);
     }
 
