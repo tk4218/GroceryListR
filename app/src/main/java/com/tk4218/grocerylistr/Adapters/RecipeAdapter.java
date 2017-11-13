@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.pinterest.android.pdk.PDKClient;
 import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
@@ -106,6 +107,8 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                     .fit()
                     .centerCrop()
                     .into(holder.recipeImage);
+        } else {
+            holder.recipeImage.setImageResource(R.drawable.recipe_default);
         }
     }
 

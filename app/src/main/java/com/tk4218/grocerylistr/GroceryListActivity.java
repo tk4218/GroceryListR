@@ -2,8 +2,10 @@ package com.tk4218.grocerylistr;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ExpandableListView;
 
 import com.tk4218.grocerylistr.Adapters.GroceryListAdapter;
@@ -30,6 +32,15 @@ public class GroceryListActivity extends AppCompatActivity {
             mGroceryListKey = extras.getInt("groceryListKey");
             new GetGroceryList().execute();
         }
+
+        FloatingActionButton addItem = (FloatingActionButton) findViewById(R.id.add_item);
+        addItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
     }
 
     @Override

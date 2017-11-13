@@ -25,6 +25,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Adapters.AddIngredientAdapter;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Image.ImageManager;
@@ -228,7 +229,6 @@ public class EditRecipeActivity extends AppCompatActivity {
                 cursor.close();
             }
         }
-       // mRecipeImage.setImageBitmap(mImageManager.setPic(mCurrentPhotoPath, mRecipeImage.getLayoutParams().width, mRecipeImage.getLayoutParams().height));
     }
 
 
@@ -337,6 +337,7 @@ public class EditRecipeActivity extends AppCompatActivity {
                 mQb.updateRecipeInfo(mRecipeKey, params[0], params[1], params[2], params[3]);
             }
 
+            updateIngredientList();
             ArrayList<Ingredient> currentIngredients = new Recipe(mRecipeKey).getIngredients();
 
 
@@ -364,6 +365,13 @@ public class EditRecipeActivity extends AppCompatActivity {
 
             //Insert any new ingredients added.
             for(int i = 0; i < mIngredientList.size(); i++){
+                if(mIngredientList.get(i).getIngredientKey() == 0){
+                    if(mIngredientList.get(i).getIngredientType().equals("")){
+                        mIngredientList.get(i).setIngredientType("Uncategorized");
+                    }
+                    mIngredientList.get(i).setIngredientKey(mQb.insertIngredient(mIngredientList.get(i).getIngredientName(),
+                            mIngredientList.get(i).getIngredientType(), mIngredientList.get(i).getShelfLife()));
+                }
                 mQb.insertRecipeToIngredient(mRecipeKey, mIngredientList.get(i).getIngredientKey(),
                         mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
             }
@@ -394,6 +402,13 @@ public class EditRecipeActivity extends AppCompatActivity {
                     setTitle(mRecipe.getRecipeName());
 
                     mRecipeName.setText(mRecipe.getRecipeName());
+
+                    mCurrentPhotoPath = mRecipe.getRecipeImage();
+                    Picasso.with(EditRecipeActivity.this)
+                            .load(mCurrentPhotoPath)
+                            .fit()
+                            .centerCrop()
+                            .into(mRecipeImage);
 
                     final String [] cuisineTypes = getResources().getStringArray(R.array.cuisine_type);
                     for(int i = 0; i < cuisineTypes.length; i++){

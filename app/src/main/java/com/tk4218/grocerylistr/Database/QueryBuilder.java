@@ -284,4 +284,10 @@ public class QueryBuilder {
         parameters.add(addParameter("return_cols", "GroceryListItemKey,GroceryListKey,IngredientKey,IngredientAmount,IngredientUnit,AddedToCart"));
         return getResults(parameters);
     }
+
+    public boolean updateAddedToCart(int groceryListItemKey, boolean addedToCart){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "update tableGroceryListItem set AddedToCart = " +(addedToCart ? 1 : 0)+ " where GroceryListItemKey = " + groceryListItemKey));
+        return insert(parameters);
+    }
 }

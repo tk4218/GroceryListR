@@ -132,14 +132,8 @@ public class AddIngredientAdapter extends BaseAdapter{
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     ArrayList<String> filterIngredients = new ArrayList<String>();
-                    if(s.length() == 3){
-                        try{
-                            filterIngredients = new SetIngredientFilter().execute(s.toString()).get();
-                        } catch(Exception e){
-                            Log.e("ERROR", "Error Loading Ingredients");
-                        }
-                        mIngredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, filterIngredients));
-                        mIngredientName.showDropDown();
+                    if(s.length() == 3 || (s.length() > 3 && mIngredientName.getAdapter() == null)){
+                            new SetIngredientFilter().execute(s.toString());
                     }
                 }
                 @Override
@@ -197,6 +191,12 @@ public class AddIngredientAdapter extends BaseAdapter{
         protected ArrayList<String> doInBackground(String... params) {
                 return mQb.getIngredientsFilter(params[0]).getStringColumnArray("IngredientName");
         }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> result) {
+            mIngredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, result));
+            mIngredientName.showDropDown();
+        }
     }
 
     private class AddIngredient extends AsyncTask<Object, Void, Integer> {
@@ -212,6 +212,9 @@ public class AddIngredientAdapter extends BaseAdapter{
                 mIngredients.get((int)params[0]).setIngredientUnit((String)params[6]);
             }else{
                 mIngredients.set((int)params[0], new Ingredient((String)params[2]));
+                if(mIngredients.get((int)params[0]).getIngredientKey() == 0)
+                    mIngredients.get((int)params[0]).setIngredientName((String)params[2]);
+
                 mIngredients.get((int)params[0]).setIngredientAmount((double)params[3]);
                 mIngredients.get((int)params[0]).setIngredientUnit((String)params[4]);
             }
@@ -226,6 +229,7 @@ public class AddIngredientAdapter extends BaseAdapter{
                 @Override
                 public void run() {
                     mIngredientName.setTag(mIngredients.get(position).getIngredientKey());
+
                 }
             });
         }

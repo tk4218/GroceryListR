@@ -1,13 +1,16 @@
 package com.tk4218.grocerylistr.Adapters;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.GroceryList;
 import com.tk4218.grocerylistr.Model.GroceryListItem;
 import com.tk4218.grocerylistr.R;
@@ -81,12 +84,35 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         }
 
         CheckBox groceryListItem = (CheckBox) convertView.findViewById(R.id.item_grocerylist_item);
+
         GroceryListItem item = getChild(groupPosition, childPosition);
+
+        groceryListItem.setTag(item);
+        groceryListItem.setChecked(((GroceryListItem)groceryListItem.getTag()).getAddedToCart());
         groceryListItem.setText(item.getFormattedIngredientAmount() + " " + item.getIngredientUnit() + " " + item.getIngredient().getIngredientName());
-        return convertView;    }
+
+        groceryListItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                new UpdateAddedToCart().execute(((GroceryListItem)buttonView.getTag()).getGroceryListItemKey(), isChecked);
+                ((GroceryListItem)buttonView.getTag()).setAddedToCart(isChecked);
+            }
+        });
+        return convertView;
+    }
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return false;
     }
+
+    private class UpdateAddedToCart extends AsyncTask<Object, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
+        @Override
+        protected Void doInBackground(Object... params) {
+            mQb.updateAddedToCart((int)params[0], (boolean)params[1]);
+            return null;
+        }
+    }
+
 }
