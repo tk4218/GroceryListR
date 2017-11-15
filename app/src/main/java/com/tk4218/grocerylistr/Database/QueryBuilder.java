@@ -285,9 +285,21 @@ public class QueryBuilder {
         return getResults(parameters);
     }
 
+    public boolean updateGroceryListItemAmount(int groceryListItemKey, double amount){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "update tableGroceryListItem set IngredientAmount = " + amount + " where GroceryListItemKey = " + groceryListItemKey));
+        return insert(parameters);
+    }
+
     public boolean updateAddedToCart(int groceryListItemKey, boolean addedToCart){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "update tableGroceryListItem set AddedToCart = " +(addedToCart ? 1 : 0)+ " where GroceryListItemKey = " + groceryListItemKey));
+        return insert(parameters);
+    }
+
+    public boolean removeGroceryListItem(int groceryListItemKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "delete from tableGroceryListItem where GroceryListItemKey = "+ groceryListItemKey));
         return insert(parameters);
     }
 }

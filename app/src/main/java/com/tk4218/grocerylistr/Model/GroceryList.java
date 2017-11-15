@@ -78,6 +78,26 @@ public class GroceryList {
         if(sortList) sortGroceryListItems();
     }
 
+    public void addGroceryListItem(int groceryListItemKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean sortList){
+        for(GroceryListItem item : mGroceryListItems){
+            if(item.getIngredient().getIngredientKey() == ingredientKey){
+                if(item.addIngredientAmount(ingredientAmount, ingredientUnit))
+                    return;
+            }
+        }
+        mGroceryListItems.add(new GroceryListItem(groceryListItemKey, mGroceryListKey, ingredientKey, ingredientAmount, ingredientUnit, false));
+        if(sortList) sortGroceryListItems();
+    }
+
+    public boolean removeGroceryListItem(int groceryListItemKey){
+        for(int i = 0; i < mGroceryListItems.size(); i++){
+            if(mGroceryListItems.get(i).getGroceryListItemKey() == groceryListItemKey){
+                mGroceryListItems.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
     public ArrayList<GroceryListItem> getGroceryListItems(){ return mGroceryListItems; }
 
     public ArrayList<GroceryListItem> getGroceryListItems(String ingredientType){
@@ -90,18 +110,18 @@ public class GroceryList {
         return filteredGroceryListItems;
     }
 
-    public boolean hasIngredient(String ingredientName){
+    public GroceryListItem findIngredient(String ingredientName){
         for(GroceryListItem item : mGroceryListItems){
-            if(item.getIngredient().getIngredientName().equals(ingredientName)) return true;
+            if(item.getIngredient().getIngredientName().equals(ingredientName)) return item;
         }
-        return false;
+        return null;
     }
 
-    public boolean hasIngredient(String ingredientName, String ingredientUnit){
+    public GroceryListItem findIngredient(String ingredientName, String ingredientUnit){
         for(GroceryListItem item : mGroceryListItems){
-            if(item.getIngredient().getIngredientName().equals(ingredientName) && item.getIngredientUnit().equals(ingredientUnit)) return true;
+            if(item.getIngredient().getIngredientName().equals(ingredientName) && item.getIngredientUnit().equals(ingredientUnit)) return item;
         }
-        return false;
+        return null;
     }
 
     public int generateGroceryList(Date mealPlanDateStart, Date mealPlanDateEnd){
