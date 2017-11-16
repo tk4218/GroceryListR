@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.pinterest.android.pdk.PDKClient;
 import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
@@ -54,7 +53,10 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
         if(mRecipes.get(position).getFavorite()){
             holder.favorite.setImageResource(android.R.drawable.btn_star_big_on);
+        } else {
+            holder.favorite.setImageResource(android.R.drawable.btn_star);
         }
+
         holder.favorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

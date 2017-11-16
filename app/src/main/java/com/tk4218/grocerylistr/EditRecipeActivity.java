@@ -404,11 +404,14 @@ public class EditRecipeActivity extends AppCompatActivity {
                     mRecipeName.setText(mRecipe.getRecipeName());
 
                     mCurrentPhotoPath = mRecipe.getRecipeImage();
-                    Picasso.with(EditRecipeActivity.this)
-                            .load(mCurrentPhotoPath)
-                            .fit()
-                            .centerCrop()
-                            .into(mRecipeImage);
+                    if(!mCurrentPhotoPath.equals("")){
+                        Picasso.with(EditRecipeActivity.this)
+                                .load(mCurrentPhotoPath)
+                                .fit()
+                                .centerCrop()
+                                .into(mRecipeImage);
+                    }
+
 
                     final String [] cuisineTypes = getResources().getStringArray(R.array.cuisine_type);
                     for(int i = 0; i < cuisineTypes.length; i++){
