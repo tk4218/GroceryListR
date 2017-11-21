@@ -1,30 +1,41 @@
 package com.tk4218.grocerylistr.Adapters;
 
 import android.content.Context;
+import android.os.AsyncTask;
+import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
+import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;
 
 
-public class IngredientDropdownAdapter extends ArrayAdapter<String> {
+public class IngredientDropdownAdapter extends ArrayAdapter<String> implements Filterable{
     private Context mContext;
     private ArrayList<String> mIngredients;
-    private ArrayList<String> mAllIngredients;
-    private ArrayList<String> mFilteredIngredients;
 
-    public IngredientDropdownAdapter(Context context, int viewResouceId, ArrayList<String> ingredients){
-        super(context, viewResouceId, ingredients);
+    public IngredientDropdownAdapter(Context context, int viewResourceId){
+        super(context, viewResourceId);
         mContext = context;
-        mIngredients = (ArrayList<String>)ingredients.clone();
-        mAllIngredients = (ArrayList<String>) mIngredients.clone();
-        mFilteredIngredients = new ArrayList<>();
+        mIngredients = new ArrayList<>();
+    }
+
+    @Override
+    public int getCount() {
+        return mIngredients.size();
+    }
+
+    @Override
+    public String getItem(int position) {
+        return mIngredients.get(position);
     }
 
     public View getView(int position, View convertView, ViewGroup parent){
@@ -37,47 +48,62 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> {
         return convertView;
     }
 
+    @Nullable
     @Override
-    public Filter getFilter(){
+    public Filter getFilter() {
+
+        Filter mFilter = new Filter() {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults results = new FilterResults();
+
+                if (constraint != null) {
+                    String ingredientFilter = constraint.toString();
+
+                    if(ingredientFilter.length() >= 3 ){
+                        Log.d("FILTER", "Filter ingredients by " + ingredientFilter);
+                        try{
+                            mIngredients = new SetIngredientFilter().execute(ingredientFilter).get();
+                            mIngredients.add("+ New Ingredient");
+                        } catch(Exception e){
+                            Log.e("ERROR", "Error Retrieving Filtered Recipes.");
+                        }
+
+
+                    }
+                }
+
+                results.values = mIngredients;
+                results.count = mIngredients.size();
+
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                clear();
+                if (results != null && results.count > 0) {
+                    for(String ingredient : mIngredients){
+                        add(ingredient);
+                    }
+                    notifyDataSetChanged();
+                } else {
+                    notifyDataSetInvalidated();
+                }
+                notifyDataSetChanged();
+            }
+        };
+
         return mFilter;
     }
 
-    private Filter mFilter = new Filter(){
+    private class SetIngredientFilter extends AsyncTask<String, Void, ArrayList<String>> {
+        private QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            FilterResults results = new FilterResults();
-
-            if(constraint!= null){
-                mFilteredIngredients.clear();
-                for(String ingredient : mAllIngredients){
-                    if(ingredient.toLowerCase().contains(constraint.toString().toLowerCase())){
-                        mFilteredIngredients.add(ingredient);
-                    }
-                }
-                results.values = mFilteredIngredients;
-                results.count = mFilteredIngredients.size();
-            }
-
-            return results;
+        protected ArrayList<String> doInBackground(String... params) {
+            return mQb.getIngredientsFilter(params[0]).getStringColumnArray("IngredientName");
         }
-
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-
-            ArrayList<String> filteredList = (ArrayList<String>) results.values;
-            clear();
-            if (results != null && results.count > 0) {
-                for (String ingredient : filteredList) {
-                    add(ingredient);
-                }
-            }
-
-            if (getPosition("+ New Ingredient") != -1) {
-                remove("+ New Ingredient");
-            }
-            add("+ New Ingredient");
-            notifyDataSetChanged();
-        }
-    };
+    }
 }

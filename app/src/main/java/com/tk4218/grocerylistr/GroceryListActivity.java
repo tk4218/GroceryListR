@@ -34,6 +34,7 @@ public class GroceryListActivity extends AppCompatActivity {
     private ExpandableListView mGroceryListView;
     private GroceryListAdapter mAdapter;
     private AutoCompleteTextView mAddItemName;
+    private IngredientDropdownAdapter mIngredientAdapter;
     private Spinner mAddItemType;
     private String mNewItemName;
 
@@ -74,6 +75,8 @@ public class GroceryListActivity extends AppCompatActivity {
         builder.setView(dialogView);
 
         mAddItemName = (AutoCompleteTextView) dialogView.findViewById(R.id.add_item_name);
+        mIngredientAdapter = new IngredientDropdownAdapter(this, R.layout.dropdown_ingredient);
+        mAddItemName.setAdapter(mIngredientAdapter);
         final EditText itemAmount = (EditText) dialogView.findViewById(R.id.add_item_amount);
         final Spinner itemMeasurement = (Spinner) dialogView.findViewById(R.id.add_item_measurement);
         mAddItemType = (Spinner) dialogView.findViewById(R.id.add_item_type);
@@ -95,9 +98,6 @@ public class GroceryListActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(s.length() == 3 || (s.length() > 3 && mAddItemName.getAdapter() == null)){
-                    new SetIngredientFilter().execute(s.toString());
-                }
             }
 
             @Override
@@ -241,21 +241,6 @@ public class GroceryListActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             mAdapter.notifyDataSetChanged();
-        }
-    }
-
-    private class SetIngredientFilter extends AsyncTask<String, Void, ArrayList<String>> {
-        private QueryBuilder mQb = new QueryBuilder();
-
-        @Override
-        protected ArrayList<String> doInBackground(String... params) {
-            return mQb.getIngredientsFilter(params[0]).getStringColumnArray("IngredientName");
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-            mAddItemName.setAdapter(new IngredientDropdownAdapter(GroceryListActivity.this, R.layout.dropdown_ingredient, result));
-            mAddItemName.showDropDown();
         }
     }
 }

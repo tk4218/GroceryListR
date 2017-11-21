@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 
-import com.pinterest.android.pdk.PDKClient;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Model.Ingredient;
@@ -33,7 +32,6 @@ public class AddIngredientAdapter extends BaseAdapter{
     private ArrayList<Ingredient> mIngredients;
     private AutoCompleteTextView mIngredientName;
     private IngredientDropdownAdapter mIngredientAdapter;
-    private String mCurrentFilter = "";
 
     public AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
@@ -92,22 +90,22 @@ public class AddIngredientAdapter extends BaseAdapter{
 
 
             /*----------------------------------------------
-             * Ingredient Measurement
+             * Ingredient Unit
              *----------------------------------------------*/
-            Spinner ingredientMeasurement = (Spinner) convertView.findViewById(R.id.edit_ingredient_measurement);
+            final Spinner ingredientUnit = (Spinner) convertView.findViewById(R.id.edit_ingredient_measurement);
             final String [] measurements = mContext.getResources().getStringArray(R.array.measurements);
             final int ingredientPosition = position;
 
             if(mIngredients.get(position).getIngredientUnit() != null){
                 for(int i = 0; i < measurements.length; i++){
                     if(measurements[i].equals(mIngredients.get(position).getIngredientUnit())){
-                        ingredientMeasurement.setSelection(i);
+                        ingredientUnit.setSelection(i);
                         break;
                     }
                 }
             }
 
-            ingredientMeasurement.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            ingredientUnit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     mIngredients.get(ingredientPosition).setIngredientUnit(measurements[position]);
@@ -122,24 +120,38 @@ public class AddIngredientAdapter extends BaseAdapter{
              * Ingredient Name
              *----------------------------------------------*/
             mIngredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
+            mIngredientAdapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient);
+            mIngredientName.setAdapter(mIngredientAdapter);
 
             if(mIngredients.get(position).getIngredientName() != null){
                 mIngredientName.setText(mIngredients.get(position).getIngredientName());
                 mIngredientName.setTag(mIngredients.get(position).getIngredientKey());
             }
+
+            mIngredientName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+                    String selectedIngredient = (String) parent.getAdapter().getItem(pos);
+                    Log.d("DEBUG", "Current Name: " + mIngredientName.getText().toString());
+                    final double ingredientAmount = mIngredients.get(position).getIngredientAmount();
+                    final String ingredientUnit = mIngredients.get(position).getIngredientUnit();
+                    if(selectedIngredient.equals("+ New Ingredient")){
+                        showNewIngredientDialog(inflater, position, ingredientAmount, ingredientUnit);
+                    }else {
+                        mIngredientName.setText(mIngredientAdapter.getItem(pos));
+                        new AddIngredient().execute(position, false, selectedIngredient, ingredientAmount, ingredientUnit);
+                    }
+                }
+            });
             mIngredientName.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    mIngredients.get(position).setIngredientName(s.toString());
+                    if(!s.toString().equals("+ New Ingredient")) {
+                        mIngredients.get(position).setIngredientName(s.toString());
+                    }
                 }
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if(s.length() >= 3){
-                        if(mCurrentFilter.equals("") || !s.toString().toLowerCase().startsWith(mCurrentFilter)) {
-                            Log.d("FILTER", "Set New Ingredient Filter");
-                            new SetIngredientFilter().execute(s.toString());
-                        }
-                    }
                 }
                 @Override
                 public void afterTextChanged(Editable s) {
@@ -147,32 +159,6 @@ public class AddIngredientAdapter extends BaseAdapter{
                     final String ingredientUnit = mIngredients.get(position).getIngredientUnit();
                     if(s.toString().equals("+ New Ingredient")){
                         mIngredientName.setText(mIngredients.get(position).getIngredientName());
-                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                        builder.setTitle("Add New Ingredient");
-                        builder.setIcon(android.R.drawable.ic_input_add);
-                        View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
-                        builder.setView(dialogView);
-                        final EditText newIngredientName  = (EditText) dialogView.findViewById(R.id.new_ingredient_name);
-                        newIngredientName.setText(mIngredients.get(position).getIngredientName());
-                        final Spinner newIngredientType = (Spinner) dialogView.findViewById(R.id.new_ingredient_type);
-                        final EditText newIngredientExpAmount = (EditText) dialogView.findViewById(R.id.new_ingredient_exp_amount);
-                        final Spinner newIngredientExpInterval = (Spinner) dialogView.findViewById(R.id.new_ingredient_exp_interval);
-                        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String ingredientType = newIngredientType.getSelectedItem().toString();
-                                String interval = newIngredientExpInterval.getSelectedItem().toString();
-                                int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
-                                if(interval.equals("Weeks")) expiration *= 7;
-                                if(interval.equals("Months")) expiration *= 30;
-                                new AddIngredient().execute(position, true, newIngredientName.getText().toString(), ingredientType, expiration, ingredientAmount, ingredientUnit);
-                            }
-                        });
-                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {}
-                        });
-                        builder.show();
                     } else {
                         new AddIngredient().execute(position, false, s.toString(), ingredientAmount, ingredientUnit);
                     }
@@ -189,28 +175,34 @@ public class AddIngredientAdapter extends BaseAdapter{
         return convertView;
     }
 
-    private class SetIngredientFilter extends AsyncTask<String, Void, ArrayList<String>> {
-        private QueryBuilder mQb = new QueryBuilder();
 
-        @Override
-        protected ArrayList<String> doInBackground(String... params) {
-                mCurrentFilter = params[0];
-                return mQb.getIngredientsFilter(params[0]).getStringColumnArray("IngredientName");
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<String> result) {
-            if(mIngredientAdapter == null){
-                mIngredientAdapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, result);
-                mIngredientName.setAdapter(mIngredientAdapter);
-            } else {
-                mIngredientAdapter.setIngredients(result);
+    private void showNewIngredientDialog(LayoutInflater inflater, final int position, final double ingredientAmount, final String ingredientUnit){
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("Add New Ingredient");
+        builder.setIcon(android.R.drawable.ic_input_add);
+        View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
+        builder.setView(dialogView);
+        final EditText newIngredientName  = (EditText) dialogView.findViewById(R.id.new_ingredient_name);
+        newIngredientName.setText(mIngredients.get(position).getIngredientName());
+        final Spinner newIngredientType = (Spinner) dialogView.findViewById(R.id.new_ingredient_type);
+        final EditText newIngredientExpAmount = (EditText) dialogView.findViewById(R.id.new_ingredient_exp_amount);
+        final Spinner newIngredientExpInterval = (Spinner) dialogView.findViewById(R.id.new_ingredient_exp_interval);
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String ingredientType = newIngredientType.getSelectedItem().toString();
+                String interval = newIngredientExpInterval.getSelectedItem().toString();
+                int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
+                if(interval.equals("Weeks")) expiration *= 7;
+                if(interval.equals("Months")) expiration *= 30;
+                new AddIngredient().execute(position, true, newIngredientName.getText().toString(), ingredientType, expiration, ingredientAmount, ingredientUnit);
             }
-
-            mIngredientAdapter.notifyDataSetChanged();
-            mIngredientName.showDropDown();
-
-        }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {}
+        });
+        builder.show();
     }
 
     private class AddIngredient extends AsyncTask<Object, Void, Integer> {
