@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 
+import com.pinterest.android.pdk.PDKClient;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Model.Ingredient;
@@ -31,6 +32,8 @@ public class AddIngredientAdapter extends BaseAdapter{
     private Context mContext;
     private ArrayList<Ingredient> mIngredients;
     private AutoCompleteTextView mIngredientName;
+    private IngredientDropdownAdapter mIngredientAdapter;
+    private String mCurrentFilter = "";
 
     public AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
@@ -131,9 +134,11 @@ public class AddIngredientAdapter extends BaseAdapter{
                 }
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    ArrayList<String> filterIngredients = new ArrayList<String>();
-                    if(s.length() == 3 || (s.length() > 3 && mIngredientName.getAdapter() == null)){
+                    if(s.length() >= 3){
+                        if(mCurrentFilter.equals("") || !s.toString().toLowerCase().startsWith(mCurrentFilter)) {
+                            Log.d("FILTER", "Set New Ingredient Filter");
                             new SetIngredientFilter().execute(s.toString());
+                        }
                     }
                 }
                 @Override
@@ -189,13 +194,22 @@ public class AddIngredientAdapter extends BaseAdapter{
 
         @Override
         protected ArrayList<String> doInBackground(String... params) {
+                mCurrentFilter = params[0];
                 return mQb.getIngredientsFilter(params[0]).getStringColumnArray("IngredientName");
         }
 
         @Override
         protected void onPostExecute(ArrayList<String> result) {
-            mIngredientName.setAdapter(new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, result));
+            if(mIngredientAdapter == null){
+                mIngredientAdapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient, result);
+                mIngredientName.setAdapter(mIngredientAdapter);
+            } else {
+                mIngredientAdapter.setIngredients(result);
+            }
+
+            mIngredientAdapter.notifyDataSetChanged();
             mIngredientName.showDropDown();
+
         }
     }
 
