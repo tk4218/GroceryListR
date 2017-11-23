@@ -3,11 +3,13 @@
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="action_save">Save</string>
+
     <string-array name="meal_types">
         <item>Dinner</item>
         <item>Lunch</item>
         <item>Breakfast</item>
     </string-array>
+
     <string-array name="cuisine_type">
         <item></item>
         <item>American</item>
@@ -24,7 +26,7 @@
 
     <string-array name="measurements">
         <item>tsp</item>
-        <item>Tbsp</item>
+        <item>tbsp</item>
         <item>cups</item>
         <item>pints</item>
         <item>quarts</item>
@@ -35,17 +37,22 @@
         <item>lbs</item>
         <item>oz</item>
         <item>grams</item>
-        <item>count</item>
-        <item>cans</item>
         <item>bags</item>
         <item>boxes</item>
+        <item>cans</item>
         <item>cloves</item>
+        <item>count</item>
         <item>leaves</item>
+        <item>slices</item>
 
     </string-array>
 
     <string-array name="ingredient_type">
         <item>Bakery</item>
+        <item>Baking &amp; Spices</item>
+        <item>Beer &amp; Liquors</item>
+        <item>Breads</item>
+        <item>Condiments</item>
         <item>Dairy</item>
         <item>Deli</item>
         <item>Dry/Canned Foods</item>
@@ -53,6 +60,9 @@
         <item>Meats</item>
         <item>Non-Foods</item>
         <item>Produce</item>
+        <item>Refrigerated</item>
+        <item>Seafood</item>
+        <item>Snacks</item>
     </string-array>
 
     <string-array name="expiration_interval">
