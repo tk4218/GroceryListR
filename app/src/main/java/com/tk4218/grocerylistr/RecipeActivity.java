@@ -4,9 +4,11 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -37,6 +39,7 @@ public class RecipeActivity extends AppCompatActivity {
     private RecyclerView mRecipeIngredientList;
     private TextView mRecipeLastMade;
     private ImageView mRecipeImage;
+    private TextView mRecipeName;
 
     private int mRecipeKey;
     private Recipe mRecipe;
@@ -57,9 +60,32 @@ public class RecipeActivity extends AppCompatActivity {
         mRecipeIngredientList.setLayoutManager(new LinearLayoutManager(this));
         mRecipeLastMade = (TextView) findViewById(R.id.recipe_last_made);
         mRecipeImage = (ImageView) findViewById(R.id.recipe_image);
+        mRecipeName = (TextView) findViewById(R.id.recipe_name_title);
         Bundle extras = getIntent().getExtras();
         setSupportActionBar(mToolbar);
 
+        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            int scrollRange = -1;
+
+            @Override
+            public void onOffsetChanged(final AppBarLayout appBarLayout, int verticalOffset) {
+                //Initialize the size of the scroll
+                if (scrollRange == -1) {
+                    scrollRange = appBarLayout.getTotalScrollRange();
+                }
+                //Check if the view is collapsed
+                if (scrollRange + verticalOffset == 0) {
+                    mToolbar.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
+                    if(mRecipe != null){
+                        mCollapseToolbar.setTitle(mRecipe.getRecipeName());
+                    }
+                }else{
+                    mToolbar.setBackgroundColor(ContextCompat.getColor(getBaseContext(), android.R.color.transparent));
+                    mCollapseToolbar.setTitle("");
+                }
+            }
+        });
         if(extras != null){
             mRecipeKey = extras.getInt("recipeKey");
         }
@@ -140,8 +166,7 @@ public class RecipeActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mToolbar.setTitle(mRecipe.getRecipeName());
-                    mCollapseToolbar.setTitle(mRecipe.getRecipeName());
+                    mRecipeName.setText(mRecipe.getRecipeName());
                     mRecipeIngredientList.setAdapter(new RecipeIngredientAdapter(RecipeActivity.this, mRecipe.getIngredients()));
 
 
