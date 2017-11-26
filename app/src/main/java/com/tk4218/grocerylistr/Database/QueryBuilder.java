@@ -243,6 +243,13 @@ public class QueryBuilder {
         return getResults(parameters);
     }
 
+    public JSONResult getGroceryListHistory(){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select GroceryListKey, MealPlanDateStart, MealPlanDateEnd, Current, GroceryListCompleted, CompletedDate from tableGroceryList order by MealPlanDateStart desc"));
+        parameters.add(addParameter("return_cols", "GroceryListKey,MealPlanDateStart,MealPlanDateEnd,Current,GroceryListCompleted,CompletedDate"));
+        return getResults(parameters);
+    }
+
     public boolean setGroceryListCurrent(boolean current, int groceryListKey) {
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "update tableGroceryList set Current = " + (current ? 1 : 0) + " where GroceryListKey = " + groceryListKey));

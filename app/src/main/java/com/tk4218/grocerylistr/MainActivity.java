@@ -150,7 +150,8 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "Feature Not Available Yet", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_grocerylist_history:
-                Toast.makeText(this, "Feature Not Available Yet", Toast.LENGTH_SHORT).show();
+                Intent groceryListHistoryIntent = new Intent(this, GroceryListHistoryActivity.class);
+                startActivity(groceryListHistoryIntent);
                 break;
             case R.id.nav_pinterest_login:
                 pinterestLogin();

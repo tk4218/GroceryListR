@@ -1,5 +1,7 @@
 package com.tk4218.grocerylistr.Model;
 
+import android.view.ViewGroupOverlay;
+
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
@@ -39,6 +41,15 @@ public class GroceryList {
         }
     }
 
+    public GroceryList(int groceryListKey, Date mealPlanDateStart, Date mealPlanDateEnd, boolean groceryListCompleted, Date completedDate, ArrayList<GroceryListItem> groceryListItems){
+        setGroceryListKey(groceryListKey);
+        setMealPlanDateStart(mealPlanDateStart);
+        setMealPlanDateEnd(mealPlanDateEnd);
+        setGroceryListCompleted(groceryListCompleted);
+        setCompletedDate(completedDate);
+        setGroceryListItems(groceryListItems);
+    }
+
     public void setGroceryListKey(int groceryListKey){ mGroceryListKey = groceryListKey; }
     public int getGroceryListKey(){ return  mGroceryListKey; }
 
@@ -53,6 +64,10 @@ public class GroceryList {
 
     public void setCompletedDate(Date completedDate){ mCompletedDate = completedDate; }
     public Date getCompletedDate(){ return  mCompletedDate; }
+
+    public void setGroceryListItems(ArrayList<GroceryListItem> groceryListItems){
+        mGroceryListItems  = groceryListItems;
+    }
 
     public  void setGroceryListItems(JSONResult groceryListItems){
         mGroceryListItems = new ArrayList<>();
