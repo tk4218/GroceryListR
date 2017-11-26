@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,8 +90,7 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         }
 
         final CheckBox groceryListItem = (CheckBox) convertView.findViewById(R.id.item_grocerylist_item);
-        GroceryListItem item = getChild(groupPosition, childPosition);
-        groceryListItem.setTag(item);
+        groceryListItem.setTag(getChild(groupPosition, childPosition));
 
         /*------------------------------------------------------
          * Set Grocery List Item Display
@@ -103,6 +103,7 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
             groceryListItem.setTextColor(Color.BLACK);
             groceryListItem.setPaintFlags(groceryListItem.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
         }
+        GroceryListItem item = (GroceryListItem)groceryListItem.getTag();
         groceryListItem.setText(item.getFormattedIngredientAmount() + " " + item.getIngredientUnit() + " " + item.getIngredient().getIngredientName());
 
 
@@ -160,20 +161,22 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         private QueryBuilder mQb = new QueryBuilder();
         @Override
         protected Void doInBackground(Object... params) {
-            mQb.updateAddedToCart((int)params[0], (boolean)params[1]);
 
-            JSONResult itemsRemaining = mQb.getGroceryListItemsRemaining(mGroceryList.getGroceryListKey());
-            if(itemsRemaining.getCount() != 0){
-                if(itemsRemaining.getInt("ItemsRemaining") == 0){
-                    if(!mGroceryList.getGroceryListCompleted()){
-                        mGroceryList.setGroceryListCompleted(true);
-                        mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), true);
-                    } else {
+                Log.d("DEBUG", "Items Remaining: " + mGroceryList.getGroceryListItemsRemaining());
+                if(mGroceryList.getGroceryListItemsRemaining() == 0) {
+                    Log.d("DEBUG", "Completing Grocery List...");
+                    mGroceryList.setGroceryListCompleted(true);
+                    mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), true);
+                } else {
+                    if(mGroceryList.getGroceryListCompleted()) {
+                        Log.d("DEBUG", "Un-Completing Grocery List...");
                         mGroceryList.setGroceryListCompleted(false);
                         mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), false);
                     }
                 }
-            }
+
+            mQb.updateAddedToCart((int)params[0], (boolean)params[1]);
+
             return null;
         }
     }

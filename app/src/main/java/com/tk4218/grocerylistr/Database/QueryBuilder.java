@@ -316,11 +316,4 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "delete from tableGroceryListItem where GroceryListItemKey = "+ groceryListItemKey));
         return insert(parameters);
     }
-
-    public JSONResult getGroceryListItemsRemaining(int groceryListKey){
-        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "select count(1) as ItemsRemaining from tableGroceryListItem where GroceryListKey = " + groceryListKey + " and AddedToCart = 0"));
-        parameters.add(addParameter("return_cols", "ItemsRemaining"));
-        return getResults(parameters);
-    }
 }

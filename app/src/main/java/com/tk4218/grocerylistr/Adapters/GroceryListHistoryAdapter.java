@@ -66,13 +66,13 @@ public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListH
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
         TextView groceryListItem;
         TextView groceryListCompleted;
         GroceryList groceryList;
+
         ViewHolder(View itemView){
             super(itemView);
-            groceryListItem = (TextView) itemView.findViewById(R.id.item_grocerylist_item);
+            groceryListItem = (TextView) itemView.findViewById(R.id.item_grocerylist);
             groceryListCompleted = (TextView) itemView.findViewById(R.id.item_grocerylist_completed);
             itemView.setOnClickListener(this);
         }

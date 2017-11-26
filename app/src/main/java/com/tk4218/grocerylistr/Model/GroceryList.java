@@ -125,6 +125,16 @@ public class GroceryList {
         return filteredGroceryListItems;
     }
 
+    public int getGroceryListItemsRemaining(){
+        int itemsRemaining = 0;
+        for(GroceryListItem item : mGroceryListItems){
+            if(!item.getAddedToCart()){
+                itemsRemaining ++;
+            }
+        }
+        return itemsRemaining;
+    }
+
     public GroceryListItem findIngredient(String ingredientName){
         for(GroceryListItem item : mGroceryListItems){
             if(item.getIngredient().getIngredientName().equals(ingredientName)) return item;

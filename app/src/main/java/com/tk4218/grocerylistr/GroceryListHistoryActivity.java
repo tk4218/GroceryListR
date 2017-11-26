@@ -30,8 +30,6 @@ public class GroceryListHistoryActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setTitle("Grocery List History");
-
         mGroceryListHistory = (RecyclerView) findViewById(R.id.grocerylist_history_list);
         mGroceryListHistory.setLayoutManager(new LinearLayoutManager(this));
 

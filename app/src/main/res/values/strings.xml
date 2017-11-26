@@ -75,5 +75,5 @@
     <string name="recipe_last_made">Recipe Last Made</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="title_activity_grocery_list_history">GroceryListHistoryActivity</string>
+    <string name="title_activity_grocery_list_history">Grocery List History</string>
 </resources>
