@@ -269,6 +269,13 @@ public class QueryBuilder {
         return getResults(parameters);
     }
 
+    public boolean updateGroceryListCompleted(int groceryListKey, boolean completed) {
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        String completedDate = (completed ? "current_timestamp()" : "'" + dateString(new Date(0)) + "'");
+        parameters.add(addParameter("sql_query", "update tableGroceryList set GroceryListCompleted = " + (completed ? 1 : 0) + ", CompletedDate = " + completedDate + " where GroceryListKey = " + groceryListKey));
+        return insert(parameters);
+    }
+
     /**********************************
      * Grocery List Item Queries
      **********************************/
@@ -308,5 +315,12 @@ public class QueryBuilder {
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "delete from tableGroceryListItem where GroceryListItemKey = "+ groceryListItemKey));
         return insert(parameters);
+    }
+
+    public JSONResult getGroceryListItemsRemaining(int groceryListKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select count(1) as ItemsRemaining from tableGroceryListItem where GroceryListKey = " + groceryListKey + " and AddedToCart = 0"));
+        parameters.add(addParameter("return_cols", "ItemsRemaining"));
+        return getResults(parameters);
     }
 }

@@ -14,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.GroceryList;
 import com.tk4218.grocerylistr.Model.GroceryListItem;
@@ -160,6 +161,19 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         @Override
         protected Void doInBackground(Object... params) {
             mQb.updateAddedToCart((int)params[0], (boolean)params[1]);
+
+            JSONResult itemsRemaining = mQb.getGroceryListItemsRemaining(mGroceryList.getGroceryListKey());
+            if(itemsRemaining.getCount() != 0){
+                if(itemsRemaining.getInt("ItemsRemaining") == 0){
+                    if(!mGroceryList.getGroceryListCompleted()){
+                        mGroceryList.setGroceryListCompleted(true);
+                        mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), true);
+                    } else {
+                        mGroceryList.setGroceryListCompleted(false);
+                        mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), false);
+                    }
+                }
+            }
             return null;
         }
     }
