@@ -50,7 +50,8 @@ public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListH
 
         Date dateFrom = mGroceryListHistory.get(position).getMealPlanDateStart();
         Date dateTo = mGroceryListHistory.get(position).getMealPlanDateEnd();
-        holder.groceryListItem.setText(dateFormat.format(dateFrom) + " to " + dateFormat.format(dateTo));
+        String groceryListDate = dateFormat.format(dateFrom) + (!dateFrom.equals(dateTo) ? " to " + dateFormat.format(dateTo) : "");
+        holder.groceryListItem.setText(groceryListDate);
 
         if(mGroceryListHistory.get(position).getGroceryListCompleted()){
             Date dateCompleted = mGroceryListHistory.get(position).getCompletedDate();

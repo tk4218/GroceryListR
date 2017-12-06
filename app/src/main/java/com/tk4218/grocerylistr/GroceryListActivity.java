@@ -183,7 +183,8 @@ public class GroceryListActivity extends AppCompatActivity {
                 mGroceryListView = (ExpandableListView) findViewById(R.id.list_grocerylist);
                 mAdapter = new GroceryListAdapter(GroceryListActivity.this, mGroceryList.getIngredientTypes(), mGroceryList);
                 mGroceryListView.setAdapter(mAdapter);
-                mGroceryListView.expandGroup(0);
+                if(mAdapter.getGroupCount() > 0)
+                    mGroceryListView.expandGroup(0);
 
                 setTitle(dateFormat.format(mGroceryList.getMealPlanDateStart()) + " To " + dateFormat.format(mGroceryList.getMealPlanDateEnd()));
                 mDialog.dismiss();

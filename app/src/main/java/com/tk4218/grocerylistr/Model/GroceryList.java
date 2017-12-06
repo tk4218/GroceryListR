@@ -149,7 +149,16 @@ public class GroceryList {
         return null;
     }
 
-    public int generateGroceryList(Date mealPlanDateStart, Date mealPlanDateEnd){
+    public int generateGroceryList(Date mealPlanDateStart, Date mealPlanDateEnd, boolean createEmptyList){
+        if(createEmptyList){
+            JSONResult currentGroceryList = mQb.getCurrentGroceryList();
+            if(currentGroceryList.getCount() > 0)
+                mQb.setGroceryListCurrent(false, currentGroceryList.getInt("GroceryListKey"));
+            mGroceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
+            mGroceryListItems = new ArrayList<>();
+
+            return mGroceryListKey;
+        }
 
         JSONResult groceryListIngredients = mQb.getIngredientsForGroceryList(mealPlanDateStart, mealPlanDateEnd);
 
@@ -167,20 +176,18 @@ public class GroceryList {
         }
         sortGroceryListItems();
 
-        int groceryListKey = 0;
-
         if(mGroceryListItems.size() > 0){
 
             JSONResult currentGroceryList = mQb.getCurrentGroceryList();
             if(currentGroceryList.getCount() > 0)
                 mQb.setGroceryListCurrent(false, currentGroceryList.getInt("GroceryListKey"));
 
-            groceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
+            mGroceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
 
-            if(groceryListKey != 0){
+            if(mGroceryListKey != 0){
                 int groceryListItemKey;
                 for(GroceryListItem item : mGroceryListItems){
-                    groceryListItemKey = mQb.insertGroceryListItem(groceryListKey,
+                    groceryListItemKey = mQb.insertGroceryListItem(mGroceryListKey,
                                                                    item.getIngredient().getIngredientKey(),
                                                                    item.getIngredientAmount(),
                                                                    item.getIngredientUnit(),
@@ -189,7 +196,7 @@ public class GroceryList {
                 }
             }
         }
-        return groceryListKey;
+        return mGroceryListKey;
     }
 
     private void sortGroceryListByTypes(){

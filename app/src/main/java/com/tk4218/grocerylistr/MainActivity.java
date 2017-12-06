@@ -147,7 +147,8 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this, "Feature Not Available Yet", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_ingredients:
-                Toast.makeText(this, "Feature Not Available Yet", Toast.LENGTH_SHORT).show();
+                Intent ingredientListIntent = new Intent(this, IngredientListActivity.class);
+                startActivity(ingredientListIntent);
                 break;
             case R.id.nav_grocerylist_history:
                 Intent groceryListHistoryIntent = new Intent(this, GroceryListHistoryActivity.class);
@@ -257,12 +258,18 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                new CreateGroceryList().execute(mMealPlanDateStart, mMealPlanDateEnd);
+                new CreateGroceryList().execute(mMealPlanDateStart, mMealPlanDateEnd, false);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {}
+        });
+        builder.setNeutralButton("Create Empty List", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                new CreateGroceryList().execute(mMealPlanDateStart, mMealPlanDateEnd, true);
+            }
         });
         builder.show();
     }
@@ -341,7 +348,7 @@ public class MainActivity extends AppCompatActivity
    }
 
 
-    private class CreateGroceryList extends AsyncTask<Date, Void, Integer> {
+    private class CreateGroceryList extends AsyncTask<Object, Void, Integer> {
        ProgressDialog mDialog;
 
        @Override
@@ -355,9 +362,9 @@ public class MainActivity extends AppCompatActivity
        }
 
         @Override
-        protected Integer doInBackground(Date... params) {
+        protected Integer doInBackground(Object... params) {
             GroceryList newGroceryList = new GroceryList();
-            return newGroceryList.generateGroceryList(params[0], params[1]);
+            return newGroceryList.generateGroceryList((Date)params[0], (Date)params[1], (boolean)params[2]);
         }
 
 

@@ -138,7 +138,7 @@ public class AddIngredientAdapter extends BaseAdapter{
                     if(selectedIngredient.equals("+ New Ingredient")){
                         showNewIngredientDialog(inflater, position, ingredientAmount, ingredientUnit);
                     }else {
-                        mIngredientName.setText(mIngredientAdapter.getItem(pos));
+                        mIngredientName.setText(selectedIngredient);
                         new AddIngredient().execute(position, false, selectedIngredient, ingredientAmount, ingredientUnit);
                     }
                 }

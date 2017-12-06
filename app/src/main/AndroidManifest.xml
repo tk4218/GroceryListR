@@ -52,6 +52,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.tk4218.grocerylistr.MainActivity" />
         </activity>
+        <activity
+            android:name=".IngredientListActivity"
+            android:label="@string/title_activity_ingredient_list"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.tk4218.grocerylistr.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

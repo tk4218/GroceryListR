@@ -167,6 +167,12 @@ public class QueryBuilder {
         return insertReturnKey(parameters);
     }
 
+    public boolean editIngredient(String ingredientName, String ingredientType, int shelfLife, int ingredientKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "update tableIngredient set IngredientName = '" + ingredientName + "', IngredientType = '" + ingredientType + "', ShelfLife = " + shelfLife + " where IngredientKey = " + ingredientKey));
+        return insert(parameters);
+    }
+
     /**********************************
      * RecipeToIngredient Queries
      **********************************/
