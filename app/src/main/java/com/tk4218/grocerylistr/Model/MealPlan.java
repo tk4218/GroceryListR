@@ -32,6 +32,8 @@ public class MealPlan {
 
     public void setMealPlanMeals(JSONResult mealPlanMeals){
         mMeals = new ArrayList<>();
+        if(mealPlanMeals.getCount() == 0) { return; }
+
         JSONResult breakfastMeals = mealPlanMeals.filter("MealType", "Breakfast");
         breakfastMeals.sort("Sequence", JSONResult.SORT_ASCENDING);
         convertMeals(breakfastMeals);

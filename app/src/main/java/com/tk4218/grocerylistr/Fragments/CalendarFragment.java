@@ -9,10 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CalendarView;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Adapters.CalendarMealAdapter;
+import com.tk4218.grocerylistr.CustomLayout.CalendarAdapter;
+import com.tk4218.grocerylistr.Model.GroceryList;
 import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.Model.MealPlan;
 import com.tk4218.grocerylistr.R;
@@ -25,9 +28,11 @@ import java.util.Locale;
 
 
 public  class CalendarFragment extends Fragment {
+    private static final int  DAYS_COUNT = 42;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
 
-    private ListView mCalendarMeals;
-    private MealPlan mMealPlan;
+
+    private GridView mCalendarDays;
     private Date mCurrentDate;
 
     public CalendarFragment() {
@@ -44,32 +49,13 @@ public  class CalendarFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_calendar, container, false);
-
-        mCalendarMeals = (ListView) rootView.findViewById(R.id.listView);
-        final TextView weekDaySelected = (TextView) rootView.findViewById(R.id.weekdaySelected);
-        final TextView dateSelected = (TextView) rootView.findViewById(R.id.dateSelected);
-
+        View rootView = inflater.inflate(R.layout.view_calendar, container, false);
         mCurrentDate = new Date();
-        final SimpleDateFormat weekdayFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
-        weekDaySelected.setText(weekdayFormat.format(mCurrentDate));
-        dateSelected.setText(dateFormat.format(mCurrentDate));
 
-        CalendarView calendarView = (CalendarView) rootView.findViewById(R.id.calendarView);
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(year, month, dayOfMonth);
+        TextView calendarMonth = (TextView) rootView.findViewById(R.id.calendar_month);
+        calendarMonth.setText(dateFormat.format(mCurrentDate));
 
-                mCurrentDate = calendar.getTime();
-                weekDaySelected.setText(weekdayFormat.format(mCurrentDate));
-                dateSelected.setText(dateFormat.format(mCurrentDate));
-
-                new RetrieveCalendar().execute(mCurrentDate);
-            }
-        });
+        mCalendarDays = (GridView) rootView.findViewById(R.id.grid_month_days);
 
         return rootView;
     }
@@ -84,40 +70,44 @@ public  class CalendarFragment extends Fragment {
         new RetrieveCalendar().execute(mCurrentDate);
     }
 
-    private class RetrieveCalendar extends AsyncTask<Date, Void, Void> {
+    private class RetrieveCalendar extends AsyncTask<Date, Void, ArrayList<MealPlan>> {
 
         @Override
-        protected Void doInBackground(Date... params) {
+        protected ArrayList<MealPlan> doInBackground(Date... params) {
 
-            Date calendarDate = params[0];
-            Log.d("DEBUG", "Attempting to retrieve calendar");
-            mMealPlan = new MealPlan(calendarDate);
+            ArrayList<MealPlan> cells = new ArrayList<>();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(mCurrentDate);
 
-            ArrayList<Meal> meals = mMealPlan.getMealPlanMeals();
-            if(mMealPlan.getMealTypeMeals("Breakfast").size() == 0){
-                meals.add(0, new Meal(mCurrentDate, "Breakfast", 0, 0, false));
-            }
-            if(mMealPlan.getMealTypeMeals("Lunch").size() == 0){
-                meals.add(mMealPlan.getMealTypeMeals("Breakfast").size(), new Meal(mCurrentDate, "Lunch", 0, 0, false));
-            }
-            if(mMealPlan.getMealTypeMeals("Dinner").size() == 0){
-                meals.add(new Meal(mCurrentDate, "Dinner", 0, 0, false));
+            // determine the cell for current month's beginning
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            int monthBeginningCell = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+
+            // move calendar backwards to the beginning of the week
+            calendar.add(Calendar.DAY_OF_MONTH, -monthBeginningCell);
+
+            // fill cells (42 days calendar as per our business logic)
+            while (cells.size() < DAYS_COUNT)
+            {
+                cells.add(new MealPlan(calendar.getTime()));
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
 
-            mMealPlan.setMealPlanMeals(meals);
-            return null;
+            return cells;
         }
 
         @Override
-        protected void onPostExecute(Void s) {
+        protected void onPostExecute(final ArrayList<MealPlan> result) {
+            if(isCancelled() || getActivity() == null) return;
             getActivity().runOnUiThread(new Runnable() {
-
                 @Override
                 public void run() {
-                    CalendarMealAdapter calendarMealAdapter = new CalendarMealAdapter(getContext(), mMealPlan.getMealPlanMeals());
-                    mCalendarMeals.setAdapter(calendarMealAdapter);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(mCurrentDate);
+                    mCalendarDays.setAdapter(new CalendarAdapter(getContext(), result, calendar.get(Calendar.MONTH)));
                 }
             });
+
         }
     }
 }
