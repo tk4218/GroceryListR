@@ -74,7 +74,6 @@ public class JSONParser {
 
             jObj = new JSONObject(json);
         } catch (Exception e) {
-            //Log.e("Connection Error", e.getCause().toString());
             e.printStackTrace();
         }
 

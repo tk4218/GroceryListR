@@ -23,6 +23,11 @@ public class MealPlan {
         setMealPlanMeals(mealPlan);
     }
 
+    public MealPlan(Date mealPlanDate, ArrayList<Meal> meals){
+        setMealPlanDate(mealPlanDate);
+        setMealPlanMeals(meals);
+    }
+
     public void setMealPlanDate(Date mealPlanDate){
         mMealPlanDate = mealPlanDate;
     }
@@ -50,6 +55,8 @@ public class MealPlan {
     public void setMealPlanMeals(ArrayList<Meal> mealPlanMeals){
         mMeals = mealPlanMeals;
     }
+
+    public void addMeal(Meal meal){ mMeals.add(meal); }
 
     public ArrayList<Meal> getMealPlanMeals(){
         return mMeals;

@@ -2,6 +2,7 @@ package com.tk4218.grocerylistr.Fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -12,9 +13,12 @@ import android.widget.CalendarView;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tk4218.grocerylistr.Adapters.CalendarMealAdapter;
 import com.tk4218.grocerylistr.CustomLayout.CalendarAdapter;
+import com.tk4218.grocerylistr.Database.JSONResult;
+import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.GroceryList;
 import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.Model.MealPlan;
@@ -71,6 +75,7 @@ public  class CalendarFragment extends Fragment {
     }
 
     private class RetrieveCalendar extends AsyncTask<Date, Void, ArrayList<MealPlan>> {
+        QueryBuilder mQb = new QueryBuilder();
 
         @Override
         protected ArrayList<MealPlan> doInBackground(Date... params) {
@@ -78,18 +83,38 @@ public  class CalendarFragment extends Fragment {
             ArrayList<MealPlan> cells = new ArrayList<>();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(mCurrentDate);
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0,0,0);
+            calendar.set(Calendar.MILLISECOND, 0);
 
-            // determine the cell for current month's beginning
             calendar.set(Calendar.DAY_OF_MONTH, 1);
             int monthBeginningCell = calendar.get(Calendar.DAY_OF_WEEK) - 1;
-
-            // move calendar backwards to the beginning of the week
             calendar.add(Calendar.DAY_OF_MONTH, -monthBeginningCell);
 
-            // fill cells (42 days calendar as per our business logic)
-            while (cells.size() < DAYS_COUNT)
-            {
-                cells.add(new MealPlan(calendar.getTime()));
+
+            Date beginDate = calendar.getTime();
+            calendar.add(Calendar.DAY_OF_MONTH, DAYS_COUNT);
+            Date endDate = calendar.getTime();
+
+            JSONResult mealPlans = mQb.getMonthMealPlans(beginDate, endDate);
+            if(mealPlans.getCount() == 0){
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), "Oops! Something went wrong.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            }
+
+            calendar.setTime(beginDate);
+
+            for(int i = 0; i < DAYS_COUNT; i++){
+                cells.add(new MealPlan(calendar.getTime(), new ArrayList<Meal>()));
+                if(mealPlans.findFirst("MealPlanDate", calendar.getTime())){
+                    do{
+                        cells.get(i).addMeal(new Meal(mealPlans.getDate("MealPlanDate"), mealPlans.getString("MealType"), mealPlans.getInt("Sequence"), mealPlans.getInt("RecipeKey"), mealPlans.getBoolean("MealCompleted")));
+                    } while (mealPlans.findNext("MealPlanDate", calendar.getTime()));
+                }
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
 

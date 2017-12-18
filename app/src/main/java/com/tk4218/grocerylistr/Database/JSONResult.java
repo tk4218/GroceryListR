@@ -173,8 +173,10 @@ public class JSONResult {
     public boolean findFirst(String findColumn, Object findValue){
         try{
             for(index = 0; index < getCount(); index++){
-                if(equalValues(result.getJSONObject(index).get(findColumn), findValue)){
-                    return true;
+                if(findValue instanceof Date){
+                     if(equalValues(getDate(index, findColumn), findValue)) return true;
+                } else {
+                     if(equalValues(result.getJSONObject(index).get(findColumn), findValue)) return true;
                 }
             }
         } catch(Exception e){
@@ -185,9 +187,13 @@ public class JSONResult {
 
     public boolean findNext(String findColumn, Object findValue){
         try{
-            for(; index < getCount(); index++){
-                if(equalValues(result.getJSONObject(index).get(findColumn), findValue)){
-                    return true;
+            for(index = index + 1; index < getCount(); index++){
+
+                if(findValue instanceof Date){
+                    if(equalValues(getDate(index, findColumn), findValue)) return true;
+
+                } else {
+                    if(equalValues(result.getJSONObject(index).get(findColumn), findValue)) return true;
                 }
             }
         } catch(Exception e){
@@ -237,6 +243,8 @@ public class JSONResult {
             return ((String) value1).equals((String) value2);
         if(value1.getClass().equals(Boolean.class) && value2.getClass().equals(Boolean.class))
             return  (Boolean) value1 == (Boolean) value2;
+        if(value1.getClass().equals(Date.class) && value2.getClass().equals(Date.class))
+            return ((Date)value1).equals(value2);
 
         return false;
     }

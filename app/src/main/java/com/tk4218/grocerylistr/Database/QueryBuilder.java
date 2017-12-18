@@ -114,7 +114,7 @@ public class QueryBuilder {
 
     public int insertRecipe(String pinterestId, String recipeName, String mealType, String cuisineType, String recipeImage){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0, current_timestamp())"));
+        parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName.replace("'", "''") + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0, current_timestamp())"));
         return insertReturnKey(parameters);
     }
 
@@ -126,7 +126,7 @@ public class QueryBuilder {
 
     public boolean updateRecipeInfo(int recipeKey, String recipeName, String mealType, String cuisineType, String recipeImage){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "update tableRecipe set RecipeName = '"+ recipeName +"', MealType = '"+ mealType +"', CuisineType = '"+ cuisineType +"', RecipeImage = '"+ recipeImage +"' where RecipeKey = " + recipeKey));
+        parameters.add(addParameter("sql_query", "update tableRecipe set RecipeName = '"+ recipeName.replace("'", "''") +"', MealType = '"+ mealType +"', CuisineType = '"+ cuisineType +"', RecipeImage = '"+ recipeImage +"' where RecipeKey = " + recipeKey));
         return insert(parameters);
     }
 
@@ -163,13 +163,13 @@ public class QueryBuilder {
 
     public int insertIngredient(String ingredientName, String ingredientType, int shelfLife){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "insert into tableIngredient (IngredientName,IngredientType,ShelfLife) values('" + ingredientName + "','" + ingredientType + "'," + shelfLife + ")"));
+        parameters.add(addParameter("sql_query", "insert into tableIngredient (IngredientName,IngredientType,ShelfLife) values('" + ingredientName.replace("'", "''") + "','" + ingredientType + "'," + shelfLife + ")"));
         return insertReturnKey(parameters);
     }
 
     public boolean editIngredient(String ingredientName, String ingredientType, int shelfLife, int ingredientKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
-        parameters.add(addParameter("sql_query", "update tableIngredient set IngredientName = '" + ingredientName + "', IngredientType = '" + ingredientType + "', ShelfLife = " + shelfLife + " where IngredientKey = " + ingredientKey));
+        parameters.add(addParameter("sql_query", "update tableIngredient set IngredientName = '" + ingredientName.replace("'", "''") + "', IngredientType = '" + ingredientType + "', ShelfLife = " + shelfLife + " where IngredientKey = " + ingredientKey));
         return insert(parameters);
     }
 
@@ -229,6 +229,13 @@ public class QueryBuilder {
         ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
         parameters.add(addParameter("sql_query", "select MAX(MealPlanDate) as LastMade from tableMealPlan where RecipeKey = "+ recipeKey));
         parameters.add(addParameter("return_cols", "LastMade"));
+        return getResults(parameters);
+    }
+
+    public JSONResult getMonthMealPlans(Date beginDate, Date endDate){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select MealPlanDate, MealType, Sequence, RecipeKey, MealCompleted from tableMealPlan where MealPlanDate >= '"+ dateString(beginDate) +"' and MealPlanDate <= '"+ dateString(endDate) +"' order by MealPlanDate,Sequence"));
+        parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
         return getResults(parameters);
     }
 
