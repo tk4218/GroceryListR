@@ -2,24 +2,20 @@ package com.tk4218.grocerylistr.Fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.CalendarContract;
-import android.support.annotation.NonNull;
+
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
 import android.widget.GridView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.tk4218.grocerylistr.Adapters.CalendarMealAdapter;
 import com.tk4218.grocerylistr.CustomLayout.CalendarAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Model.GroceryList;
 import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.Model.MealPlan;
 import com.tk4218.grocerylistr.R;
@@ -28,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 
 public  class CalendarFragment extends Fragment {
@@ -36,6 +31,9 @@ public  class CalendarFragment extends Fragment {
     SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
 
 
+    private ProgressBar mLoading;
+    private LinearLayout mCalendarHeader;
+    private LinearLayout mCalendarContent;
     private GridView mCalendarDays;
     private Date mCurrentDate;
 
@@ -59,6 +57,9 @@ public  class CalendarFragment extends Fragment {
         TextView calendarMonth = (TextView) rootView.findViewById(R.id.calendar_month);
         calendarMonth.setText(dateFormat.format(mCurrentDate));
 
+        mLoading = (ProgressBar) rootView.findViewById(R.id.calendar_loading);
+        mCalendarHeader = (LinearLayout) rootView.findViewById(R.id.calendar_header);
+        mCalendarContent = (LinearLayout) rootView.findViewById(R.id.calendar_content);
         mCalendarDays = (GridView) rootView.findViewById(R.id.grid_month_days);
 
         return rootView;
@@ -71,6 +72,8 @@ public  class CalendarFragment extends Fragment {
          * Retrieving Recipes from the database. Doing it in onResume
          * guarantees the list will be updated upon returning to the fragment.
          *--------------------------------------------------------------------*/
+        mCalendarHeader.setVisibility(View.GONE);
+        mCalendarContent.setVisibility(View.GONE);
         new RetrieveCalendar().execute(mCurrentDate);
     }
 
@@ -130,6 +133,9 @@ public  class CalendarFragment extends Fragment {
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(mCurrentDate);
                     mCalendarDays.setAdapter(new CalendarAdapter(getContext(), result, calendar.get(Calendar.MONTH)));
+                    mLoading.setVisibility(View.GONE);
+                    mCalendarContent.setVisibility(View.VISIBLE);
+                    mCalendarHeader.setVisibility(View.VISIBLE);
                 }
             });
 

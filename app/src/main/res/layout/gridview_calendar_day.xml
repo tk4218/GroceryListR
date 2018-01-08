@@ -16,5 +16,5 @@
     <ListView
         android:id="@+id/listview_meals"
         android:layout_width="match_parent"
-        android:layout_height="56dp" />
+        android:layout_height="64dp" />
 </LinearLayout>

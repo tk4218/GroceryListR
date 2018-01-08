@@ -3,9 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center"
     android:orientation="vertical">
 
+    <ProgressBar
+        android:id="@+id/calendar_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center_horizontal|center"
+        android:indeterminate="true" />
+
     <LinearLayout
+        android:id="@+id/calendar_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
@@ -44,6 +53,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/calendar_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -52,56 +62,56 @@
             android:id="@+id/day_sunday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Sun" />
 
         <TextView
             android:id="@+id/day_monday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Mon" />
 
         <TextView
             android:id="@+id/day_tuesday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Tue" />
 
         <TextView
             android:id="@+id/day_wednesday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Wed" />
 
         <TextView
             android:id="@+id/day_thursday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Thu" />
 
         <TextView
             android:id="@+id/day_friday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Fri" />
 
         <TextView
             android:id="@+id/day_saturday"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:layout_weight="1"
+            android:gravity="center_horizontal"
             android:text="Sat" />
     </LinearLayout>
 

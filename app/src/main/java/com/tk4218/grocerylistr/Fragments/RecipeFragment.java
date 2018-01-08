@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.tk4218.grocerylistr.Adapters.RecipeAdapter;
 import com.tk4218.grocerylistr.EditRecipeActivity;
@@ -28,6 +29,7 @@ import java.util.Date;
 
 public  class RecipeFragment extends Fragment {
 
+    private ProgressBar mLoading;
     private SwipeRefreshLayout mRefreshRecipes;
     private RecyclerView mRecyclerView;
     private  ArrayList<Recipe> mRecipes;
@@ -55,6 +57,7 @@ public  class RecipeFragment extends Fragment {
          *  Set recipes on grid view
          *--------------------------------*/
         mRecipes = new ArrayList<>();
+        mLoading = (ProgressBar) rootView.findViewById(R.id.recipe_loading);
         mRefreshRecipes = (SwipeRefreshLayout) rootView.findViewById(R.id.refresh_recipes);
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recipeGridView);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
@@ -135,6 +138,7 @@ public  class RecipeFragment extends Fragment {
                     RecipeAdapter adapter = new RecipeAdapter(RecipeFragment.this.getContext(), mRecipes);
                     mRecyclerView.setAdapter(adapter);
                     mRefreshRecipes.setRefreshing(false);
+                    mLoading.setVisibility(View.GONE);
                 }
             });
         }
