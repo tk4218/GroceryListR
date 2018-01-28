@@ -1,15 +1,20 @@
 package com.tk4218.grocerylistr;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.Spinner;
 
 import com.tk4218.grocerylistr.Adapters.IngredientListAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
@@ -27,18 +32,17 @@ public class IngredientListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ingredient_list);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mIngredientList = (RecyclerView) findViewById(R.id.ingredient_list);
+        mIngredientList = findViewById(R.id.ingredient_list);
         mIngredientList.setLayoutManager(new LinearLayoutManager(this));
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.add_ingredient);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                showNewIngredientDialog(getLayoutInflater());
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -85,6 +89,55 @@ public class IngredientListActivity extends AppCompatActivity {
             mAdapter = new IngredientListAdapter(IngredientListActivity.this, result);
             mIngredientList.setAdapter(mAdapter);
             mDialog.dismiss();
+        }
+    }
+
+    private void showNewIngredientDialog(LayoutInflater inflater){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add New Ingredient");
+        builder.setIcon(android.R.drawable.ic_input_add);
+        View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
+        builder.setView(dialogView);
+        final EditText newIngredientName = dialogView.findViewById(R.id.new_ingredient_name);
+        final Spinner newIngredientType = dialogView.findViewById(R.id.new_ingredient_type);
+        final EditText newIngredientExpAmount = dialogView.findViewById(R.id.new_ingredient_exp_amount);
+        final Spinner newIngredientExpInterval = dialogView.findViewById(R.id.new_ingredient_exp_interval);
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String ingredientType = newIngredientType.getSelectedItem().toString();
+                String interval = newIngredientExpInterval.getSelectedItem().toString();
+                int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
+                if(interval.equals("Weeks")) expiration *= 7;
+                if(interval.equals("Months")) expiration *= 30;
+                new AddIngredient().execute(newIngredientName.getText().toString(), ingredientType, expiration);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {}
+        });
+        builder.show();
+    }
+
+    private class AddIngredient extends AsyncTask<Object, Void, Integer> {
+        private QueryBuilder mQb = new QueryBuilder();
+
+        @Override
+        protected Integer doInBackground(Object... params) {
+            return mQb.insertIngredient((String)params[0], (String)params[1], (int)params[2]);
+        }
+
+        @Override
+        protected void onPostExecute(Integer result){
+            IngredientListActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent(IngredientListActivity.this, IngredientListActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
         }
     }
 

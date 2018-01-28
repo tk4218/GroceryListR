@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,15 +28,17 @@ import com.tk4218.grocerylistr.RecipeActivity;
 
 import java.util.ArrayList;
 
-public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> {
+public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> implements Filterable{
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<Recipe> mRecipes;
+    private ArrayList<Recipe> mFilteredRecipes;
 
     public RecipeAdapter(Context context, ArrayList<Recipe> recipes){
         mContext = context;
         mInflater = LayoutInflater.from(context);
         mRecipes = recipes;
+        mFilteredRecipes = recipes;
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -48,10 +52,10 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.recipe = mRecipes.get(position);
-        holder.recipeName.setText(mRecipes.get(position).getRecipeName());
+        holder.recipe = mFilteredRecipes.get(position);
+        holder.recipeName.setText(mFilteredRecipes.get(position).getRecipeName());
 
-        if(mRecipes.get(position).getFavorite()){
+        if(mFilteredRecipes.get(position).getFavorite()){
             holder.favorite.setImageResource(android.R.drawable.btn_star_big_on);
         } else {
             holder.favorite.setImageResource(android.R.drawable.btn_star);
@@ -116,8 +120,49 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
-        return mRecipes.size();
+        return mFilteredRecipes.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String searchString = constraint.toString();
+                if (searchString.isEmpty()) {
+                    mFilteredRecipes = mRecipes;
+                } else {
+                    ArrayList<Recipe> filteredList = new ArrayList<>();
+                    for (Recipe row : mRecipes) {
+
+                        // name match condition. this might differ depending on your requirement
+                        // here we are looking for name or phone number match
+                        if (row.getRecipeName().toLowerCase().contains(searchString.toLowerCase())) {
+                            filteredList.add(row);
+                        }
+                    }
+
+                    mFilteredRecipes = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = mFilteredRecipes;
+                return filterResults;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+
+                if (results != null && results.count > 0) {
+                    mFilteredRecipes = (ArrayList<Recipe>) results.values;
+                }
+                notifyDataSetChanged();
+            }
+        };
+    }
+
 
     class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener {
 
@@ -131,12 +176,12 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
         ViewHolder(View itemView) {
             super(itemView);
-            recipeName = (TextView) itemView.findViewById(R.id.gridRecipeName);
-            recipeImage = (ImageView) itemView.findViewById(R.id.gridRecipeImage);
-            favorite = (ImageButton) itemView.findViewById(R.id.gridFavorite);
-            scheduleRecipe = (ImageButton) itemView.findViewById(R.id.gridSchedule);
-            editRecipe = (ImageButton) itemView.findViewById(R.id.gridEdit);
-            pinterestIcon = (ImageView) itemView.findViewById(R.id.gridPinterest);
+            recipeName = itemView.findViewById(R.id.gridRecipeName);
+            recipeImage = itemView.findViewById(R.id.gridRecipeImage);
+            favorite = itemView.findViewById(R.id.gridFavorite);
+            scheduleRecipe = itemView.findViewById(R.id.gridSchedule);
+            editRecipe = itemView.findViewById(R.id.gridEdit);
+            pinterestIcon = itemView.findViewById(R.id.gridPinterest);
             itemView.setOnClickListener(this);
         }
 

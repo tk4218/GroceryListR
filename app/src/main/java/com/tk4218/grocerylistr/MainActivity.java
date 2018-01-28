@@ -23,19 +23,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CalendarView;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Fragments.RecipeFragment;
 import com.tk4218.grocerylistr.Model.GroceryList;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import com.pinterest.android.pdk.PDKCallback;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity
 
     private MainViewPagerAdapter mMainViewPagerAdapter;
     private ViewPager mViewPager;
+    private SearchView mSearchView;
 
     private boolean mFromDateSelected;
     private Date mMealPlanDateStart;
@@ -65,7 +67,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mPDKClient = PDKClient.configureInstance(this, PINTEREST_APP_ID);
@@ -74,8 +76,8 @@ public class MainActivity extends AppCompatActivity
         /*---------------------------------------------------
          * Set up Navigation Drawer
          *---------------------------------------------------*/
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        NavigationView navView = (NavigationView) findViewById(R.id.nav_view);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navView = findViewById(R.id.nav_view);
         navView.setItemIconTintList(null);
         navView.setNavigationItemSelectedListener(this);
         final Menu navigationMenu = navView.getMenu();
@@ -101,10 +103,10 @@ public class MainActivity extends AppCompatActivity
         mMainViewPagerAdapter = new MainViewPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mMainViewPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
     }
@@ -113,6 +115,27 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        mSearchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
+        mSearchView.setMaxWidth(Integer.MAX_VALUE);
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if(mViewPager.getCurrentItem() != 1){
+                    mViewPager.setCurrentItem(1);
+                }
+
+                RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
+                viewPagerFragment.filterRecipes(newText);
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -123,8 +146,9 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        } else if (id == R.id.app_bar_search) {
             return true;
         }
 
@@ -168,7 +192,7 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -180,10 +204,10 @@ public class MainActivity extends AppCompatActivity
 
         mFromDateSelected  = true;
         mMealPlanDateStart = new Date();
-        LinearLayout fromLayout = (LinearLayout) dialogView.findViewById(R.id.from_date_picker);
-        final TextView fromDayOfWeek = (TextView) dialogView.findViewById(R.id.from_dayofweek);
-        final TextView fromDate = (TextView) dialogView.findViewById(R.id.from_date);
-        final TextView fromYear = (TextView) dialogView.findViewById(R.id.from_year);
+        LinearLayout fromLayout = dialogView.findViewById(R.id.from_date_picker);
+        final TextView fromDayOfWeek = dialogView.findViewById(R.id.from_dayofweek);
+        final TextView fromDate = dialogView.findViewById(R.id.from_date);
+        final TextView fromYear = dialogView.findViewById(R.id.from_year);
         fromDayOfWeek.setText(weekdayFormat.format(mMealPlanDateStart));
         fromDate.setText(dateFormat.format(mMealPlanDateStart));
         fromYear.setText(yearFormat.format(mMealPlanDateStart));
@@ -192,15 +216,15 @@ public class MainActivity extends AppCompatActivity
         calendar.setTime(new Date());
         calendar.add(Calendar.DATE, 14);
         mMealPlanDateEnd = calendar.getTime();
-        LinearLayout toLayout = (LinearLayout) dialogView.findViewById(R.id.to_date_picker);
-        final TextView toDayOfWeek = (TextView) dialogView.findViewById(R.id.to_dayofweek);
-        final TextView toDate = (TextView) dialogView.findViewById(R.id.to_date);
-        final TextView toYear = (TextView) dialogView.findViewById(R.id.to_year);
+        LinearLayout toLayout = dialogView.findViewById(R.id.to_date_picker);
+        final TextView toDayOfWeek = dialogView.findViewById(R.id.to_dayofweek);
+        final TextView toDate = dialogView.findViewById(R.id.to_date);
+        final TextView toYear = dialogView.findViewById(R.id.to_year);
         toDayOfWeek.setText(weekdayFormat.format(mMealPlanDateEnd));
         toDate.setText(dateFormat.format(mMealPlanDateEnd));
         toYear.setText(yearFormat.format(mMealPlanDateEnd));
 
-        final CalendarView calendarView = (CalendarView) dialogView.findViewById(R.id.calendarView2);
+        final CalendarView calendarView = dialogView.findViewById(R.id.calendarView2);
 
 
         fromLayout.setOnClickListener(new View.OnClickListener() {
@@ -278,7 +302,7 @@ public class MainActivity extends AppCompatActivity
      * Pinterest Login
      *------------------------------*/
     private void pinterestLogin(){
-        List scopes = new ArrayList<String>();
+        ArrayList<String> scopes = new ArrayList<>();
         scopes.add(PDKClient.PDKCLIENT_PERMISSION_READ_PUBLIC);
         scopes.add(PDKClient.PDKCLIENT_PERMISSION_WRITE_PUBLIC);
 
@@ -322,7 +346,7 @@ public class MainActivity extends AppCompatActivity
    /*********************************************************************
     * Async Tasks
     *********************************************************************/
-   private class GetCurrentGroceryList extends AsyncTask<Void, Void, Integer> {
+   class GetCurrentGroceryList extends AsyncTask<Void, Void, Integer> {
        private QueryBuilder mQb = new QueryBuilder();
 
        @Override
@@ -347,8 +371,7 @@ public class MainActivity extends AppCompatActivity
        }
    }
 
-
-    private class CreateGroceryList extends AsyncTask<Object, Void, Integer> {
+   class CreateGroceryList extends AsyncTask<Object, Void, Integer> {
        ProgressDialog mDialog;
 
        @Override

@@ -26,14 +26,13 @@ import com.tk4218.grocerylistr.R;
 import java.util.ArrayList;
 import java.util.Date;
 
-
-public  class RecipeFragment extends Fragment {
+public  class RecipeFragment extends Fragment{
 
     private ProgressBar mLoading;
     private SwipeRefreshLayout mRefreshRecipes;
     private RecyclerView mRecyclerView;
+    private RecipeAdapter mAdapter;
     private  ArrayList<Recipe> mRecipes;
-    private UpdatePinterestRecipes mUpdatePinterestRecipes;
 
     public RecipeFragment() {
 
@@ -57,9 +56,9 @@ public  class RecipeFragment extends Fragment {
          *  Set recipes on grid view
          *--------------------------------*/
         mRecipes = new ArrayList<>();
-        mLoading = (ProgressBar) rootView.findViewById(R.id.recipe_loading);
-        mRefreshRecipes = (SwipeRefreshLayout) rootView.findViewById(R.id.refresh_recipes);
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recipeGridView);
+        mLoading = rootView.findViewById(R.id.recipe_loading);
+        mRefreshRecipes = rootView.findViewById(R.id.refresh_recipes);
+        mRecyclerView = rootView.findViewById(R.id.recipeGridView);
         mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
         mRefreshRecipes.setColorSchemeColors(Color.RED);
@@ -73,7 +72,7 @@ public  class RecipeFragment extends Fragment {
         /*-----------------------------------
          *Set floating action button action
          *-----------------------------------*/
-        FloatingActionButton fab = (FloatingActionButton)rootView.findViewById(R.id.fab);
+        FloatingActionButton fab = rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,16 +87,19 @@ public  class RecipeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         /*-------------------------------------------------------------------
          * Retrieving Recipes from the database. Doing it in onResume
          * guarantees the list will be updated upon returning to the fragment.
          *-------------------------------------------------------------------*/
-
-        mUpdatePinterestRecipes = new UpdatePinterestRecipes();
-        mUpdatePinterestRecipes.execute();
-
+        UpdatePinterestRecipes updatePinterestRecipes = new UpdatePinterestRecipes();
+        updatePinterestRecipes.execute();
         new RetrieveRecipes().execute();
+    }
+
+    public void filterRecipes(String filterString){
+        Log.d("SEARCH", "SEARCHING RECIPES");
+        if(mAdapter != null)
+            mAdapter.getFilter().filter(filterString);
     }
 
     private class RetrieveRecipes extends AsyncTask<Boolean, String, String>{
@@ -135,8 +137,8 @@ public  class RecipeFragment extends Fragment {
 
                 @Override
                 public void run() {
-                    RecipeAdapter adapter = new RecipeAdapter(RecipeFragment.this.getContext(), mRecipes);
-                    mRecyclerView.setAdapter(adapter);
+                    mAdapter = new RecipeAdapter(RecipeFragment.this.getContext(), mRecipes);
+                    mRecyclerView.setAdapter(mAdapter);
                     mRefreshRecipes.setRefreshing(false);
                     mLoading.setVisibility(View.GONE);
                 }

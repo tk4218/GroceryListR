@@ -17,7 +17,6 @@ import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;
 
-
 public class IngredientDropdownAdapter extends ArrayAdapter<String> implements Filterable{
     private Context mContext;
     private ArrayList<String> mIngredients;
@@ -43,7 +42,7 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> implements F
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.dropdown_ingredient, null);
         }
-        TextView ingredient = (TextView) convertView.findViewById(R.id.select_ingredient);
+        TextView ingredient = convertView.findViewById(R.id.select_ingredient);
         ingredient.setText(getItem(position));
         return convertView;
     }
@@ -69,11 +68,8 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> implements F
                         } catch(Exception e){
                             Log.e("ERROR", "Error Retrieving Filtered Recipes.");
                         }
-
-
                     }
                 }
-
                 results.values = mIngredients;
                 results.count = mIngredients.size();
 

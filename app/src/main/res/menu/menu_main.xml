@@ -3,8 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.tk4218.grocerylistr.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/app_bar_search"
+        android:icon="@android:drawable/ic_menu_search"
         android:orderInCategory="100"
+        android:title="Search"
+        android:visible="true"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="200"
         android:title="@string/action_settings"
         app:showAsAction="never" />
 </menu>

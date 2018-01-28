@@ -1,6 +1,7 @@
 package com.tk4218.grocerylistr.CustomLayout;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,17 +10,14 @@ import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.R;
+import com.tk4218.grocerylistr.RecipeActivity;
 
 import java.util.ArrayList;
 
-/**
- * Created by taylo on 12/10/2017.
- */
-
 public class CalendarDayAdapter extends BaseAdapter {
 
-    Context mContext;
-    ArrayList<Meal> mMeals;
+    private Context mContext;
+    private ArrayList<Meal> mMeals;
 
     public CalendarDayAdapter(Context context, ArrayList<Meal> meals){
         mContext = context;
@@ -42,14 +40,22 @@ public class CalendarDayAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.listview_day_meals, null);
         }
 
-        TextView recipeName = (TextView) convertView.findViewById(R.id.list_day_meal);
+        TextView recipeName = convertView.findViewById(R.id.list_day_meal);
         recipeName.setText(mMeals.get(position).getRecipe().getRecipeName());
+        recipeName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, RecipeActivity.class);
+                intent.putExtra("recipeKey", mMeals.get(position).getRecipe().getRecipeKey());
+                mContext.startActivity(intent);
+            }
+        });
 
         return convertView;
     }
