@@ -23,6 +23,50 @@
     <ExpandableListView
         android:id="@+id/list_grocerylist"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"/>
 
+    <TextView
+        android:id="@+id/undo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/add_item"
+        android:layout_toLeftOf="@+id/add_item"
+        android:layout_toStartOf="@+id/add_item"
+        android:text="Undo" />
+
+    <LinearLayout
+        android:id="@+id/add_item_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/undo"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_add_item"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/add_item_amount"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:text="1.0"
+            android:textSize="14sp" />
+
+        <Spinner
+            android:id="@+id/add_item_measurement"
+            android:layout_width="120dp"
+            android:layout_height="match_parent"
+            android:entries="@array/measurements" />
+
+        <AutoCompleteTextView
+            android:id="@+id/add_item_name"
+            android:layout_width="210dp"
+            android:layout_height="wrap_content"
+            android:hint="Add Item"
+            android:inputType="textCapWords"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+    </LinearLayout>
 </RelativeLayout>

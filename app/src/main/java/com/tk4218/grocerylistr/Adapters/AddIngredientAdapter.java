@@ -31,7 +31,6 @@ public class AddIngredientAdapter extends BaseAdapter{
     private Context mContext;
     private ArrayList<Ingredient> mIngredients;
     private AutoCompleteTextView mIngredientName;
-    private IngredientDropdownAdapter mIngredientAdapter;
 
     public AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
@@ -65,7 +64,7 @@ public class AddIngredientAdapter extends BaseAdapter{
             /*----------------------------------------------
              * Ingredient Amount
              *----------------------------------------------*/
-            final EditText ingredientAmount = (EditText) convertView.findViewById(R.id.edit_ingredient_amount);
+            final EditText ingredientAmount = convertView.findViewById(R.id.edit_ingredient_amount);
 
             if(mIngredients.get(position).getIngredientAmount() != 0){
                 ingredientAmount.setText(String.valueOf(mIngredients.get(position).getIngredientAmount()));
@@ -92,7 +91,7 @@ public class AddIngredientAdapter extends BaseAdapter{
             /*----------------------------------------------
              * Ingredient Unit
              *----------------------------------------------*/
-            final Spinner ingredientUnit = (Spinner) convertView.findViewById(R.id.edit_ingredient_measurement);
+            final Spinner ingredientUnit = convertView.findViewById(R.id.edit_ingredient_measurement);
             final String [] measurements = mContext.getResources().getStringArray(R.array.measurements);
             final int ingredientPosition = position;
 
@@ -119,9 +118,9 @@ public class AddIngredientAdapter extends BaseAdapter{
             /*----------------------------------------------
              * Ingredient Name
              *----------------------------------------------*/
-            mIngredientName = (AutoCompleteTextView) convertView.findViewById(R.id.edit_ingredient_name);
-            mIngredientAdapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient);
-            mIngredientName.setAdapter(mIngredientAdapter);
+            mIngredientName = convertView.findViewById(R.id.edit_ingredient_name);
+            IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient);
+            mIngredientName.setAdapter(adapter);
 
             if(mIngredients.get(position).getIngredientName() != null){
                 mIngredientName.setText(mIngredients.get(position).getIngredientName());
@@ -169,7 +168,7 @@ public class AddIngredientAdapter extends BaseAdapter{
             /*----------------------------------------------
              * Delete Button
              *----------------------------------------------*/
-            ImageButton deleteIngredient = (ImageButton) convertView.findViewById(R.id.edit_ingredient_delete);
+            ImageButton deleteIngredient = convertView.findViewById(R.id.edit_ingredient_delete);
             deleteIngredient.setTag(position);
         }
         return convertView;
@@ -182,11 +181,11 @@ public class AddIngredientAdapter extends BaseAdapter{
         builder.setIcon(android.R.drawable.ic_input_add);
         View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
         builder.setView(dialogView);
-        final EditText newIngredientName  = (EditText) dialogView.findViewById(R.id.new_ingredient_name);
+        final EditText newIngredientName  = dialogView.findViewById(R.id.new_ingredient_name);
         newIngredientName.setText(mIngredients.get(position).getIngredientName());
-        final Spinner newIngredientType = (Spinner) dialogView.findViewById(R.id.new_ingredient_type);
-        final EditText newIngredientExpAmount = (EditText) dialogView.findViewById(R.id.new_ingredient_exp_amount);
-        final Spinner newIngredientExpInterval = (Spinner) dialogView.findViewById(R.id.new_ingredient_exp_interval);
+        final Spinner newIngredientType = dialogView.findViewById(R.id.new_ingredient_type);
+        final EditText newIngredientExpAmount = dialogView.findViewById(R.id.new_ingredient_exp_amount);
+        final Spinner newIngredientExpInterval = dialogView.findViewById(R.id.new_ingredient_exp_interval);
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
