@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity
     final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd", Locale.getDefault());
     final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.getDefault());
 
+    private SharedPreferences mSp;
     private static String PINTEREST_APP_ID = "4932556460807699958";
     private PDKClient mPDKClient;
 
@@ -72,6 +74,11 @@ public class MainActivity extends AppCompatActivity
 
         mPDKClient = PDKClient.configureInstance(this, PINTEREST_APP_ID);
         mPDKClient.onConnect(this);
+
+        mSp = getSharedPreferences("login", MODE_PRIVATE);
+        if(!mSp.getString("Username", "").equals("")){
+            Toast.makeText(this, "Hello, " + mSp.getString("Username", ""), Toast.LENGTH_LONG).show();
+        }
 
         /*---------------------------------------------------
          * Set up Navigation Drawer
