@@ -329,4 +329,37 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "delete from tableGroceryListItem where GroceryListItemKey = "+ groceryListItemKey));
         return insert(parameters);
     }
+
+    /**********************************
+     * User Queries
+     **********************************/
+    public JSONResult getUserByUsername(String username){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select Username,Email from Users where Username = '"+ username +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email"));
+        return getResults(parameters);
+    }
+    public JSONResult getUserByEmail(String email){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select Username,Email from Users where Email = '"+ email +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email"));
+        return getResults(parameters);
+    }
+    public JSONResult getUserPasswordByUsername(String username){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select Username,Email,Password from Users where Username = '"+ username +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email,Password"));
+        return getResults(parameters);
+    }
+    public JSONResult getUserPasswordByEmail(String email){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "select Username,Email,Password from Users where Email = '"+ email +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email,Password"));
+        return getResults(parameters);
+    }
+    public boolean insertUser(String username, String email, String password, String firstName, String lastName) {
+        ArrayList<ArrayList<String>> parameters = new ArrayList<ArrayList<String>>();
+        parameters.add(addParameter("sql_query", "insert into Users (Username,Email,Password,FirstName,LastName) values ('"+username+"','"+email+"','"+password+"','"+firstName+"','"+lastName+"')"));
+        return insert(parameters);
+    }
 }
