@@ -32,12 +32,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.PasswordStorage;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -48,8 +59,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
+    //New Account Activity Intent values
     private static final int REQUEST_CREATE_ACCOUNT = 0;
     private static final int ACCOUNT_CREATED = 1;
+
+    //Facebook Login variables
+    private static final String EMAIL = "email";
+    private CallbackManager mCallbackManager;
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -76,6 +92,46 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             Log.d("LOGIN", "Logged in with username: " + mSp.getString("Username", ""));
             goToMainActivity();
         }
+
+        /*------------------------------------------------------------
+         * Facebook Login
+         *------------------------------------------------------------*/
+        mCallbackManager = CallbackManager.Factory.create();
+        LoginButton loginButton = findViewById(R.id.facebook_login_button);
+        loginButton.setReadPermissions(Arrays.asList(EMAIL));
+
+        // Callback registration
+        loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                GraphRequest request = GraphRequest.newMeRequest(
+                        loginResult.getAccessToken(),
+                        new GraphRequest.GraphJSONObjectCallback() {
+                            @Override
+                            public void onCompleted(JSONObject object, GraphResponse response) {
+                                try {
+                                    String userId = object.getString("id");
+                                    String email = object.getString("email");
+                                    String name = object.getString("name");
+
+                                    GetUser getUser = new GetUser(userId, email, name);
+                                    getUser.execute();
+
+                                } catch (JSONException e) {e.printStackTrace();}
+                            }
+                        });
+
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name,email");
+                request.setParameters(parameters);
+                request.executeAsync();
+            }
+
+            @Override
+            public void onCancel() {}
+            @Override
+            public void onError(FacebookException exception) {}
+        });
 
         // Set up the login form.
         mUsernameView = findViewById(R.id.email);
@@ -116,6 +172,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
+
         if(requestCode == REQUEST_CREATE_ACCOUNT){
             if(resultCode == ACCOUNT_CREATED){
                 String username = data.getStringExtra("Username");
@@ -225,7 +283,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
@@ -375,6 +432,43 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+    private class GetUser extends AsyncTask<Void, Void, Void>{
+        private QueryBuilder mQb = new QueryBuilder();
+
+        private String mUserId;
+        private String mEmail;
+        private String mName;
+
+        GetUser(String userId, String email, String name){
+            mUserId = userId;
+            mEmail = email;
+            mName = name;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            JSONResult existingUser = mQb.getUserByUsername(mUserId);
+            if(existingUser.getCount() == 0){
+                existingUser = mQb.getUserByEmail(mEmail);
+            }
+            if(existingUser.getCount() == 0){
+                String[] names = mName.split(" ",2);
+                String firstName = names[0];
+                String lastName = names.length > 1 ? names[1] : "";
+                mQb.insertUser(mUserId, mEmail, "", firstName, lastName);
+            } else {
+                mUserId = existingUser.getString("Username");
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            mSp.edit().putBoolean("LoggedIn", true).apply();
+            mSp.edit().putString("Username", mUserId).apply();
+            goToMainActivity();
         }
     }
 }

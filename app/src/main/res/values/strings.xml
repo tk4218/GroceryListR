@@ -4,6 +4,9 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="action_save">Save</string>
 
+    <string name="facebook_app_id">336015353554927</string>
+    <string name="fb_login_protocol_scheme">fb336015353554927</string>
+
     <string-array name="meal_types">
         <item>Dinner</item>
         <item>Lunch</item>

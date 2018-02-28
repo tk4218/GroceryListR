@@ -28,6 +28,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
 import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
@@ -92,12 +93,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSuccess(PDKResponse response) {
                 navigationMenu.findItem(R.id.nav_pinterest_login).setVisible(false);
-                navigationMenu.findItem(R.id.nav_pinterest_logout).setVisible(true);
             }
             @Override
             public void onFailure(PDKException exception) {
                 navigationMenu.findItem(R.id.nav_pinterest_login).setVisible(true);
-                navigationMenu.findItem(R.id.nav_pinterest_logout).setVisible(false);
             }
         });
 
@@ -188,14 +187,13 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_pinterest_login:
                 pinterestLogin();
                 break;
-            case R.id.nav_pinterest_logout:
-                mPDKClient.logout();
-                Intent intent = getIntent();
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            case R.id.nav_logout:
+                mSp.edit().putBoolean("LoggedIn", false).apply();
+                mSp.edit().putString("Username", "").apply();
+                AccessToken.setCurrentAccessToken(null);
+                Intent intent = new Intent(this, LoginActivity.class);
                 finish();
-                overridePendingTransition(0, 0);
                 startActivity(intent);
-                Toast.makeText(this, "Logged out of Pinterest", Toast.LENGTH_SHORT).show();
                 break;
         }
 
