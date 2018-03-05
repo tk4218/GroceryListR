@@ -127,6 +127,7 @@ public  class RecipeFragment extends Fragment{
                 recipes = mQb.getUserRecipes(mSettings.getUser());
             }else{
                 recipes = mQb.getAllRecipes();
+                recipes.addBooleanColumn("Favorite", false);
             }
 
             recipes.moveFirst();

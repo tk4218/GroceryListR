@@ -87,47 +87,25 @@ public class QueryBuilder {
     public JSONResult getAllRecipes(){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select * from tableRecipe where PinterestId = ''"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited"));
         return getResults(parameters);
     }
-
     public JSONResult getRecipe(int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select * from tableRecipe where RecipeKey = " + recipeKey));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited"));
         return getResults(parameters);
     }
-
-    public JSONResult getPinterestRecipe(String pinterestId){
-        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select * from tableRecipe where PinterestId = '"+ pinterestId +"'"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
-        return getResults(parameters);
-    }
-
     public JSONResult getPinterestRecipes(String username){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select r.* from UserRecipes u, tableRecipe r Where u.Username = '"+username+"' and r.RecipeKey = u.RecipeKey and r.PinterestId <> ''"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited"));
         return getResults(parameters);
     }
-
     public int insertRecipe(String pinterestId, String recipeName, String mealType, String cuisineType, String recipeImage){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName.replace("'", "''") + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0, current_timestamp())"));
+        parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName.replace("'", "''") + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0, current_timestamp())"));
         return insertReturnKey(parameters);
-    }
-
-    public boolean updateRecipeFavorite(int recipeKey, boolean favorite){
-        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "update tableRecipe set Favorite = " + (favorite ? 1 : 0) + " where RecipeKey = " + recipeKey));
-        return insert(parameters);
-    }
-
-    public boolean updateRecipeInfo(int recipeKey, String recipeName, String mealType, String cuisineType, String recipeImage){
-        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "update tableRecipe set RecipeName = '"+ recipeName.replace("'", "''") +"', MealType = '"+ mealType +"', CuisineType = '"+ cuisineType +"', RecipeImage = '"+ recipeImage +"' where RecipeKey = " + recipeKey));
-        return insert(parameters);
     }
 
     /*---------------------------------
@@ -139,13 +117,11 @@ public class QueryBuilder {
         parameters.add(addParameter("return_cols", "RecipeEditKey,Username,RecipeKey,RecipeName,MealType,CuisineType,LastEdited"));
         return getResults(parameters);
     }
-
     public int insertUserEditRecipe(String username, int recipeKey, String recipeName, String mealType, String cuisineType){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "insert into UserEditRecipes (Username,RecipeKey,RecipeName,MealType,CuisineType,LastEdited) values('"+username+"',"+recipeKey+",'" + recipeName.replace("'", "''") + "','" + mealType + "','" + cuisineType + "',current_timestamp())"));
         return insertReturnKey(parameters);
     }
-
     public boolean updateUserEditRecipe(String recipeName, String mealType, String cuisineType, String username, int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update UserEditRecipes set RecipeName = '"+recipeName+"', MealType = '"+cuisineType+"', CuisineType = '"+cuisineType+"' where Username = '"+username+"' and RecipeKey = " + recipeKey));
@@ -167,16 +143,19 @@ public class QueryBuilder {
         parameters.add(addParameter("return_cols", "Username,RecipeKey,RecipeEditKey,Favorite"));
         return getResults(parameters);
     }
-
     public boolean insertUserRecipe(String username, int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "insert into UserRecipes (Username,RecipeKey,RecipeEditKey,Favorite) values('"+ username +"'," + recipeKey + ",0,0)"));
         return insert(parameters);
     }
-
     public boolean updateUserRecipeEditKey(String username, int recipeKey, int recipeEditKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update UserRecipes set RecipeEditKey = "+recipeEditKey+" where Username = '"+username+"' and RecipeKey = " +recipeKey));
+        return insert(parameters);
+    }
+    public boolean updateRecipeFavorite(String username, int recipeKey, boolean favorite){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "update UserRecipes set Favorite = " + (favorite ? 1 : 0) + " where Username = '"+username+"' and RecipeKey = " + recipeKey));
         return insert(parameters);
     }
 

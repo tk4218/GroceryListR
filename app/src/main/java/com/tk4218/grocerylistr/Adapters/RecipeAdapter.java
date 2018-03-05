@@ -22,6 +22,7 @@ import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 import com.tk4218.grocerylistr.EditRecipeActivity;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
 import com.tk4218.grocerylistr.RecipeActivity;
@@ -29,6 +30,7 @@ import com.tk4218.grocerylistr.RecipeActivity;
 import java.util.ArrayList;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> implements Filterable{
+    private ApplicationSettings mSettings;
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<Recipe> mRecipes;
@@ -40,6 +42,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         mRecipes = recipes;
         mFilteredRecipes = recipes;
 
+        mSettings = new ApplicationSettings(mContext);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
     }
@@ -68,7 +71,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
                 Log.d("UPDATE RECIPE", "Set Key " +holder.recipe.getRecipeKey()+ " to " + holder.recipe.getFavorite());
                 QueryBuilder qb = new QueryBuilder();
-                if(qb.updateRecipeFavorite(holder.recipe.getRecipeKey(), holder.recipe.getFavorite())){
+                if(qb.updateRecipeFavorite(mSettings.getUser(), holder.recipe.getRecipeKey(), holder.recipe.getFavorite())){
                     if (holder.recipe.getFavorite()){
                         holder.favorite.setImageResource(android.R.drawable.btn_star_big_on);
                     } else {
