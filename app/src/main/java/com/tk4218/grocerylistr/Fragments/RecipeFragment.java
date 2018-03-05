@@ -19,6 +19,7 @@ import com.tk4218.grocerylistr.Adapters.RecipeAdapter;
 import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.Model.UpdatePinterestRecipes;
 import com.tk4218.grocerylistr.R;
@@ -27,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public  class RecipeFragment extends Fragment{
+    private ApplicationSettings mSettings;
 
+    private boolean mShowUserRecipes;
     private ProgressBar mLoading;
     private SwipeRefreshLayout mRefreshRecipes;
     private RecyclerView mRecyclerView;
@@ -50,11 +53,12 @@ public  class RecipeFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
-
+        mSettings = new ApplicationSettings(getActivity());
 
         /*--------------------------------
          *  Set recipes on grid view
          *--------------------------------*/
+        mShowUserRecipes = true;
         mRecipes = new ArrayList<>();
         mLoading = rootView.findViewById(R.id.recipe_loading);
         mRefreshRecipes = rootView.findViewById(R.id.refresh_recipes);
@@ -91,8 +95,11 @@ public  class RecipeFragment extends Fragment{
          * Retrieving Recipes from the database. Doing it in onResume
          * guarantees the list will be updated upon returning to the fragment.
          *-------------------------------------------------------------------*/
-        UpdatePinterestRecipes updatePinterestRecipes = new UpdatePinterestRecipes();
-        updatePinterestRecipes.execute();
+        if(mSettings.isPinterestLoggedIn()){
+            UpdatePinterestRecipes updatePinterestRecipes = new UpdatePinterestRecipes();
+            updatePinterestRecipes.execute(mSettings.getUser());
+        }
+
         new RetrieveRecipes().execute();
     }
 
@@ -102,15 +109,25 @@ public  class RecipeFragment extends Fragment{
             mAdapter.getFilter().filter(filterString);
     }
 
+    public void toggleRecipeList(boolean showUserRecipes){
+        mShowUserRecipes = showUserRecipes;
+        mLoading.setVisibility(View.VISIBLE);
+        new RetrieveRecipes().execute();
+    }
+
     private class RetrieveRecipes extends AsyncTask<Boolean, String, String>{
         QueryBuilder mQb = new QueryBuilder();
 
         @Override
         protected String doInBackground(Boolean... params) {
             mRecipes.clear();
+            JSONResult recipes;
 
-            Log.d("DEBUG", "Attempting to retrieve recipes");
-            final JSONResult recipes = mQb.getAllRecipes();
+            if(mShowUserRecipes){
+                recipes = mQb.getUserRecipes(mSettings.getUser());
+            }else{
+                recipes = mQb.getAllRecipes();
+            }
 
             recipes.moveFirst();
             for(int i = 0; i < recipes.getCount(); i++){

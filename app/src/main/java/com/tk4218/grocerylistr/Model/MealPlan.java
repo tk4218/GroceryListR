@@ -6,27 +6,32 @@ import com.tk4218.grocerylistr.Database.QueryBuilder;
 import java.util.ArrayList;
 import java.util.Date;
 
-/**
+/*
  * Created by Tk4218 on 10/11/2017.
  */
 
 public class MealPlan {
     private QueryBuilder mQb = new QueryBuilder();
 
+    private String mUsername;
     private Date mMealPlanDate;
     private ArrayList<Meal> mMeals;
 
-    public MealPlan(Date mealPlanDate){
+    public MealPlan(String username, Date mealPlanDate){
+        setUsername(username);
         setMealPlanDate(mealPlanDate);
 
-        JSONResult mealPlan = mQb.getMealPlan(mealPlanDate);
+        JSONResult mealPlan = mQb.getMealPlan(mUsername, mealPlanDate);
         setMealPlanMeals(mealPlan);
     }
 
-    public MealPlan(Date mealPlanDate, ArrayList<Meal> meals){
+    public MealPlan(String username, Date mealPlanDate, ArrayList<Meal> meals){
+        setUsername(username);
         setMealPlanDate(mealPlanDate);
         setMealPlanMeals(meals);
     }
+
+    private void setUsername(String username){ mUsername = username; }
 
     public void setMealPlanDate(Date mealPlanDate){
         mMealPlanDate = mealPlanDate;
@@ -83,7 +88,8 @@ public class MealPlan {
 
     private void convertMeals(JSONResult meals){
         for(int i = 0; i < meals.getCount(); i++) {
-            mMeals.add(new Meal(meals.getDate(i, "MealPlanDate"),
+            mMeals.add(new Meal(mUsername,
+                    meals.getDate(i, "MealPlanDate"),
                     meals.getString(i, "MealType"),
                     meals.getInt(i, "Sequence"),
                     meals.getInt(i, "RecipeKey"),

@@ -1,7 +1,5 @@
 package com.tk4218.grocerylistr.Model;
 
-import android.view.ViewGroupOverlay;
-
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
@@ -10,7 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 
-/**
+/*
  * Created by Tk4218 on 10/14/2017.
  */
 
@@ -18,20 +16,22 @@ public class GroceryList {
     QueryBuilder mQb = new QueryBuilder();
 
     private int mGroceryListKey;
+    private String mUsername;
     private Date mMealPlanDateStart;
     private Date mMealPlanDateEnd;
     private boolean mGroceryListCompleted;
     private Date mCompletedDate;
     private ArrayList<GroceryListItem> mGroceryListItems;
 
-    public GroceryList(){
-
+    public GroceryList(String username){
+        setUsername(username);
     }
 
     public GroceryList(int groceryListKey){
         JSONResult groceryList = mQb.getGroceryList(groceryListKey);
         if(groceryList.getCount() > 0){
             setGroceryListKey(groceryListKey);
+            setUsername(groceryList.getString("Username"));
             setMealPlanDateStart(groceryList.getDate("MealPlanDateStart"));
             setMealPlanDateEnd(groceryList.getDate("MealPlanDateEnd"));
             setGroceryListCompleted(groceryList.getBoolean("GroceryListCompleted"));
@@ -52,6 +52,9 @@ public class GroceryList {
 
     public void setGroceryListKey(int groceryListKey){ mGroceryListKey = groceryListKey; }
     public int getGroceryListKey(){ return  mGroceryListKey; }
+
+    private void setUsername(String username){ mUsername = username; }
+    public String getUsername(){ return mUsername; }
 
     public void setMealPlanDateStart(Date startDate){ mMealPlanDateStart = startDate; }
     public Date getMealPlanDateStart(){ return  mMealPlanDateStart; }
@@ -151,19 +154,20 @@ public class GroceryList {
 
     public int generateGroceryList(Date mealPlanDateStart, Date mealPlanDateEnd, boolean createEmptyList){
         if(createEmptyList){
-            JSONResult currentGroceryList = mQb.getCurrentGroceryList();
+            JSONResult currentGroceryList = mQb.getCurrentGroceryList(mUsername);
             if(currentGroceryList.getCount() > 0)
-                mQb.setGroceryListCurrent(false, currentGroceryList.getInt("GroceryListKey"));
-            mGroceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
+                mQb.setGroceryListCurrent( false, currentGroceryList.getInt("GroceryListKey"));
+            mGroceryListKey = mQb.insertGroceryList(mUsername, mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
             mGroceryListItems = new ArrayList<>();
 
             return mGroceryListKey;
         }
 
-        JSONResult groceryListIngredients = mQb.getIngredientsForGroceryList(mealPlanDateStart, mealPlanDateEnd);
+        JSONResult groceryListIngredients = mQb.getIngredientsForGroceryList(mUsername, mealPlanDateStart, mealPlanDateEnd);
 
         if (groceryListIngredients.getCount() == 0) return 0;
 
+        groceryListIngredients = groceryListIngredients.filter("RemoveIngredient", 0);
 
         if(mGroceryListItems == null){
             mGroceryListItems = new ArrayList<>();
@@ -178,11 +182,11 @@ public class GroceryList {
 
         if(mGroceryListItems.size() > 0){
 
-            JSONResult currentGroceryList = mQb.getCurrentGroceryList();
+            JSONResult currentGroceryList = mQb.getCurrentGroceryList(mUsername);
             if(currentGroceryList.getCount() > 0)
                 mQb.setGroceryListCurrent(false, currentGroceryList.getInt("GroceryListKey"));
 
-            mGroceryListKey = mQb.insertGroceryList(mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
+            mGroceryListKey = mQb.insertGroceryList(mUsername, mealPlanDateStart, mealPlanDateEnd, true, false, new Date(0));
 
             if(mGroceryListKey != 0){
                 int groceryListItemKey;

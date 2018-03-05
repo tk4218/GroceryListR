@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -33,6 +32,7 @@ import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Fragments.RecipeFragment;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.GroceryList;
 
 import java.text.SimpleDateFormat;
@@ -49,6 +49,10 @@ import com.pinterest.android.pdk.PDKResponse;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private ApplicationSettings mSettings;
+
+    private boolean mShowUserRecipes;
+
     private MainViewPagerAdapter mMainViewPagerAdapter;
     private ViewPager mViewPager;
     private SearchView mSearchView;
@@ -61,13 +65,13 @@ public class MainActivity extends AppCompatActivity
     final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd", Locale.getDefault());
     final SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy", Locale.getDefault());
 
-    private SharedPreferences mSp;
     private static String PINTEREST_APP_ID = "4932556460807699958";
     private PDKClient mPDKClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mShowUserRecipes = true;
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -76,10 +80,7 @@ public class MainActivity extends AppCompatActivity
         mPDKClient = PDKClient.configureInstance(this, PINTEREST_APP_ID);
         mPDKClient.onConnect(this);
 
-        mSp = getSharedPreferences("login", MODE_PRIVATE);
-        if(!mSp.getString("Username", "").equals("")){
-            Toast.makeText(this, "Hello, " + mSp.getString("Username", ""), Toast.LENGTH_LONG).show();
-        }
+        mSettings = new ApplicationSettings(this);
 
         /*---------------------------------------------------
          * Set up Navigation Drawer
@@ -93,10 +94,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSuccess(PDKResponse response) {
                 navigationMenu.findItem(R.id.nav_pinterest_login).setVisible(false);
+                mSettings.pinterestLogin();
             }
             @Override
             public void onFailure(PDKException exception) {
                 navigationMenu.findItem(R.id.nav_pinterest_login).setVisible(true);
+                mSettings.pinterestLogout();
             }
         });
 
@@ -142,6 +145,13 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        MenuItem recipeToggle = menu.findItem(R.id.action_toggle_recipes);
+        if(!mShowUserRecipes){
+            recipeToggle.setTitle("My Recipes");
+        } else{
+            recipeToggle.setTitle("Explore Recipes");
+        }
+
         return true;
     }
 
@@ -152,7 +162,11 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_toggle_recipes) {
+            mShowUserRecipes = !mShowUserRecipes;
+            RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
+            viewPagerFragment.toggleRecipeList(mShowUserRecipes);
+            invalidateOptionsMenu();
             return true;
         } else if (id == R.id.app_bar_search) {
             return true;
@@ -188,8 +202,10 @@ public class MainActivity extends AppCompatActivity
                 pinterestLogin();
                 break;
             case R.id.nav_logout:
-                mSp.edit().putBoolean("LoggedIn", false).apply();
-                mSp.edit().putString("Username", "").apply();
+                if(mSettings.isPinterestLoggedIn()){
+                    mPDKClient.logout();
+                }
+                mSettings.logout();
                 AccessToken.setCurrentAccessToken(null);
                 Intent intent = new Intent(this, LoginActivity.class);
                 finish();
@@ -356,7 +372,7 @@ public class MainActivity extends AppCompatActivity
 
        @Override
        protected Integer doInBackground(Void... params) {
-           JSONResult currentGroceryList = mQb.getCurrentGroceryList();
+           JSONResult currentGroceryList = mQb.getCurrentGroceryList(mSettings.getUser());
            if(currentGroceryList.getCount() == 0){
                return 0;
            }
@@ -391,7 +407,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected Integer doInBackground(Object... params) {
-            GroceryList newGroceryList = new GroceryList();
+            GroceryList newGroceryList = new GroceryList(mSettings.getUser());
             return newGroceryList.generateGroceryList((Date)params[0], (Date)params[1], (boolean)params[2]);
         }
 

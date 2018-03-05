@@ -14,15 +14,16 @@ import com.tk4218.grocerylistr.Database.QueryBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UpdatePinterestRecipes extends AsyncTask<Void, Void, Void> {
+public class UpdatePinterestRecipes extends AsyncTask<String, Void, Void> {
 
     private PDKClient mPDKClient;
     private QueryBuilder mQb = new QueryBuilder();
+    private String mUsername;
     private boolean mUpdateFinished;
 
     @Override
-    protected Void doInBackground(final Void... params) {
-
+    protected Void doInBackground(final String... params) {
+        mUsername = params[0];
         mPDKClient = PDKClient.getInstance();
         mPDKClient.getMyPins("id,metadata,image", new PDKCallback(){
 
@@ -30,7 +31,7 @@ public class UpdatePinterestRecipes extends AsyncTask<Void, Void, Void> {
             public void onSuccess(PDKResponse response) {
                 Log.d("PINTEREST", "Pins Retrieval Successful");
 
-                JSONResult pinterestRecipes = mQb.getPinterestRecipes();
+                JSONResult pinterestRecipes = mQb.getPinterestRecipes(mUsername);
 
                 List<PDKPin> pinList = response.getPinList();
                 for (PDKPin pin : pinList){
@@ -48,6 +49,7 @@ public class UpdatePinterestRecipes extends AsyncTask<Void, Void, Void> {
                             ArrayList<Ingredient> recipeIngredients = parser.getRecipeIngredients();
 
                             int recipeKey = mQb.insertRecipe(pinterestId, recipeName, "", "", recipeImage);
+                            mQb.insertUserRecipe(mUsername, recipeKey);
 
                             for(Ingredient ingredient : recipeIngredients){
                                 int ingredientKey = 0;
@@ -57,7 +59,6 @@ public class UpdatePinterestRecipes extends AsyncTask<Void, Void, Void> {
                                 } else {
                                     ingredientKey = existingIngredient.getIngredientKey();
                                 }
-
                                 mQb.insertRecipeToIngredient(recipeKey, ingredientKey, ingredient.getIngredientAmount(), ingredient.getIngredientUnit(), ingredient.getPreparation1(), "", false);
                             }
                         }

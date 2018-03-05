@@ -8,6 +8,7 @@ import android.support.v4.app.DialogFragment;
 import android.widget.DatePicker;
 
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.MealPlan;
 import com.tk4218.grocerylistr.Model.Recipe;
 
@@ -16,11 +17,13 @@ import java.util.Date;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
+    private ApplicationSettings mSettings;
     private int mRecipeKey;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the current date as the default date in the picker
+        mSettings = new ApplicationSettings(getActivity());
 
         Bundle arguments = getArguments();
         mRecipeKey = arguments.getInt("recipeKey");
@@ -43,15 +46,15 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
         @Override
         protected Void doInBackground(Integer... params) {
-            Recipe recipe = new Recipe(mRecipeKey);
+            Recipe recipe = new Recipe(mRecipeKey, mSettings.getUser());
 
             Calendar calendar = Calendar.getInstance();
             calendar.set(params[0], params[1], params[2]);
 
             Date mealPlanDate = calendar.getTime();
-            MealPlan mealPlan = new MealPlan(mealPlanDate);
+            MealPlan mealPlan = new MealPlan(mSettings.getUser(), mealPlanDate);
 
-            mQb.insertMealPlan(mealPlanDate, recipe.getMealType(), mealPlan.getMealTypeMeals(recipe.getMealType()).size(), recipe.getRecipeKey(), 0, false);
+            mQb.insertMealPlan(mSettings.getUser(), mealPlanDate, recipe.getMealType(), mealPlan.getMealTypeMeals(recipe.getMealType()).size(), recipe.getRecipeKey(), 0, false);
             return null;
         }
     }

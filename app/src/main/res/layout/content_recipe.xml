@@ -20,6 +20,7 @@
         android:textStyle="bold" />
 
     <LinearLayout
+        android:id="@+id/layout_last_made"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
@@ -30,7 +31,7 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:id="@+id/imageView6"
+            android:id="@+id/icon_last_made"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0.01"

@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.tk4218.grocerylistr.CustomLayout.CalendarAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.Meal;
 import com.tk4218.grocerylistr.Model.MealPlan;
 import com.tk4218.grocerylistr.R;
@@ -24,12 +25,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-
+import java.util.Locale;
 
 public  class CalendarFragment extends Fragment {
-    private static final int  DAYS_COUNT = 42;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
+    private ApplicationSettings mSettings;
 
+    private static final int  DAYS_COUNT = 42;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.US);
 
     private ProgressBar mLoading;
     private LinearLayout mCalendarHeader;
@@ -52,15 +54,17 @@ public  class CalendarFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.view_calendar, container, false);
+        mSettings = new ApplicationSettings(getActivity());
+
         mCurrentDate = new Date();
 
-        TextView calendarMonth = (TextView) rootView.findViewById(R.id.calendar_month);
+        TextView calendarMonth = rootView.findViewById(R.id.calendar_month);
         calendarMonth.setText(dateFormat.format(mCurrentDate));
 
-        mLoading = (ProgressBar) rootView.findViewById(R.id.calendar_loading);
-        mCalendarHeader = (LinearLayout) rootView.findViewById(R.id.calendar_header);
-        mCalendarContent = (LinearLayout) rootView.findViewById(R.id.calendar_content);
-        mCalendarDays = (GridView) rootView.findViewById(R.id.grid_month_days);
+        mLoading = rootView.findViewById(R.id.calendar_loading);
+        mCalendarHeader = rootView.findViewById(R.id.calendar_header);
+        mCalendarContent = rootView.findViewById(R.id.calendar_content);
+        mCalendarDays = rootView.findViewById(R.id.grid_month_days);
 
         return rootView;
     }
@@ -98,24 +102,24 @@ public  class CalendarFragment extends Fragment {
             calendar.add(Calendar.DAY_OF_MONTH, DAYS_COUNT);
             Date endDate = calendar.getTime();
 
-            JSONResult mealPlans = mQb.getMonthMealPlans(beginDate, endDate);
-            if(mealPlans.getCount() == 0){
+            JSONResult mealPlans = mQb.getMonthMealPlans(mSettings.getUser(), beginDate, endDate);
+            if(mealPlans == null){
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(getContext(), "Oops! Something went wrong.", Toast.LENGTH_SHORT).show();
                     }
                 });
-
+                return null;
             }
 
             calendar.setTime(beginDate);
 
             for(int i = 0; i < DAYS_COUNT; i++){
-                cells.add(new MealPlan(calendar.getTime(), new ArrayList<Meal>()));
+                cells.add(new MealPlan(mSettings.getUser(), calendar.getTime(), new ArrayList<Meal>()));
                 if(mealPlans.findFirst("MealPlanDate", calendar.getTime())){
                     do{
-                        cells.get(i).addMeal(new Meal(mealPlans.getDate("MealPlanDate"), mealPlans.getString("MealType"), mealPlans.getInt("Sequence"), mealPlans.getInt("RecipeKey"), mealPlans.getBoolean("MealCompleted")));
+                        cells.get(i).addMeal(new Meal(mSettings.getUser(), mealPlans.getDate("MealPlanDate"), mealPlans.getString("MealType"), mealPlans.getInt("Sequence"), mealPlans.getInt("RecipeKey"), mealPlans.getBoolean("MealCompleted")));
                     } while (mealPlans.findNext("MealPlanDate", calendar.getTime()));
                 }
                 calendar.add(Calendar.DAY_OF_MONTH, 1);

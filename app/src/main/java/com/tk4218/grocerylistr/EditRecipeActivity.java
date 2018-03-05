@@ -27,8 +27,10 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Adapters.AddIngredientAdapter;
+import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Image.ImageManager;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.Ingredient;
 import com.tk4218.grocerylistr.Model.Recipe;
 
@@ -38,6 +40,8 @@ import java.util.ArrayList;
 
 
 public class EditRecipeActivity extends AppCompatActivity {
+    ApplicationSettings mSettings;
+
     private static final int REQUEST_PERMISSIONS = 100;
     String mCurrentPhotoPath = "";
 
@@ -55,20 +59,21 @@ public class EditRecipeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mSettings = new ApplicationSettings(this);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
         setContentView(R.layout.activity_edit_recipe);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mRecipeImage = (ImageButton) findViewById(R.id.edit_recipe_image);
-        mRecipeName = (EditText) findViewById(R.id.edit_recipe_name);
-        mMealType = (Spinner) findViewById(R.id.edit_meal_type);
-        mCuisineType = (Spinner) findViewById(R.id.edit_meal_style);
-        mIngredientListView = (ListView) findViewById(R.id.edit_ingredient_list);
+        mRecipeImage = findViewById(R.id.edit_recipe_image);
+        mRecipeName = findViewById(R.id.edit_recipe_name);
+        mMealType = findViewById(R.id.edit_meal_type);
+        mCuisineType = findViewById(R.id.edit_meal_style);
+        mIngredientListView = findViewById(R.id.edit_ingredient_list);
 
         Bundle extras = getIntent().getExtras();
         if(extras != null){
@@ -79,7 +84,6 @@ public class EditRecipeActivity extends AppCompatActivity {
             mIngredientList = new ArrayList<>();
             mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
         }
-
     }
 
     @Override
@@ -281,6 +285,7 @@ public class EditRecipeActivity extends AppCompatActivity {
             super.onPreExecute();
             mDialog = new ProgressDialog(EditRecipeActivity.this);
             mDialog.setMessage("Creating Recipe...");
+            mDialog.setCancelable(false);
             mDialog.setIndeterminate(false);
             mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             mDialog.show();
@@ -303,6 +308,8 @@ public class EditRecipeActivity extends AppCompatActivity {
                     mQb.insertRecipeToIngredient(recipeKey, ingredientKey, mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
                 }
             }
+            mQb.insertUserRecipe(mSettings.getUser(), recipeKey);
+
             return null;
         }
 
@@ -323,6 +330,7 @@ public class EditRecipeActivity extends AppCompatActivity {
             super.onPreExecute();
             mDialog = new ProgressDialog(EditRecipeActivity.this);
             mDialog.setMessage("Updating Recipe...");
+            mDialog.setCancelable(false);
             mDialog.setIndeterminate(false);
             mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             mDialog.show();
@@ -330,50 +338,83 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... params) {
-            if(!mRecipe.getRecipeName().equals(params[0]) ||
-                    !mRecipe.getMealType().equals(params[1]) ||
-                    !mRecipe.getCuisineType().equals(params[2]) ||
-                    !mRecipe.getRecipeImage().equals(params[3])){
-                mQb.updateRecipeInfo(mRecipeKey, params[0], params[1], params[2], params[3]);
+            if(mRecipe.isUserEdited()){
+                if(!mRecipe.getRecipeName().equals(params[0]) ||
+                        !mRecipe.getMealType().equals(params[1]) ||
+                        !mRecipe.getCuisineType().equals(params[2]) ||
+                        !mRecipe.getRecipeImage().equals(params[3])){
+                    mQb.updateUserEditRecipe(params[0], params[1], params[2], mSettings.getUser(), mRecipeKey);
+                }
+            }else{
+                int recipeEditKey = mQb.insertUserEditRecipe(mSettings.getUser(), mRecipeKey, params[0], params[1], params[2]);
+                mQb.updateUserRecipeEditKey(mSettings.getUser(), mRecipeKey, recipeEditKey);
             }
 
             updateIngredientList();
-            ArrayList<Ingredient> currentIngredients = new Recipe(mRecipeKey).getIngredients();
+            JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
+            recipeIngredients.addBooleanColumn("Delete", true);
+            JSONResult recipeEditIngredients = mQb.getUserRecipeIngredients(mSettings.getUser(), mRecipeKey);
+            recipeEditIngredients.addBooleanColumn("Delete", true);
 
-
-            //Update/Delete any current ingredients that have been updated or removed.
-            boolean delete;
-            for(int i = 0; i < currentIngredients.size(); i++){
-                delete = true;
-                for(int j = 0; j < mIngredientList.size(); j++){
-                    if(currentIngredients.get(i).getIngredientKey() == mIngredientList.get(j).getIngredientKey()){
-                        if(currentIngredients.get(i).getIngredientAmount() != mIngredientList.get(j).getIngredientAmount() ||
-                            !currentIngredients.get(i).getIngredientUnit().equals(mIngredientList.get(j).getIngredientUnit())){
-                            mQb.updateRecipeToIngredient(mRecipeKey, currentIngredients.get(i).getIngredientKey(),
-                                    mIngredientList.get(j).getIngredientAmount(), mIngredientList.get(j).getIngredientUnit());
+            for(int i = 0; i < mIngredientList.size(); i++){
+                int ingredientKey = mIngredientList.get(i).getIngredientKey();
+                double ingredientAmount = mIngredientList.get(i).getIngredientAmount();
+                String ingredientUnit = mIngredientList.get(i).getIngredientUnit();
+                //Update existing User Recipe Ingredients
+                if(recipeEditIngredients.findFirst("IngredientKey", ingredientKey)){
+                    recipeEditIngredients.putBoolean("Delete", false);
+                    if(recipeIngredients.findFirst("IngredientKey", ingredientKey)){
+                        recipeIngredients.putBoolean("Delete", false);
+                    }
+                    //update user recipe ingredient if different
+                    if(recipeEditIngredients.getDouble("IngredientAmount") != ingredientAmount ||
+                        !recipeEditIngredients.getString("IngredientUnit").equals(ingredientUnit)){
+                        mQb.updateUserRecipeToIngredient(mSettings.getUser(), mRecipeKey, ingredientKey, ingredientAmount, ingredientUnit, false);
+                    }
+                } else{
+                    //Add new User Recipe Ingredients
+                    if(recipeIngredients.findFirst("IngredientKey", ingredientKey)){
+                        recipeIngredients.putBoolean("Delete", false);
+                        //Check for differences and add user recipe ingredient
+                        if(recipeIngredients.getDouble("IngredientAmount") != ingredientAmount ||
+                                !recipeIngredients.getString("IngredientUnit").equals(ingredientUnit)){
+                            mQb.insertUserRecipeIngredient(mSettings.getUser(), mRecipeKey, ingredientKey, ingredientAmount, ingredientUnit, "", "", false, false);
                         }
-                        mIngredientList.remove(j);
-                        delete = false;
-                        break;
+                    } else{
+                        //add user recipe to ingredient
+                        if(ingredientKey == 0){
+                            if(mIngredientList.get(i).getIngredientType().equals("")){
+                                mIngredientList.get(i).setIngredientType("Uncategorized");
+                            }
+                            ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName(),
+                                    mIngredientList.get(i).getIngredientType(), mIngredientList.get(i).getShelfLife());
+                        }
+                        mQb.insertUserRecipeIngredient(mSettings.getUser(), mRecipeKey, ingredientKey, ingredientAmount, ingredientUnit, "", "", false, false);
                     }
                 }
-                if(delete){
-                    mQb.deleteRecipeToIngredient(mRecipeKey, currentIngredients.get(i).getIngredientKey());
-                }
-
             }
 
-            //Insert any new ingredients added.
-            for(int i = 0; i < mIngredientList.size(); i++){
-                if(mIngredientList.get(i).getIngredientKey() == 0){
-                    if(mIngredientList.get(i).getIngredientType().equals("")){
-                        mIngredientList.get(i).setIngredientType("Uncategorized");
+            //Remove Recipe Ingredient from User Recipe
+            if(recipeIngredients.findFirst("Delete", true)){
+                do{
+                    if(recipeEditIngredients.findFirst("IngredientKey", recipeIngredients.getInt("IngredientKey"))){
+                        recipeEditIngredients.putBoolean("Delete", false);
+                        if(!recipeEditIngredients.getBoolean("RemoveIngredient")){
+                            //update existing recipe edit ingredient to remove
+                            mQb.updateUserRecipeToIngredientRemove(mSettings.getUser(), mRecipeKey, recipeIngredients.getInt("IngredientKey"), true);
+                        }
+                    } else{
+                        //add user recipe ingredient remove
+                        mQb.insertUserRecipeIngredient(mSettings.getUser(), mRecipeKey, recipeIngredients.getInt("IngredientKey"), 0, "", "", "", false, true);
                     }
-                    mIngredientList.get(i).setIngredientKey(mQb.insertIngredient(mIngredientList.get(i).getIngredientName(),
-                            mIngredientList.get(i).getIngredientType(), mIngredientList.get(i).getShelfLife()));
-                }
-                mQb.insertRecipeToIngredient(mRecipeKey, mIngredientList.get(i).getIngredientKey(),
-                        mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
+                }while(recipeIngredients.findNext("Delete", true));
+            }
+
+            //Delete removed User Recipe Ingredients
+            if(recipeEditIngredients.findFirst("Delete", true)){
+                do{
+                    mQb.deleteUserRecipeToIngredient(mSettings.getUser(), mRecipeKey, recipeEditIngredients.getInt("IngredientKey"));
+                }while(recipeEditIngredients.findNext("Delete", true));
             }
 
             return null;
@@ -390,7 +431,7 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Integer... params) {
-            mRecipe = new Recipe(params[0]);
+            mRecipe = new Recipe(params[0], mSettings.getUser());
             return null;
         }
 

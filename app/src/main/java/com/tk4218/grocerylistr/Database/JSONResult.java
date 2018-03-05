@@ -1,6 +1,10 @@
 package com.tk4218.grocerylistr.Database;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
@@ -8,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -34,13 +39,16 @@ public class JSONResult {
         index = 0;
     }
 
-    public void moveNext(){
+    public boolean moveNext(){
         index++;
+        return index < getCount();
     }
 
     public void moveToPosition(int position){
         index = position;
     }
+
+    public int getPosition(){ return index; }
 
     public int getInt(String columnName){
         try{
@@ -58,6 +66,18 @@ public class JSONResult {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public void putInt(String columnName, int value){
+        try {
+            result.getJSONObject(index).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
+    public void putInt(int position, String columnName, int value){
+        try {
+            result.getJSONObject(position).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
     }
 
     public double getDouble(String columnName){
@@ -78,6 +98,18 @@ public class JSONResult {
         return 0;
     }
 
+    public void putDouble(String columnName, double value){
+        try {
+            result.getJSONObject(index).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
+    public void putDouble(int position, String columnName, double value){
+        try {
+            result.getJSONObject(position).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
     public String getString(String columnName){
         try{
             return result.getJSONObject(index).getString(columnName);
@@ -96,6 +128,18 @@ public class JSONResult {
         return "";
     }
 
+    public void putString(String columnName, String value){
+        try {
+            result.getJSONObject(index).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
+    public void putString(int position, String columnName, String value){
+        try {
+            result.getJSONObject(position).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
     public boolean getBoolean(String columnName){
         try{
             return result.getJSONObject(index).getInt(columnName) == 1;
@@ -112,6 +156,18 @@ public class JSONResult {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void putBoolean(String columnName, boolean value){
+        try {
+            result.getJSONObject(index).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
+    public void putBoolean(int position, String columnName, boolean value){
+        try {
+            result.getJSONObject(position).put(columnName, value);
+        } catch (JSONException e) { e.printStackTrace(); }
     }
 
     public Date getDate(String columnName){
@@ -138,6 +194,20 @@ public class JSONResult {
         return new Date();
     }
 
+    public void putDate(String columnName, Date value){
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            result.getJSONObject(index).put(columnName, dateFormat.format(value));
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
+    public void putDate(int position, String columnName, Date value){
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            result.getJSONObject(position).put(columnName, dateFormat.format(value));
+        } catch (JSONException e) { e.printStackTrace(); }
+    }
+
     public JSONObject getRow(int position) {
         try {
             return result.getJSONObject(position);
@@ -145,6 +215,49 @@ public class JSONResult {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void addRow(){
+        try {
+            result.put(getCount(), new JSONObject());
+            index = getCount() - 1;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void deleteRow(int index){
+        result.remove(index);
+        this.index = 0;
+    }
+
+    public void addColumn(String columnName){
+        try {
+            for (int i = 0; i < getCount(); i++) {
+                result.getJSONObject(i).put(columnName, null);
+            }
+        } catch (JSONException e){ e.printStackTrace(); }
+    }
+
+    public void addBooleanColumn(String columnName){
+        addBooleanColumn(columnName, false);
+    }
+
+    public void addBooleanColumn(String columnName, boolean defaultValue){
+        try {
+            for (int i = 0; i < getCount(); i++) {
+                result.getJSONObject(i).put(columnName, defaultValue);
+            }
+        } catch (JSONException e){ e.printStackTrace(); }
+    }
+
+    public void deleteColumn(String columnName){
+        try {
+            for (int i = 0; i < getCount(); i++) {
+                result.getJSONObject(i).remove(columnName);
+            }
+        } catch (JSONException e){ e.printStackTrace(); }
     }
 
     public ArrayList<String> getStringColumnArray(String columnName){
@@ -237,13 +350,15 @@ public class JSONResult {
     }
 
     private boolean equalValues(Object value1, Object value2){
-        if(value1.getClass().equals(Integer.class) && value2.getClass().equals(Integer.class))
+        if(value2.getClass().equals(Integer.class)) {
+            if(value1.getClass().equals(String.class))return Integer.parseInt((String) value1) == (int) value2;
             return (int) value1 == (int) value2;
-        if(value1.getClass().equals(String.class) && value2.getClass().equals(String.class))
+        }
+        if(value2.getClass().equals(String.class))
             return ((String) value1).equals((String) value2);
-        if(value1.getClass().equals(Boolean.class) && value2.getClass().equals(Boolean.class))
+        if(value2.getClass().equals(Boolean.class))
             return  (Boolean) value1 == (Boolean) value2;
-        if(value1.getClass().equals(Date.class) && value2.getClass().equals(Date.class))
+        if(value2.getClass().equals(Date.class))
             return ((Date)value1).equals(value2);
 
         return false;

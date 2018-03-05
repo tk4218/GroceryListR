@@ -2,7 +2,7 @@ package com.tk4218.grocerylistr.Model;
 
 import java.util.Date;
 
-/**
+/*
  * Created by Tk4218 on 10/11/2017.
  */
 
@@ -17,15 +17,15 @@ public class Meal {
     public Meal(){
     }
 
-    public Meal(Date mealPlanDate, String mealType, int sequence){
+    public Meal(String username, Date mealPlanDate, String mealType, int sequence){
 
     }
 
-    public Meal(Date mealPlanDate, String mealType, int sequence, int recipeKey, boolean mealCompleted){
+    public Meal(String username, Date mealPlanDate, String mealType, int sequence, int recipeKey, boolean mealCompleted){
         setMealPlanDate(mealPlanDate);
         setMealType(mealType);
         setMealSequence(sequence);
-        setRecipe(recipeKey);
+        setRecipe(recipeKey, username);
         setMealCompleted(mealCompleted);
     }
 
@@ -38,7 +38,7 @@ public class Meal {
     public void setMealSequence(int sequence){ mSequence = sequence; }
     public int getMealSequence(){ return mSequence; }
 
-    public void setRecipe(int recipeKey){ mRecipe = new Recipe(recipeKey); }
+    public void setRecipe(int recipeKey, String username){ mRecipe = new Recipe(recipeKey, username); }
     public Recipe getRecipe(){ return mRecipe; }
 
     public void setMealCompleted(boolean mealCompleted){ mMealCompleted = mealCompleted; }

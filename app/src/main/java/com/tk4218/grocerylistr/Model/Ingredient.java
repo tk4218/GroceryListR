@@ -70,6 +70,7 @@ public class Ingredient {
         return mIngredientKey;
     }
 
+
     public void setIngredientName(String ingredientName){
         mIngredientName = ingredientName;
     }

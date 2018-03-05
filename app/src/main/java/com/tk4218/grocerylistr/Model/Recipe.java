@@ -1,25 +1,19 @@
 package com.tk4218.grocerylistr.Model;
 
-import android.util.Log;
-
-import com.pinterest.android.pdk.PDKCallback;
-import com.pinterest.android.pdk.PDKClient;
-import com.pinterest.android.pdk.PDKException;
-import com.pinterest.android.pdk.PDKResponse;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 
-/**
+/*
  * Created by tk4218 on 4/30/2017.
  */
-public class Recipe {
+public class Recipe{
     private QueryBuilder mQb = new QueryBuilder();
 
     private int mRecipeKey;
+    private int mRecipeEditKey;
     private String mPinterestId;
     private String mRecipeName;
     private String mMealType;
@@ -28,40 +22,74 @@ public class Recipe {
     private boolean mFavorite;
     private int mRating;
     private Date mLastEdited;
+    private boolean mUserRecipe;
+    private boolean mUserEdited;
     private ArrayList<Ingredient> mIngredients;
 
-    public Recipe(int recipeKey){
-        final JSONResult recipe = mQb.getRecipe(recipeKey);
-        if(recipe.getCount() > 0) {
+    public Recipe(int recipeKey, String username){
+        JSONResult recipe = mQb.getRecipe(recipeKey);
+
+        if(recipe.getCount() > 0){
             setRecipeKey(recipeKey);
             setPinterestId(recipe.getString("PinterestId"));
             setRecipeName(recipe.getString("RecipeName"));
             setMealType(recipe.getString("MealType"));
             setCuisineType(recipe.getString("CuisineType"));
             setRecipeImage(recipe.getString("RecipeImage"));
-            setFavorite(recipe.getBoolean("Favorite"));
             setRating(recipe.getInt("Rating"));
             setLastEdited(recipe.getDate("LastEdited"));
-
-            JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
-            setIngredients(recipeIngredients);
         }
-    }
 
-    public Recipe(final String pinterestId){
-        JSONResult recipe = mQb.getPinterestRecipe(pinterestId);
-        if(recipe.getCount() > 0) {
-            setRecipeKey(recipe.getInt("RecipeKey"));
-            setPinterestId(pinterestId);
-            setRecipeName(recipe.getString("RecipeName"));
-            setMealType(recipe.getString("MealType"));
-            setCuisineType(recipe.getString("CuisineType"));
-            setRecipeImage(recipe.getString("RecipeImage"));
-            setFavorite(recipe.getBoolean("Favorite"));
-            setRating(recipe.getInt("Rating"));
-            setLastEdited(recipe.getDate("LastEdited"));
+        if(!username.equals("")){
+            JSONResult userRecipe = mQb.getUserRecipe(username, recipeKey);
+            if(userRecipe.getCount() > 0) {
+                setUserRecipe(true);
+                setFavorite(userRecipe.getBoolean("Favorite"));
 
-            JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
+                if(userRecipe.getInt("RecipeEditKey") != 0){
+                    setUserEdited(true);
+                    setRecipeEditKey(userRecipe.getInt("RecipeEditKey"));
+                    JSONResult userEditRecipe = mQb.getUserEditRecipe(userRecipe.getInt("RecipeEditKey"));
+                    if(userEditRecipe.getCount() > 0){
+                        setRecipeName(userEditRecipe.getString("RecipeName"));
+                        setMealType(userEditRecipe.getString("MealType"));
+                        setCuisineType(userEditRecipe.getString("CuisineType"));
+                        setLastEdited(userEditRecipe.getDate("LastEdited"));
+                    }
+                }
+            }
+        }
+
+        if (recipe.getCount() > 0) {
+            JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
+            if(mUserEdited){
+                boolean deleted;
+                JSONResult userRecipeIngredients = mQb.getUserRecipeIngredients(username, recipeKey);
+                if(userRecipeIngredients.getCount() > 0){
+                    do {
+                        deleted = false;
+                        if(recipeIngredients.findFirst("IngredientKey", userRecipeIngredients.getInt("IngredientKey"))){
+                            if(userRecipeIngredients.getBoolean("RemoveIngredient")){
+                                recipeIngredients.deleteRow(recipeIngredients.getPosition());
+                                deleted = true;
+                            }
+                        }else{
+                            recipeIngredients.addRow();
+                        }
+
+                        if(!deleted){
+                            recipeIngredients.putInt("IngredientKey", userRecipeIngredients.getInt("IngredientKey"));
+                            recipeIngredients.putString("IngredientName", userRecipeIngredients.getString("IngredientName"));
+                            recipeIngredients.putString("IngredientType", userRecipeIngredients.getString("IngredientType"));
+                            recipeIngredients.putInt("ShelfLife", userRecipeIngredients.getInt("ShelfLife"));
+                            recipeIngredients.putDouble("IngredientAmount", userRecipeIngredients.getDouble("IngredientAmount"));
+                            recipeIngredients.putString("IngredientUnit", userRecipeIngredients.getString("IngredientUnit"));
+                            recipeIngredients.putString("Preparation1", userRecipeIngredients.getString("Preparation1"));
+                            recipeIngredients.putString("Preparation2", userRecipeIngredients.getString("Preparation2"));
+                        }
+                    }while(userRecipeIngredients.moveNext());
+                }
+            }
             setIngredients(recipeIngredients);
         }
     }
@@ -85,6 +113,14 @@ public class Recipe {
 
     public void setRecipeKey(int recipeKey){
         mRecipeKey = recipeKey;
+    }
+
+    public int getRecipeEditKey(){
+        return mRecipeEditKey;
+    }
+
+    public void setRecipeEditKey(int recipeKey){
+        mRecipeEditKey = recipeKey;
     }
 
     public String getPinterestId() { return mPinterestId; }
@@ -130,6 +166,14 @@ public class Recipe {
     public Date getLastEdited() { return mLastEdited; }
 
     public void setLastEdited(Date lastEdited){ mLastEdited = lastEdited; }
+
+    public boolean isUserRecipe(){ return mUserRecipe; }
+
+    public void setUserRecipe(boolean userRecipe){ mUserRecipe = userRecipe; }
+
+    public boolean isUserEdited(){ return mUserEdited; }
+
+    public void setUserEdited(boolean userEdited){ mUserEdited = userEdited; }
 
     public ArrayList<Ingredient> getIngredients(){
         return mIngredients;

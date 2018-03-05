@@ -11,8 +11,8 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_toggle_recipes"
         android:orderInCategory="200"
-        android:title="@string/action_settings"
+        android:title="Explore Recipes"
         app:showAsAction="never" />
 </menu>
