@@ -9,9 +9,8 @@ import java.util.Date;
 /*
  * Created by tk4218 on 4/30/2017.
  */
+@SuppressWarnings({"unused", "WeakerAccess", "SameParameterValue"})
 public class Recipe{
-    private QueryBuilder mQb = new QueryBuilder();
-
     private int mRecipeKey;
     private int mRecipeEditKey;
     private String mPinterestId;
@@ -27,7 +26,8 @@ public class Recipe{
     private ArrayList<Ingredient> mIngredients;
 
     public Recipe(int recipeKey, String username){
-        JSONResult recipe = mQb.getRecipe(recipeKey);
+        QueryBuilder qb = new QueryBuilder();
+        JSONResult recipe = qb.getRecipe(recipeKey);
 
         if(recipe.getCount() > 0){
             setRecipeKey(recipeKey);
@@ -41,7 +41,7 @@ public class Recipe{
         }
 
         if(!username.equals("")){
-            JSONResult userRecipe = mQb.getUserRecipe(username, recipeKey);
+            JSONResult userRecipe = qb.getUserRecipe(username, recipeKey);
             if(userRecipe.getCount() > 0) {
                 setUserRecipe(true);
                 setFavorite(userRecipe.getBoolean("Favorite"));
@@ -49,7 +49,7 @@ public class Recipe{
                 if(userRecipe.getInt("RecipeEditKey") != 0){
                     setUserEdited(true);
                     setRecipeEditKey(userRecipe.getInt("RecipeEditKey"));
-                    JSONResult userEditRecipe = mQb.getUserEditRecipe(userRecipe.getInt("RecipeEditKey"));
+                    JSONResult userEditRecipe = qb.getUserEditRecipe(userRecipe.getInt("RecipeEditKey"));
                     if(userEditRecipe.getCount() > 0){
                         setRecipeName(userEditRecipe.getString("RecipeName"));
                         setMealType(userEditRecipe.getString("MealType"));
@@ -61,10 +61,10 @@ public class Recipe{
         }
 
         if (recipe.getCount() > 0) {
-            JSONResult recipeIngredients = mQb.getRecipeIngredients(recipeKey);
+            JSONResult recipeIngredients = qb.getRecipeIngredients(recipeKey);
             if(mUserEdited){
                 boolean deleted;
-                JSONResult userRecipeIngredients = mQb.getUserRecipeIngredients(username, recipeKey);
+                JSONResult userRecipeIngredients = qb.getUserRecipeIngredients(username, recipeKey);
                 if(userRecipeIngredients.getCount() > 0){
                     do {
                         deleted = false;

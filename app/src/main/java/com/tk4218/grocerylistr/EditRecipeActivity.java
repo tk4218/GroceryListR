@@ -14,6 +14,8 @@ import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -21,7 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -50,7 +51,8 @@ public class EditRecipeActivity extends AppCompatActivity {
     EditText mRecipeName;
     Spinner mMealType;
     Spinner mCuisineType;
-    ListView mIngredientListView;
+    RecyclerView mIngredientListView;
+    AddIngredientAdapter mAdapter;
 
     int mRecipeKey;
     Recipe mRecipe;
@@ -74,15 +76,20 @@ public class EditRecipeActivity extends AppCompatActivity {
         mMealType = findViewById(R.id.edit_meal_type);
         mCuisineType = findViewById(R.id.edit_meal_style);
         mIngredientListView = findViewById(R.id.edit_ingredient_list);
+        mIngredientListView.setLayoutManager(new LinearLayoutManager(this));
 
         Bundle extras = getIntent().getExtras();
         if(extras != null){
             mRecipeKey = extras.getInt("recipeKey");
+        }
+
+        if(mRecipeKey != 0) {
             new GetRecipeInfo().execute(mRecipeKey);
         } else {
             setTitle("Add New Recipe");
             mIngredientList = new ArrayList<>();
-            mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
+            mAdapter = new AddIngredientAdapter(this, mIngredientList);
+            mIngredientListView.setAdapter(mAdapter);
         }
     }
 
@@ -113,21 +120,13 @@ public class EditRecipeActivity extends AppCompatActivity {
      *  Event Handlers
      *********************************************/
     public void addIngredient(View view){
-        updateIngredientList();
         mIngredientList.add(new Ingredient());
-        mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
-    }
-
-    public void deleteIngredient(View view){
-        int ingredientPosition = (int) view.getTag();
-        updateIngredientList();
-        mIngredientList.remove(ingredientPosition);
-        mIngredientListView.setAdapter(new AddIngredientAdapter(this, mIngredientList));
+        mAdapter.notifyItemInserted(mIngredientList.size()-1);
     }
 
     private void updateIngredientList(){
         for(int i = 0; i < mIngredientList.size(); i++){
-            Ingredient ingredient = (Ingredient) mIngredientListView.getAdapter().getItem(i);
+            Ingredient ingredient = mAdapter.getItem(i);
             mIngredientList.get(i).setIngredientName(ingredient.getIngredientName());
         }
     }
@@ -350,7 +349,6 @@ public class EditRecipeActivity extends AppCompatActivity {
                 mQb.updateUserRecipeEditKey(mSettings.getUser(), mRecipeKey, recipeEditKey);
             }
 
-            updateIngredientList();
             JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
             recipeIngredients.addBooleanColumn("Delete", true);
             JSONResult recipeEditIngredients = mQb.getUserRecipeIngredients(mSettings.getUser(), mRecipeKey);
@@ -471,7 +469,8 @@ public class EditRecipeActivity extends AppCompatActivity {
                     }
 
                     mIngredientList = mRecipe.getIngredients();
-                    mIngredientListView.setAdapter(new AddIngredientAdapter(EditRecipeActivity.this, mIngredientList));
+                    mAdapter = new AddIngredientAdapter(EditRecipeActivity.this, mIngredientList);
+                    mIngredientListView.setAdapter(mAdapter);
                 }
             });
         }

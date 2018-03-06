@@ -62,8 +62,8 @@ public class RecipeIngredientAdapter extends RecyclerView.Adapter<RecipeIngredie
 
         ViewHolder(View itemView) {
             super(itemView);
-            ingredientAmount = (TextView) itemView.findViewById(R.id.recipe_ingredient_amount);
-            ingredientName = (TextView) itemView.findViewById(R.id.recipe_ingredient_name);
+            ingredientAmount = itemView.findViewById(R.id.recipe_ingredient_amount);
+            ingredientName = itemView.findViewById(R.id.recipe_ingredient_name);
         }
 
     }

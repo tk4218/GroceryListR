@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -14,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
@@ -26,163 +26,166 @@ import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;
 
-public class AddIngredientAdapter extends BaseAdapter{
+public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdapter.ViewHolder>{
 
     private Context mContext;
+    private LayoutInflater mInflater;
     private ArrayList<Ingredient> mIngredients;
-    private AutoCompleteTextView mIngredientName;
 
     public AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
+        mInflater = LayoutInflater.from(context);
         mIngredients = ingredients;
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
     }
 
+
     @Override
-    public int getCount() {
+    public AddIngredientAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = mInflater.inflate(R.layout.listview_add_ingredient, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+        holder.mIngredient = mIngredients.get(position);
+        holder.mPosition = position;
+
+        /*----------------------------------------------
+         * Ingredient Amount
+         *----------------------------------------------*/
+        if(holder.mIngredient.getIngredientAmount() != 0){
+            holder.mIngredientAmount.setText(String.valueOf(holder.mIngredient.getIngredientAmount()));
+        }else {
+            holder.mIngredientAmount.setText("");
+        }
+
+        holder.mIngredientAmount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(!s.toString().equals("")){
+                    try{
+                        holder.mIngredient.setIngredientAmount(Double.parseDouble(s.toString()));
+                    } catch(Exception e){
+                        Log.e("ERROR", "Error Setting Ingredient Amount.");
+                    }
+                }
+            }
+        });
+
+        /*----------------------------------------------
+         * Ingredient Unit
+         *----------------------------------------------*/
+        final String [] measurements = mContext.getResources().getStringArray(R.array.measurements);
+        if(mIngredients.get(position).getIngredientUnit() != null){
+            for(int i = 0; i < measurements.length; i++){
+                if(measurements[i].equals(mIngredients.get(position).getIngredientUnit())){
+                    holder.mIngredientUnit.setSelection(i);
+                    break;
+                }
+            }
+        } else{
+            holder.mIngredientUnit.setSelection(0);
+        }
+        holder.mIngredientUnit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                holder.mIngredient.setIngredientUnit(measurements[position]);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                holder.mIngredient.setIngredientUnit("");
+            }
+        });
+
+        /*----------------------------------------------
+         * Ingredient Name
+         *----------------------------------------------*/
+        IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient);
+        holder.mIngredientName.setAdapter(adapter);
+
+        if(holder.mIngredient.getIngredientName() != null){
+            holder.mIngredientName.setText(holder.mIngredient.getIngredientName());
+            holder.mIngredientName.setTag(holder.mIngredient.getIngredientKey());
+        } else {
+            holder.mIngredientName.setText("");
+            holder.mIngredientName.setTag(0);
+        }
+
+        holder.mIngredientName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+                String selectedIngredient = (String) parent.getAdapter().getItem(pos);
+                Log.d("DEBUG", "Current Name: " + holder.mIngredientName.getText().toString());
+
+                if(selectedIngredient.equals("+ New Ingredient")){
+                    showNewIngredientDialog(mInflater, holder);
+                }else {
+                    holder.mIngredientName.setText(selectedIngredient);
+                    new AddIngredient().execute(holder, false, selectedIngredient);
+                }
+            }
+        });
+
+        holder.mIngredientName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                if(!s.toString().equals("+ New Ingredient")) {
+                    holder.mIngredient.setIngredientName(s.toString());
+                }
+            }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().equals("+ New Ingredient")){
+                    holder.mIngredientName.setText(holder.mIngredient.getIngredientName());
+                    holder.updateIngredientList();
+                } else {
+                    holder.mIngredient.setIngredientName(s.toString());
+                    new AddIngredient().execute(holder, false, s.toString());
+                }
+
+            }
+        });
+
+        /*----------------------------------------------
+         * Delete Button
+         *----------------------------------------------*/
+        holder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mIngredients.remove(holder.mIngredient);
+                notifyDataSetChanged();
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
         return mIngredients.size();
     }
 
-    @Override
-    public Ingredient getItem(int position) {
+
+    public Ingredient getItem(int position){
         return mIngredients.get(position);
     }
 
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
-        if (convertView == null){
-            final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.listview_add_ingredient, null);
-
-            /*----------------------------------------------
-             * Ingredient Amount
-             *----------------------------------------------*/
-            final EditText ingredientAmount = convertView.findViewById(R.id.edit_ingredient_amount);
-
-            if(mIngredients.get(position).getIngredientAmount() != 0){
-                ingredientAmount.setText(String.valueOf(mIngredients.get(position).getIngredientAmount()));
-            }
-
-            ingredientAmount.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {}
-                @Override
-                public void afterTextChanged(Editable s) {
-                    if(!s.toString().equals("")){
-                        try{
-                            mIngredients.get(position).setIngredientAmount(Double.parseDouble(s.toString()));
-                        } catch(Exception e){
-                            Log.e("ERROR", "Error Setting Ingredient Amount.");
-                        }
-                    }
-                }
-            });
-
-
-            /*----------------------------------------------
-             * Ingredient Unit
-             *----------------------------------------------*/
-            final Spinner ingredientUnit = convertView.findViewById(R.id.edit_ingredient_measurement);
-            final String [] measurements = mContext.getResources().getStringArray(R.array.measurements);
-            final int ingredientPosition = position;
-
-            if(mIngredients.get(position).getIngredientUnit() != null){
-                for(int i = 0; i < measurements.length; i++){
-                    if(measurements[i].equals(mIngredients.get(position).getIngredientUnit())){
-                        ingredientUnit.setSelection(i);
-                        break;
-                    }
-                }
-            }
-
-            ingredientUnit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    mIngredients.get(ingredientPosition).setIngredientUnit(measurements[position]);
-                }
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                    mIngredients.get(ingredientPosition).setIngredientUnit("");
-                }
-            });
-
-            /*----------------------------------------------
-             * Ingredient Name
-             *----------------------------------------------*/
-            mIngredientName = convertView.findViewById(R.id.edit_ingredient_name);
-            IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient);
-            mIngredientName.setAdapter(adapter);
-
-            if(mIngredients.get(position).getIngredientName() != null){
-                mIngredientName.setText(mIngredients.get(position).getIngredientName());
-                mIngredientName.setTag(mIngredients.get(position).getIngredientKey());
-            }
-
-            mIngredientName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-                    String selectedIngredient = (String) parent.getAdapter().getItem(pos);
-                    Log.d("DEBUG", "Current Name: " + mIngredientName.getText().toString());
-                    final double ingredientAmount = mIngredients.get(position).getIngredientAmount();
-                    final String ingredientUnit = mIngredients.get(position).getIngredientUnit();
-                    if(selectedIngredient.equals("+ New Ingredient")){
-                        showNewIngredientDialog(inflater, position, ingredientAmount, ingredientUnit);
-                    }else {
-                        mIngredientName.setText(selectedIngredient);
-                        new AddIngredient().execute(position, false, selectedIngredient, ingredientAmount, ingredientUnit);
-                    }
-                }
-            });
-            mIngredientName.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    if(!s.toString().equals("+ New Ingredient")) {
-                        mIngredients.get(position).setIngredientName(s.toString());
-                    }
-                }
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
-                @Override
-                public void afterTextChanged(Editable s) {
-                    final double ingredientAmount = mIngredients.get(position).getIngredientAmount();
-                    final String ingredientUnit = mIngredients.get(position).getIngredientUnit();
-                    if(s.toString().equals("+ New Ingredient")){
-                        mIngredientName.setText(mIngredients.get(position).getIngredientName());
-                    } else {
-                        new AddIngredient().execute(position, false, s.toString(), ingredientAmount, ingredientUnit);
-                    }
-
-                }
-            });
-
-            /*----------------------------------------------
-             * Delete Button
-             *----------------------------------------------*/
-            ImageButton deleteIngredient = convertView.findViewById(R.id.edit_ingredient_delete);
-            deleteIngredient.setTag(position);
-        }
-        return convertView;
-    }
-
-
-    private void showNewIngredientDialog(LayoutInflater inflater, final int position, final double ingredientAmount, final String ingredientUnit){
+    private void showNewIngredientDialog(LayoutInflater inflater, final ViewHolder holder){
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Add New Ingredient");
         builder.setIcon(android.R.drawable.ic_input_add);
         View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
         builder.setView(dialogView);
         final EditText newIngredientName  = dialogView.findViewById(R.id.new_ingredient_name);
-        newIngredientName.setText(mIngredients.get(position).getIngredientName());
+        newIngredientName.setText(holder.mIngredient.getIngredientName());
         final Spinner newIngredientType = dialogView.findViewById(R.id.new_ingredient_type);
         final EditText newIngredientExpAmount = dialogView.findViewById(R.id.new_ingredient_exp_amount);
         final Spinner newIngredientExpInterval = dialogView.findViewById(R.id.new_ingredient_exp_interval);
@@ -194,7 +197,7 @@ public class AddIngredientAdapter extends BaseAdapter{
                 int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
                 if(interval.equals("Weeks")) expiration *= 7;
                 if(interval.equals("Months")) expiration *= 30;
-                new AddIngredient().execute(position, true, newIngredientName.getText().toString(), ingredientType, expiration, ingredientAmount, ingredientUnit);
+                new AddIngredient().execute(holder, true, newIngredientName.getText().toString(), ingredientType, expiration);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -204,37 +207,52 @@ public class AddIngredientAdapter extends BaseAdapter{
         builder.show();
     }
 
-    private class AddIngredient extends AsyncTask<Object, Void, Integer> {
+    class ViewHolder extends RecyclerView.ViewHolder{
+        EditText mIngredientAmount;
+        Spinner mIngredientUnit;
+        AutoCompleteTextView mIngredientName;
+        ImageButton mDeleteButton;
+        Ingredient mIngredient;
+        int mPosition;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+
+            mIngredientAmount = itemView.findViewById(R.id.edit_ingredient_amount);
+            mIngredientUnit = itemView.findViewById(R.id.edit_ingredient_measurement);
+            mIngredientName = itemView.findViewById(R.id.edit_ingredient_name);
+            mDeleteButton = itemView.findViewById(R.id.edit_ingredient_delete);
+        }
+
+        public void updateIngredientList(){
+            mIngredients.set(mPosition, mIngredient);
+        }
+    }
+
+    private class AddIngredient extends AsyncTask<Object, Void, ViewHolder> {
         private QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected Integer doInBackground(Object... params) {
-
+        protected ViewHolder doInBackground(Object... params) {
+            ViewHolder holder = (ViewHolder)params[0];
             if((boolean)params[1]) {
                 int ingredientKey = mQb.insertIngredient((String)params[2], (String)params[3], (int)params[4]);
-                mIngredients.set((int)params[0], new Ingredient(ingredientKey));
-                mIngredients.get((int)params[0]).setIngredientAmount((double)params[5]);
-                mIngredients.get((int)params[0]).setIngredientUnit((String)params[6]);
+                holder.mIngredient.setIngredientKey(ingredientKey);
             }else{
-                mIngredients.set((int)params[0], new Ingredient((String)params[2]));
-                if(mIngredients.get((int)params[0]).getIngredientKey() == 0)
-                    mIngredients.get((int)params[0]).setIngredientName((String)params[2]);
-
-                mIngredients.get((int)params[0]).setIngredientAmount((double)params[3]);
-                mIngredients.get((int)params[0]).setIngredientUnit((String)params[4]);
+                Ingredient ingredient = new Ingredient((String)params[2]);
+                holder.mIngredient.setIngredientKey(ingredient.getIngredientKey());
             }
 
-            return (int)params[0];
+            return holder;
         }
 
         @Override
-        protected void onPostExecute(Integer result){
-            final int position  = result;
+        protected void onPostExecute(final ViewHolder result){
             ((EditRecipeActivity) mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mIngredientName.setTag(mIngredients.get(position).getIngredientKey());
-
+                    result.updateIngredientList();
+                    result.mIngredientName.setTag(result.mIngredient.getIngredientKey());
                 }
             });
         }
