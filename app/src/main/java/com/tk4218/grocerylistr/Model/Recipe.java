@@ -94,7 +94,7 @@ public class Recipe{
         }
     }
 
-    public Recipe (int recipeKey, final String pinterestId, final String recipeName, final String mealType, final String cuisineType, String recipeImage, boolean favorite, int rating, Date lastEdited, ArrayList<Ingredient> ingredients){
+    public Recipe (int recipeKey, final String pinterestId, final String recipeName, final String mealType, final String cuisineType, String recipeImage, boolean favorite, int rating, Date lastEdited, boolean userRecipe){
         setRecipeKey(recipeKey);
         setPinterestId(pinterestId);
         setRecipeName(recipeName);
@@ -104,7 +104,7 @@ public class Recipe{
         setFavorite(favorite);
         setRating(rating);
         setLastEdited(lastEdited);
-        setIngredients(ingredients);
+        setUserRecipe(userRecipe);
     }
 
     public int getRecipeKey(){

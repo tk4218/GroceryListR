@@ -84,10 +84,10 @@ public class QueryBuilder {
     /*-----------------------------------*
      * Recipe Queries
      *-----------------------------------*/
-    public JSONResult getAllRecipes(){
+    public JSONResult getAllRecipes(String username){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select * from tableRecipe where PinterestId = ''"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited"));
+        parameters.add(addParameter("sql_query", "select r.*, coalesce(ur.Username, '') as Username from tableRecipe r left join UserRecipes ur on r.RecipeKey = ur.RecipeKey and ur.Username = '"+username+"' where r.PinterestId = ''"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited,Username"));
         return getResults(parameters);
     }
     public JSONResult getRecipe(int recipeKey){
@@ -133,8 +133,8 @@ public class QueryBuilder {
      *---------------------------------*/
     public JSONResult getUserRecipes(String username){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select ur.RecipeKey, r.PinterestId, coalesce(e.RecipeName, r.RecipeName) as RecipeName, coalesce(e.MealType, r.MealType) as MealType, coalesce(e.CuisineType, r.CuisineType) as CuisineType, r.RecipeImage, ur.Favorite, r.Rating, coalesce(e.LastEdited, '0000-00-00 00:00:00') as LastEdited from UserRecipes ur left join UserEditRecipes e on ur.RecipeEditKey <> 0 and e.RecipeEditKey = ur.RecipeEditKey, tableRecipe r where ur.Username = '"+username+"' and r.RecipeKey = ur.RecipeKey"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited"));
+        parameters.add(addParameter("sql_query", "select ur.RecipeKey, r.PinterestId, coalesce(e.RecipeName, r.RecipeName) as RecipeName, coalesce(e.MealType, r.MealType) as MealType, coalesce(e.CuisineType, r.CuisineType) as CuisineType, r.RecipeImage, ur.Favorite, r.Rating, coalesce(e.LastEdited, '0000-00-00 00:00:00') as LastEdited, ur.Username from UserRecipes ur left join UserEditRecipes e on ur.RecipeEditKey <> 0 and e.RecipeEditKey = ur.RecipeEditKey, tableRecipe r where ur.Username = '"+username+"' and r.RecipeKey = ur.RecipeKey"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited,Username"));
         return getResults(parameters);
     }
     public JSONResult getUserRecipe(String username, int recipeKey){

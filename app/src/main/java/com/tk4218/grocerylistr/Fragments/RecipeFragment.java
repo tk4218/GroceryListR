@@ -126,7 +126,7 @@ public  class RecipeFragment extends Fragment{
             if(mShowUserRecipes){
                 recipes = mQb.getUserRecipes(mSettings.getUser());
             }else{
-                recipes = mQb.getAllRecipes();
+                recipes = mQb.getAllRecipes(mSettings.getUser());
                 recipes.addBooleanColumn("Favorite", false);
             }
 
@@ -140,7 +140,8 @@ public  class RecipeFragment extends Fragment{
                         recipes.getString("RecipeImage"),
                         recipes.getBoolean("Favorite"),
                         recipes.getInt("Rating"),
-                        recipes.getDate("LastEdited"));
+                        recipes.getDate("LastEdited"),
+                        recipes.getString("Username"));
                 recipes.moveNext();
             }
 
@@ -163,8 +164,9 @@ public  class RecipeFragment extends Fragment{
             });
         }
 
-        private void addRecipe(int recipeKey, String pinterestId, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastEdited){
-            mRecipes.add(new Recipe(recipeKey, pinterestId, recipeName, mealType, mealStyle, recipeImage, favorite, rating, lastEdited, null));
+        private void addRecipe(int recipeKey, String pinterestId, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastEdited, String username){
+            boolean userRecipe = username.equals(mSettings.getUser());
+            mRecipes.add(new Recipe(recipeKey, pinterestId, recipeName, mealType, mealStyle, recipeImage, favorite, rating, lastEdited, userRecipe));
         }
     }
 }

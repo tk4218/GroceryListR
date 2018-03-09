@@ -1,20 +1,27 @@
 package com.tk4218.grocerylistr.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,49 +65,102 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         holder.recipe = mFilteredRecipes.get(position);
         holder.recipeName.setText(mFilteredRecipes.get(position).getRecipeName());
 
-        if(mFilteredRecipes.get(position).getFavorite()){
-            holder.favorite.setImageResource(android.R.drawable.btn_star_big_on);
-        } else {
-            holder.favorite.setImageResource(android.R.drawable.btn_star);
+        if(holder.recipe.isUserRecipe()){
+            if(mFilteredRecipes.get(position).getFavorite()){
+                holder.saveFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+            } else {
+                holder.saveFavorite.setImageResource(android.R.drawable.btn_star);
+            }
+            holder.saveFavorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.recipe.setFavorite(!holder.recipe.getFavorite());
+
+                    QueryBuilder qb = new QueryBuilder();
+                    if(qb.updateRecipeFavorite(mSettings.getUser(), holder.recipe.getRecipeKey(), holder.recipe.getFavorite())){
+                        if (holder.recipe.getFavorite()){
+                            holder.saveFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+                        } else {
+                            holder.saveFavorite.setImageResource(android.R.drawable.btn_star);
+                        }
+                    } else{
+                        Toast.makeText(RecipeAdapter.this.mContext, "Oops! Something went wrong.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else{
+            holder.saveFavorite.setImageResource(android.R.drawable.ic_input_add);
+            holder.saveFavorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    saveRecipe(holder.recipe.getRecipeKey(), holder.recipe.getRecipeName(), holder);
+                }
+            });
         }
 
-        holder.favorite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                holder.recipe.setFavorite(!holder.recipe.getFavorite());
-
-                Log.d("UPDATE RECIPE", "Set Key " +holder.recipe.getRecipeKey()+ " to " + holder.recipe.getFavorite());
-                QueryBuilder qb = new QueryBuilder();
-                if(qb.updateRecipeFavorite(mSettings.getUser(), holder.recipe.getRecipeKey(), holder.recipe.getFavorite())){
-                    if (holder.recipe.getFavorite()){
-                        holder.favorite.setImageResource(android.R.drawable.btn_star_big_on);
-                    } else {
-                        holder.favorite.setImageResource(android.R.drawable.btn_star);
-                    }
-                } else{
-                    Toast.makeText(RecipeAdapter.this.mContext, "Oops! Something went wrong.", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
 
         holder.scheduleRecipe.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogFragment datePicker = new DatePickerFragment();
-                Bundle arguments = new Bundle();
-                arguments.putInt("recipeKey", holder.recipe.getRecipeKey());
-                datePicker.setArguments(arguments);
-                datePicker.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "datePicker");
-            }
+                @Override
+                public void onClick(View v) {
+                    DialogFragment datePicker = new DatePickerFragment();
+                    Bundle arguments = new Bundle();
+                    arguments.putInt("recipeKey", holder.recipe.getRecipeKey());
+                    datePicker.setArguments(arguments);
+                    datePicker.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "datePicker");
+                }
         });
 
-        holder.editRecipe.setOnClickListener(new View.OnClickListener() {
+        holder.recipeOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, EditRecipeActivity.class);
-                intent.putExtra("recipeKey", holder.recipe.getRecipeKey());
-                mContext.startActivity(intent);
+                PopupMenu recipeMenu = new PopupMenu(mContext, v);
+                recipeMenu.inflate(R.menu.menu_recipe_options);
+                if(holder.recipe.isUserRecipe()){
+                    recipeMenu.getMenu().findItem(R.id.option_save_recipe).setVisible(false);
+                    if(holder.recipe.getFavorite()){
+                        recipeMenu.getMenu().findItem(R.id.option_favorite).setTitle("Remove Favorite");
+                    }else {
+                        recipeMenu.getMenu().findItem(R.id.option_favorite).setTitle("Make Favorite");
+                    }
+                }else {
+                    recipeMenu.getMenu().findItem(R.id.option_edit_recipe).setVisible(false);
+                    recipeMenu.getMenu().findItem(R.id.option_favorite).setVisible(false);
+                    recipeMenu.getMenu().findItem(R.id.option_delete_recipe).setVisible(false);
+                }
+                recipeMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()){
+                            case R.id.option_view_recipe:
+                                Intent recipeIntent = new Intent(mContext, RecipeActivity.class);
+                                recipeIntent.putExtra("recipeKey", holder.recipe.getRecipeKey());
+                                mContext.startActivity(recipeIntent);
+                                break;
+                            case R.id.option_edit_recipe:
+                                Intent editIntent = new Intent(mContext, EditRecipeActivity.class);
+                                editIntent.putExtra("recipeKey", holder.recipe.getRecipeKey());
+                                mContext.startActivity(editIntent);
+                            case R.id.option_favorite:
+                                holder.recipe.setFavorite(!holder.recipe.getFavorite());
+
+                                QueryBuilder qb = new QueryBuilder();
+                                if(qb.updateRecipeFavorite(mSettings.getUser(), holder.recipe.getRecipeKey(), holder.recipe.getFavorite())){
+                                    if (holder.recipe.getFavorite()){
+                                        holder.saveFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+                                    } else {
+                                        holder.saveFavorite.setImageResource(android.R.drawable.btn_star);
+                                    }
+                                } else{
+                                    Toast.makeText(RecipeAdapter.this.mContext, "Oops! Something went wrong.", Toast.LENGTH_SHORT).show();
+                                }
+                            case R.id.option_save_recipe:
+                                saveRecipe(holder.recipe.getRecipeKey(), holder.recipe.getRecipeName(), holder);
+                            case R.id.option_delete_recipe:
+                        }
+                        return false;
+                    }
+                });
+                recipeMenu.show();
             }
         });
 
@@ -166,14 +226,32 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         };
     }
 
+    public void saveRecipe(final int recipeKey, String recipeName, final ViewHolder holder){
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("Save Recipe")
+                .setMessage("Save " + recipeName + " to your recipes?")
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new SaveUserRecipe().execute(recipeKey);
+                        holder.recipe.setUserRecipe(true);
+                        notifyDataSetChanged();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {}
+                }).create().show();
+    }
 
     class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener {
 
         TextView recipeName;
         ImageView recipeImage;
-        ImageButton favorite;
+        ImageButton recipeOptions;
+        ImageButton saveFavorite;
         ImageButton scheduleRecipe;
-        ImageButton editRecipe;
+
         ImageView pinterestIcon;
         public Recipe recipe;
 
@@ -181,9 +259,9 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
             super(itemView);
             recipeName = itemView.findViewById(R.id.gridRecipeName);
             recipeImage = itemView.findViewById(R.id.gridRecipeImage);
-            favorite = itemView.findViewById(R.id.gridFavorite);
-            scheduleRecipe = itemView.findViewById(R.id.gridSchedule);
-            editRecipe = itemView.findViewById(R.id.gridEdit);
+            recipeOptions = itemView.findViewById(R.id.action_recipe_options);
+            saveFavorite = itemView.findViewById(R.id.action_save_favorite);
+            scheduleRecipe = itemView.findViewById(R.id.action_schedule_recipe);
             pinterestIcon = itemView.findViewById(R.id.gridPinterest);
             itemView.setOnClickListener(this);
         }
@@ -193,6 +271,16 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
             Intent recipeIntent = new Intent(v.getContext(), RecipeActivity.class);
             recipeIntent.putExtra("recipeKey", recipe.getRecipeKey());
             v.getContext().startActivity(recipeIntent);
+        }
+    }
+
+    private class SaveUserRecipe extends AsyncTask<Integer, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            mQb.insertUserRecipe(mSettings.getUser(), params[0]);
+            return null;
         }
     }
 }

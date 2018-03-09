@@ -252,6 +252,16 @@ public class JSONResult {
         } catch (JSONException e){ e.printStackTrace(); }
     }
 
+    public void addStringColumn(String columnName){ addStringColumn(columnName, "");   }
+
+    public void addStringColumn(String columnName, String defaultValue){
+        try {
+            for (int i = 0; i < getCount(); i++) {
+                result.getJSONObject(i).put(columnName, defaultValue);
+            }
+        } catch (JSONException e){ e.printStackTrace(); }
+    }
+
     public void deleteColumn(String columnName){
         try {
             for (int i = 0; i < getCount(); i++) {
