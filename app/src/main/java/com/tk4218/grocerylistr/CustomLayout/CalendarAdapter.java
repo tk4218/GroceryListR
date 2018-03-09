@@ -17,16 +17,16 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-/**
+/*
  * Created by taylo on 12/10/2017.
  */
 
 public class CalendarAdapter extends BaseAdapter {
 
-    Context mContext;
-    ArrayList<MealPlan> mDaysOfMonth;
-    int mCurrentMonth;
-    final SimpleDateFormat dayFormat = new SimpleDateFormat("dd", Locale.getDefault());
+    private Context mContext;
+    private ArrayList<MealPlan> mDaysOfMonth;
+    private int mCurrentMonth;
+    private final SimpleDateFormat dayFormat = new SimpleDateFormat("dd", Locale.getDefault());
 
     public CalendarAdapter(Context context, ArrayList<MealPlan> daysOfMonth, int currentMonth) {
         mContext = context;
@@ -56,9 +56,9 @@ public class CalendarAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.gridview_calendar_day, null);
         }
 
-        TextView dayOfMonth = (TextView) convertView.findViewById(R.id.day_of_month);
+        TextView dayOfMonth = convertView.findViewById(R.id.day_of_month);
         dayOfMonth.setText(dayFormat.format(mDaysOfMonth.get(position).getMealPlanDate()));
-        ListView dayMeals = (ListView) convertView.findViewById(R.id.listview_meals);
+        ListView dayMeals = convertView.findViewById(R.id.listview_meals);
         dayMeals.setAdapter(new CalendarDayAdapter(mContext, mDaysOfMonth.get(position).getMealPlanMeals()));
 
         Calendar calendar = Calendar.getInstance();

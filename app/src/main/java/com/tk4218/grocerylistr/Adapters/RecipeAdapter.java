@@ -34,6 +34,7 @@ import com.tk4218.grocerylistr.RecipeActivity;
 import java.util.ArrayList;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> implements Filterable{
+
     private ApplicationSettings mSettings;
     private Context mContext;
     private LayoutInflater mInflater;
@@ -68,6 +69,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
             } else {
                 holder.saveFavorite.setImageResource(android.R.drawable.btn_star);
             }
+
             holder.saveFavorite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -94,7 +96,6 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 }
             });
         }
-
 
         holder.scheduleRecipe.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -195,14 +196,10 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 } else {
                     ArrayList<Recipe> filteredList = new ArrayList<>();
                     for (Recipe row : mRecipes) {
-
-                        // name match condition. this might differ depending on your requirement
-                        // here we are looking for name or phone number match
                         if (row.getRecipeName().toLowerCase().contains(searchString.toLowerCase())) {
                             filteredList.add(row);
                         }
                     }
-
                     mFilteredRecipes = filteredList;
                 }
 

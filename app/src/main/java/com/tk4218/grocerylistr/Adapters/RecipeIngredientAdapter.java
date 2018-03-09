@@ -6,29 +6,23 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Model.Ingredient;
 import com.tk4218.grocerylistr.R;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 
-/**
+/*
  * Created by Tk4218 on 10/8/2017.
  */
 
 public class RecipeIngredientAdapter extends RecyclerView.Adapter<RecipeIngredientAdapter.ViewHolder> {
 
-    private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<Ingredient> mIngredients;
 
     public RecipeIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
-        mContext = context;
         mInflater = LayoutInflater.from(context);
         mIngredients = ingredients;
 
@@ -45,7 +39,8 @@ public class RecipeIngredientAdapter extends RecyclerView.Adapter<RecipeIngredie
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.ingredient = mIngredients.get(position);
-        holder.ingredientAmount.setText(mIngredients.get(position).getFormattedIngredientAmount() + " " + mIngredients.get(position).getIngredientUnit());
+        String ingredientAmountText = mIngredients.get(position).getFormattedIngredientAmount() + " " + mIngredients.get(position).getIngredientUnit();
+        holder.ingredientAmount.setText(ingredientAmountText);
         holder.ingredientName.setText(mIngredients.get(position).getIngredientName());
     }
 
@@ -53,7 +48,6 @@ public class RecipeIngredientAdapter extends RecyclerView.Adapter<RecipeIngredie
     public int getItemCount() {
         return mIngredients.size();
     }
-
 
     class ViewHolder extends RecyclerView.ViewHolder{
         TextView ingredientAmount;

@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-/**
+/*
  * Created by Tk4218 on 8/12/2017.
  */
 

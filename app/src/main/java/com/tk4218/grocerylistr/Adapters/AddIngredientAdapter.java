@@ -43,15 +43,14 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
 
 
     @Override
-    public AddIngredientAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.listview_add_ingredient, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mIngredient = mIngredients.get(position);
-        holder.mPosition = position;
 
         /*----------------------------------------------
          * Ingredient Amount
@@ -122,10 +121,9 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
                 String selectedIngredient = (String) parent.getAdapter().getItem(pos);
-                Log.d("DEBUG", "Current Name: " + holder.mIngredientName.getText().toString());
 
                 if(selectedIngredient.equals("+ New Ingredient")){
-                    showNewIngredientDialog(mInflater, holder);
+                    showNewIngredientDialog(holder);
                 }else {
                     holder.mIngredientName.setText(selectedIngredient);
                     new AddIngredient().execute(holder, false, selectedIngredient);
@@ -147,7 +145,6 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
             public void afterTextChanged(Editable s) {
                 if(s.toString().equals("+ New Ingredient")){
                     holder.mIngredientName.setText(holder.mIngredient.getIngredientName());
-                    holder.updateIngredientList();
                 } else {
                     holder.mIngredient.setIngredientName(s.toString());
                     new AddIngredient().execute(holder, false, s.toString());
@@ -173,22 +170,21 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         return mIngredients.size();
     }
 
-
-    public Ingredient getItem(int position){
-        return mIngredients.get(position);
-    }
-
-    private void showNewIngredientDialog(LayoutInflater inflater, final ViewHolder holder){
+    private void showNewIngredientDialog(final ViewHolder holder){
+        View dialogView = mInflater.inflate(R.layout.dialog_new_ingredient, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle("Add New Ingredient");
-        builder.setIcon(android.R.drawable.ic_input_add);
-        View dialogView = inflater.inflate(R.layout.dialog_new_ingredient, null);
-        builder.setView(dialogView);
+
+        builder.setTitle("Add New Ingredient")
+               .setIcon(android.R.drawable.ic_input_add)
+               .setView(dialogView);
+
         final EditText newIngredientName  = dialogView.findViewById(R.id.new_ingredient_name);
-        newIngredientName.setText(holder.mIngredient.getIngredientName());
         final Spinner newIngredientType = dialogView.findViewById(R.id.new_ingredient_type);
         final EditText newIngredientExpAmount = dialogView.findViewById(R.id.new_ingredient_exp_amount);
         final Spinner newIngredientExpInterval = dialogView.findViewById(R.id.new_ingredient_exp_interval);
+
+        newIngredientName.setText(holder.mIngredient.getIngredientName());
+
         builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -199,12 +195,12 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
                 if(interval.equals("Months")) expiration *= 30;
                 new AddIngredient().execute(holder, true, newIngredientName.getText().toString(), ingredientType, expiration);
             }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {}
-        });
-        builder.show();
+        })
+                .show();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{
@@ -213,19 +209,14 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         AutoCompleteTextView mIngredientName;
         ImageButton mDeleteButton;
         Ingredient mIngredient;
-        int mPosition;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
 
             mIngredientAmount = itemView.findViewById(R.id.edit_ingredient_amount);
             mIngredientUnit = itemView.findViewById(R.id.edit_ingredient_measurement);
             mIngredientName = itemView.findViewById(R.id.edit_ingredient_name);
             mDeleteButton = itemView.findViewById(R.id.edit_ingredient_delete);
-        }
-
-        public void updateIngredientList(){
-            mIngredients.set(mPosition, mIngredient);
         }
     }
 
@@ -251,7 +242,6 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
             ((EditRecipeActivity) mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    result.updateIngredientList();
                     result.mIngredientName.setTag(result.mIngredient.getIngredientKey());
                 }
             });

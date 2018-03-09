@@ -3,7 +3,6 @@ package com.tk4218.grocerylistr.Adapters;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +17,11 @@ import com.tk4218.grocerylistr.R;
 import java.util.ArrayList;
 
 public class IngredientDropdownAdapter extends ArrayAdapter<String> implements Filterable{
-    private Context mContext;
+
     private ArrayList<String> mIngredients;
 
     public IngredientDropdownAdapter(Context context, int viewResourceId){
         super(context, viewResourceId);
-        mContext = context;
         mIngredients = new ArrayList<>();
     }
 
@@ -37,6 +35,7 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> implements F
         return mIngredients.get(position);
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent){
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -51,7 +50,7 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> implements F
     @Override
     public Filter getFilter() {
 
-        Filter mFilter = new Filter() {
+        return new Filter() {
 
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
@@ -61,13 +60,10 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> implements F
                     String ingredientFilter = constraint.toString();
 
                     if(ingredientFilter.length() >= 3 ){
-                        Log.d("FILTER", "Filter ingredients by " + ingredientFilter);
                         try{
                             mIngredients = new SetIngredientFilter().execute(ingredientFilter).get();
                             mIngredients.add("+ New Ingredient");
-                        } catch(Exception e){
-                            Log.e("ERROR", "Error Retrieving Filtered Recipes.");
-                        }
+                        } catch(Exception e){ e.printStackTrace(); }
                     }
                 }
                 results.values = mIngredients;
@@ -90,8 +86,6 @@ public class IngredientDropdownAdapter extends ArrayAdapter<String> implements F
                 notifyDataSetChanged();
             }
         };
-
-        return mFilter;
     }
 
     private class SetIngredientFilter extends AsyncTask<String, Void, ArrayList<String>> {

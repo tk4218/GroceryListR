@@ -3,7 +3,6 @@ package com.tk4218.grocerylistr.Adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
 
 import com.tk4218.grocerylistr.Fragments.CalendarFragment;
 import com.tk4218.grocerylistr.Fragments.RecipeFragment;
@@ -22,7 +21,6 @@ public class MainViewPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
-        Log.d("Tab Number", position+"");
         switch(position){
             case 0:
                 return CalendarFragment.newInstance();

@@ -19,7 +19,7 @@ public class CalendarDayAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<Meal> mMeals;
 
-    public CalendarDayAdapter(Context context, ArrayList<Meal> meals){
+    CalendarDayAdapter(Context context, ArrayList<Meal> meals){
         mContext = context;
         mMeals = meals;
     }

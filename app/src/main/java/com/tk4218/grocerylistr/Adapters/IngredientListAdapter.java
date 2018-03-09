@@ -22,11 +22,12 @@ import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;
 
-/**
+/*
  * Created by Tk4218 on 11/28/2017.
  */
 
 public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAdapter.ViewHolder> {
+
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<Ingredient> mIngredients;
@@ -41,12 +42,13 @@ public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAd
     }
 
     @Override
-    public IngredientListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.listview_ingredient_list, parent, false);
-        return new ViewHolder(view);    }
+        return new ViewHolder(view);
+    }
 
     @Override
-    public void onBindViewHolder(final IngredientListAdapter.ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.ingredient = mIngredients.get(position);
         holder.ingredientName.setText(mIngredients.get(position).getIngredientName());
         holder.ingredientType.setText(mIngredients.get(position).getIngredientType());
@@ -54,7 +56,7 @@ public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAd
         holder.editIngredient.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showEditIngredientDialog(holder.ingredient, position);
+                showEditIngredientDialog(holder.ingredient, holder.getAdapterPosition());
             }
         });
     }
@@ -66,10 +68,10 @@ public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAd
         View dialogView = mInflater.inflate(R.layout.dialog_new_ingredient, null);
         builder.setView(dialogView);
 
-        final EditText editIngredientName  = (EditText) dialogView.findViewById(R.id.new_ingredient_name);
+        final EditText editIngredientName  = dialogView.findViewById(R.id.new_ingredient_name);
         editIngredientName.setText(ingredient.getIngredientName());
 
-        final Spinner editIngredientType = (Spinner) dialogView.findViewById(R.id.new_ingredient_type);
+        final Spinner editIngredientType = dialogView.findViewById(R.id.new_ingredient_type);
         final String [] ingredientTypes = mContext.getResources().getStringArray(R.array.ingredient_type);
         for(int i = 0; i < ingredientTypes.length; i++){
             if(ingredientTypes[i].equals(ingredient.getIngredientType())){
@@ -78,18 +80,20 @@ public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAd
             }
         }
 
-        final EditText editIngredientExpAmount = (EditText) dialogView.findViewById(R.id.new_ingredient_exp_amount);
-        final Spinner editIngredientExpInterval = (Spinner) dialogView.findViewById(R.id.new_ingredient_exp_interval);
+        final EditText editIngredientExpAmount = dialogView.findViewById(R.id.new_ingredient_exp_amount);
+        final Spinner editIngredientExpInterval =  dialogView.findViewById(R.id.new_ingredient_exp_interval);
+        String shelfLifeText;
         if(ingredient.getShelfLife() % 30 == 0){
-            editIngredientExpAmount.setText(ingredient.getShelfLife()/30 + "");
+            shelfLifeText = ingredient.getShelfLife()/30 + "";
             editIngredientExpInterval.setSelection(2);
         } else if(ingredient.getShelfLife() % 7 == 0){
-            editIngredientExpAmount.setText(ingredient.getShelfLife()/7 + "");
+            shelfLifeText = ingredient.getShelfLife()/7 + "";
             editIngredientExpInterval.setSelection(1);
         } else {
-            editIngredientExpAmount.setText(ingredient.getShelfLife() + "");
+            shelfLifeText = ingredient.getShelfLife() + "";
             editIngredientExpInterval.setSelection(0);
         }
+        editIngredientExpAmount.setText(shelfLifeText);
 
         builder.setPositiveButton("Change", new DialogInterface.OnClickListener() {
             @Override
@@ -97,8 +101,10 @@ public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAd
                 String ingredientType = editIngredientType.getSelectedItem().toString();
                 String interval = editIngredientExpInterval.getSelectedItem().toString();
                 int expiration = Integer.parseInt(editIngredientExpAmount.getText().toString());
+
                 if(interval.equals("Weeks")) expiration *= 7;
                 if(interval.equals("Months")) expiration *= 30;
+
                 new EditIngredient().execute(position, editIngredientName.getText().toString(), ingredientType, expiration, mIngredients.get(position).getIngredientKey());
             }
         });
@@ -123,10 +129,10 @@ public class IngredientListAdapter extends RecyclerView.Adapter<IngredientListAd
 
         ViewHolder(View itemView){
             super(itemView);
-            ingredientName = (TextView) itemView.findViewById(R.id.list_ingredient_name);
-            ingredientType = (TextView) itemView.findViewById(R.id.list_ingredient_type);
-            ingredientTypeImage = (ImageView) itemView.findViewById(R.id.list_ingredient_type_image);
-            editIngredient = (ImageButton) itemView.findViewById(R.id.list_edit_ingredient);
+            ingredientName = itemView.findViewById(R.id.list_ingredient_name);
+            ingredientType = itemView.findViewById(R.id.list_ingredient_type);
+            ingredientTypeImage = itemView.findViewById(R.id.list_ingredient_type_image);
+            editIngredient = itemView.findViewById(R.id.list_edit_ingredient);
             itemView.setOnClickListener(this);
         }
 

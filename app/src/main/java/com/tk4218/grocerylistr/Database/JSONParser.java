@@ -14,22 +14,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-
-/**
+/*
  * Created by Tk4218 on 8/12/2017.
  */
 
-public class JSONParser {
+class JSONParser {
 
-    public JSONObject makeHttpRequest(String link, ArrayList<ArrayList<String>> params) {
-        String json = "";
+    JSONObject makeHttpRequest(String link, ArrayList<ArrayList<String>> params) {
+        String json;
         JSONObject jObj = null;
 
-
         try {
-            /****************************************
+            /*----------------------------------------*
              Set URL to connect to amazon AWS database
-             ****************************************/
+             *----------------------------------------*/
             URL url = new URL(link);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
@@ -39,9 +37,9 @@ public class JSONParser {
             con.setDoOutput(true);
             con.connect();
 
-            /********************************
+            /*----------------------------------------*
              * Build and set POST parameters
-             ********************************/
+             *----------------------------------------*/
             Uri.Builder builder = new Uri.Builder();
             for(int i = 0; i < params.size(); i++) {
                 builder.appendQueryParameter(params.get(i).get(0), params.get(i).get(1));
@@ -58,16 +56,16 @@ public class JSONParser {
             writer.close();
             os.close();
 
-            /**********************************
+            /*----------------------------------------*
              * Read results and set JSONObject
-             **********************************/
+             *----------------------------------------*/
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
 
             StringBuilder sb = new StringBuilder();
-            String line = null;
+            String line;
 
-            while((line= reader.readLine()) != null){
-                sb.append(line + "\n");
+            while((line = reader.readLine()) != null){
+                sb.append(line).append("\n");
             }
             json = sb.toString();
             Log.d("JSON Text", json);

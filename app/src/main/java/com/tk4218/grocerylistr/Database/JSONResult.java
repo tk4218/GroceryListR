@@ -12,16 +12,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
-/**
+/*
  * Created by Tk4218 on 8/12/2017.
  */
 
+@SuppressWarnings({"unused", "SameParameterValue"})
 public class JSONResult {
     public static final int SORT_ASCENDING = 0;
     public static final int SORT_DESCENDING = 1;
+
+    private SimpleDateFormat mDateFormatShort = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+    private SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);
+
 
     private JSONArray result;
     private int index = 0;
@@ -174,8 +179,7 @@ public class JSONResult {
         try{
             String date = result.getJSONObject(index).getString(columnName);
             if(date.equals("0000-00-00 00:00:00") || date.equals("null")) return new Date(0);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            return dateFormat.parse(date);
+            return mDateFormatShort.parse(date);
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -186,7 +190,7 @@ public class JSONResult {
         try{
             String date = result.getJSONObject(position).getString(columnName);
             if(date.equals("0000-00-00 00:00:00") || date.equals("null")) return new Date(0);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             return dateFormat.parse(date);
         } catch (Exception e){
             e.printStackTrace();
@@ -196,15 +200,13 @@ public class JSONResult {
 
     public void putDate(String columnName, Date value){
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            result.getJSONObject(index).put(columnName, dateFormat.format(value));
+            result.getJSONObject(index).put(columnName, mDateFormat.format(value));
         } catch (JSONException e) { e.printStackTrace(); }
     }
 
     public void putDate(int position, String columnName, Date value){
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            result.getJSONObject(position).put(columnName, dateFormat.format(value));
+            result.getJSONObject(position).put(columnName, mDateFormat.format(value));
         } catch (JSONException e) { e.printStackTrace(); }
     }
 
@@ -365,11 +367,11 @@ public class JSONResult {
             return (int) value1 == (int) value2;
         }
         if(value2.getClass().equals(String.class))
-            return ((String) value1).equals((String) value2);
+            return  value1.equals(value2);
         if(value2.getClass().equals(Boolean.class))
-            return  (Boolean) value1 == (Boolean) value2;
+            return value1 == value2;
         if(value2.getClass().equals(Date.class))
-            return ((Date)value1).equals(value2);
+            return value1.equals(value2);
 
         return false;
     }

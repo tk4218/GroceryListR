@@ -22,12 +22,13 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the current date as the default date in the picker
         mSettings = new ApplicationSettings(getActivity());
 
         Bundle arguments = getArguments();
-        mRecipeKey = arguments.getInt("recipeKey");
+        if(arguments != null)
+            mRecipeKey = arguments.getInt("recipeKey");
 
+        // Use the current date as the default date in the picker
         final Calendar c = Calendar.getInstance();
         int year = c.get(Calendar.YEAR);
         int month = c.get(Calendar.MONTH);

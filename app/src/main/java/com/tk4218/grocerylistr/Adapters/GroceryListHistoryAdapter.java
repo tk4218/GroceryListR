@@ -18,16 +18,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-/**
+/*
  * Created by taylo on 11/25/2017.
  */
 
 public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListHistoryAdapter.ViewHolder> {
+
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<GroceryList> mGroceryListHistory;
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
-
 
     public GroceryListHistoryAdapter(Context context, ArrayList<GroceryList> groceryListHistory){
         mContext = context;
@@ -48,6 +47,7 @@ public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListH
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.groceryList = mGroceryListHistory.get(position);
 
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
         Date dateFrom = mGroceryListHistory.get(position).getMealPlanDateStart();
         Date dateTo = mGroceryListHistory.get(position).getMealPlanDateEnd();
         String groceryListDate = dateFormat.format(dateFrom) + (!dateFrom.equals(dateTo) ? " to " + dateFormat.format(dateTo) : "");
@@ -55,7 +55,8 @@ public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListH
 
         if(mGroceryListHistory.get(position).getGroceryListCompleted()){
             Date dateCompleted = mGroceryListHistory.get(position).getCompletedDate();
-            holder.groceryListCompleted.setText("Completed: " + dateFormat.format(dateCompleted));
+            String completedText = "Completed: " + dateFormat.format(dateCompleted);
+            holder.groceryListCompleted.setText(completedText);
         } else {
             holder.groceryListCompleted.setText("");
         }
@@ -73,8 +74,8 @@ public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListH
 
         ViewHolder(View itemView){
             super(itemView);
-            groceryListItem = (TextView) itemView.findViewById(R.id.item_grocerylist);
-            groceryListCompleted = (TextView) itemView.findViewById(R.id.item_grocerylist_completed);
+            groceryListItem = itemView.findViewById(R.id.item_grocerylist);
+            groceryListCompleted = itemView.findViewById(R.id.item_grocerylist_completed);
             itemView.setOnClickListener(this);
         }
 
