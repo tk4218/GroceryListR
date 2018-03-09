@@ -10,8 +10,6 @@ import android.os.StrictMode;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +18,6 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -226,7 +223,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         };
     }
 
-    public void saveRecipe(final int recipeKey, String recipeName, final ViewHolder holder){
+    private void saveRecipe(final int recipeKey, String recipeName, final ViewHolder holder){
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Save Recipe")
                 .setMessage("Save " + recipeName + " to your recipes?")
