@@ -48,8 +48,21 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@android:drawable/ic_menu_today"
         app:backgroundTint="@color/colorPrimary"
+        app:fabSize="mini"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/button_recipe_edit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="54dp"
+        android:clickable="true"
+        app:backgroundTint="@color/colorPrimary"
+        app:fabSize="mini"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="bottom|end"
+        app:srcCompat="@android:drawable/ic_menu_edit" />
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"

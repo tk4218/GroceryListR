@@ -124,13 +124,6 @@ public class EditRecipeActivity extends AppCompatActivity {
         mAdapter.notifyItemInserted(mIngredientList.size()-1);
     }
 
-    private void updateIngredientList(){
-        for(int i = 0; i < mIngredientList.size(); i++){
-            Ingredient ingredient = mAdapter.getItem(i);
-            mIngredientList.get(i).setIngredientName(ingredient.getIngredientName());
-        }
-    }
-
     public void changePicture(View view){
         Log.d("Change Picture", "Recipe Image Clicked");
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

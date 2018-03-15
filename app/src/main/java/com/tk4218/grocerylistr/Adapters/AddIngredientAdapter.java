@@ -1,5 +1,6 @@
 package com.tk4218.grocerylistr.Adapters;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -171,6 +172,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
     }
 
     private void showNewIngredientDialog(final ViewHolder holder){
+        @SuppressLint("InflateParams")
         View dialogView = mInflater.inflate(R.layout.dialog_new_ingredient, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 

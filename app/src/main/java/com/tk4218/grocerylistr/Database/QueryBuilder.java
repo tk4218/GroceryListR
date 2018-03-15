@@ -127,6 +127,11 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "update UserEditRecipes set RecipeName = '"+recipeName+"', MealType = '"+cuisineType+"', CuisineType = '"+cuisineType+"' where Username = '"+username+"' and RecipeKey = " + recipeKey));
         return insert(parameters);
     }
+    public boolean deleteUserEditRecipe(int recipeEditKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "delete from UserEditRecipes where RecipeEditKey = " + recipeEditKey));
+        return insert(parameters);
+    }
 
     /*---------------------------------
      * User Recipes Queries
@@ -158,6 +163,11 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "update UserRecipes set Favorite = " + (favorite ? 1 : 0) + " where Username = '"+username+"' and RecipeKey = " + recipeKey));
         return insert(parameters);
     }
+    public boolean deleteUserRecipe(String username, int recipeKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "delete from UserRecipes where Username = '"+username+"' and RecipeKey = " + recipeKey));
+        return insert(parameters);
+    }
 
     /*-----------------------------------*
      * Ingredient Queries
@@ -168,34 +178,29 @@ public class QueryBuilder {
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife"));
         return getResults(parameters);
     }
-
     public JSONResult getIngredient(int ingredientKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select * from tableIngredient where IngredientKey = '" + ingredientKey + "'"));
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife"));
         return getResults(parameters);
     }
-
     public JSONResult getAllIngredients(){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select * from tableIngredient"));
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife"));
         return getResults(parameters);
     }
-
     public JSONResult getIngredientsFilter(String filter){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select * from tableIngredient where IngredientName like '%"+ filter +"%'"));
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife"));
         return getResults(parameters);
     }
-
     public int insertIngredient(String ingredientName, String ingredientType, int shelfLife){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "insert into tableIngredient (IngredientName,IngredientType,ShelfLife) values('" + ingredientName.replace("'", "''") + "','" + ingredientType + "'," + shelfLife + ")"));
         return insertReturnKey(parameters);
     }
-
     public boolean editIngredient(String ingredientName, String ingredientType, int shelfLife, int ingredientKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update tableIngredient set IngredientName = '" + ingredientName.replace("'", "''") + "', IngredientType = '" + ingredientType + "', ShelfLife = " + shelfLife + " where IngredientKey = " + ingredientKey));
@@ -211,27 +216,23 @@ public class QueryBuilder {
                                                  "values(" + recipeKey + "," + ingredientKey + "," + ingredientAmount + ",'" + ingredientUnit + "','" + preparation1 + "','" + preparation2 + "'," + (optional ? 1 : 0) + ")"));
         return insert(parameters);
     }
-
     public JSONResult getRecipeIngredients(int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit, ri.Preparation1, ri.Preparation2 from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey"));
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit,Preparation1,Preparation2"));
         return getResults(parameters);
     }
-
     public JSONResult getRecipeIngredient(int recipeKey, String ingredientName){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select i.IngredientKey, i.IngredientName, i.IngredientType, i.ShelfLife, ri.IngredientAmount, ri.IngredientUnit, ri.Preparation1, ri.Preparation2 from tableRecipeToIngredient ri, tableIngredient i where ri.RecipeKey = " +recipeKey+ " and i.IngredientKey = ri.ingredientKey and i.IngredientName = '" + ingredientName + "'"));
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit,Preparation1,Preparation2"));
         return getResults(parameters);
     }
-
     public boolean updateRecipeToIngredient(int recipeKey, int ingredientKey, double ingredientAmount, String ingredientUnit){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update tableRecipeToIngredient set IngredientAmount = "+ ingredientAmount +", IngredientUnit = '"+ ingredientUnit +"' where RecipeKey = "+ recipeKey +" and IngredientKey = " +ingredientKey));
         return insert(parameters);
     }
-
     public boolean deleteRecipeToIngredient(int recipeKey, int ingredientKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "delete from tableRecipeToIngredient where RecipeKey = "+ recipeKey +" and IngredientKey = " +ingredientKey));
@@ -247,30 +248,32 @@ public class QueryBuilder {
         parameters.add(addParameter("return_cols", "IngredientKey,IngredientName,IngredientType,ShelfLife,IngredientAmount,IngredientUnit,Preparation1,Preparation2,RemoveIngredient"));
         return getResults(parameters);
     }
-
     public boolean insertUserRecipeIngredient(String username, int recipeKey, int ingredientKey, double ingredientAmount, String ingredientUnit, String preparation1, String preparation2, boolean optional, boolean remove){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "insert into UserRecipeToIngredient (Username,RecipeKey,IngredientKey,IngredientAmount,IngredientUnit,Preparation1,Preparation2,Optional,RemoveIngredient) values('"+username+"',"+recipeKey+","+ingredientKey+","+ingredientAmount+",'"+ingredientUnit+"','"+preparation1+"','"+preparation2+"',"+(optional ? 1 : 0)+","+(remove ? 1: 0)+")"));
         return insert(parameters);
     }
-
     public boolean updateUserRecipeToIngredient(String username, int recipeKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean remove){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update UserRecipeToIngredient set IngredientAmount = "+ ingredientAmount +", IngredientUnit = '"+ ingredientUnit +"', RemoveIngredient = "+(remove ? 1 : 0)+" where Username = '"+username+"' and RecipeKey = "+ recipeKey +" and IngredientKey = " +ingredientKey));
         return insert(parameters);
     }
-
     public boolean updateUserRecipeToIngredientRemove(String username, int recipeKey, int ingredientKey, boolean remove){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update UserRecipeToIngredient set RemoveIngredient = "+ (remove ? 1 : 0) +" where Username = '"+username+"' and RecipeKey = "+ recipeKey +" and IngredientKey = " +ingredientKey));
         return insert(parameters);
     }
-
     public boolean deleteUserRecipeToIngredient(String username, int recipeKey, int ingredientKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "delete from UserRecipeToIngredient where Username = '"+username+"' and RecipeKey = "+ recipeKey +" and IngredientKey = " +ingredientKey));
         return insert(parameters);
     }
+    public boolean deleteUserRecipeToIngredients(String username, int recipeKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "delete from UserRecipeToIngredient where Username = '"+username+"' and RecipeKey = "+ recipeKey));
+        return insert(parameters);
+    }
+
     /*-----------------------------------
      * Meal Plan Queries
      *-----------------------------------*/
@@ -279,26 +282,34 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "insert into UserMealPlans (Username,MealPlanDate,MealType,Sequence,RecipeKey,GroceryListKey,MealCompleted) values('"+username+"','" + dateString(mealPlanDate) + "','" + mealType + "'," + sequence + ","+ recipeKey+ ","+ groceryListKey + "," + mealCompleted + ")"));
         return insert(parameters);
     }
-
     public JSONResult getMealPlan(String username, Date mealPlanDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select MealPlanDate, MealType, Sequence, RecipeKey, MealCompleted from UserMealPlans where Username = '"+username+"' and MealPlanDate = '"+ dateString(mealPlanDate) +"'"));
         parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
         return getResults(parameters);
     }
-
     public JSONResult getRecipeLastMade(String username, int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select MAX(MealPlanDate) as LastMade from UserMealPlans where Username = '"+username+"' and RecipeKey = "+ recipeKey));
         parameters.add(addParameter("return_cols", "LastMade"));
         return getResults(parameters);
     }
-
     public JSONResult getMonthMealPlans(String username, Date beginDate, Date endDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select MealPlanDate, MealType, Sequence, RecipeKey, MealCompleted from UserMealPlans where Username = '"+username+"' and MealPlanDate >= '"+ dateString(beginDate) +"' and MealPlanDate <= '"+ dateString(endDate) +"' order by MealPlanDate,Sequence"));
         parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
         return getResults(parameters);
+    }
+    public JSONResult getRecipeSchedule(String username, int recipeKey, Date fromDate){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "select m.MealPlanDate, m.Sequence, m.MealCompleted, r.RecipeKey, r.RecipeName from UserMealPlans m, tableRecipe r where m.Username = '"+username+"' and m.MealPlanDate >= '"+ dateString(fromDate) +"'  and m.RecipeKey = "+recipeKey+" and r.RecipeKey = m.RecipeKey order by MealPlanDate,Sequence"));
+        parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
+        return getResults(parameters);
+    }
+    public boolean deleteMealPlan(String username, Date mealPlanDate, int recipeKey) {
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "delete from UserMealPlans where Username = '"+username+"' and MealPlanDate = '"+dateString(mealPlanDate)+"' and RecipeKey = " + recipeKey));
+        return insert(parameters);
     }
 
     /*-----------------------------------*

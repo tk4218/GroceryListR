@@ -72,7 +72,7 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
         if(convertView == null){
             final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.expandlist_grocerylist_header, null);
+            convertView = inflater.inflate(R.layout.expandlist_grocerylist_header, parent, false);
         }
 
         //Each expandable group is the ingredient type of the items within the group.
@@ -85,7 +85,7 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         if(convertView == null){
             final LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.expandlist_grocerylist_item, null);
+            convertView = inflater.inflate(R.layout.expandlist_grocerylist_item, parent, false);
         }
 
         final CheckBox groceryListItem = convertView.findViewById(R.id.item_grocerylist_item);

@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 import com.tk4218.grocerylistr.EditRecipeActivity;
@@ -154,6 +155,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                             case R.id.option_save_recipe:
                                 saveRecipe(holder.recipe.getRecipeKey(), holder.recipe.getRecipeName(), holder);
                             case R.id.option_delete_recipe:
+                                deleteRecipe(holder.recipe.getRecipeKey(), holder.recipe.getRecipeName(), holder);
                         }
                         return false;
                     }
@@ -238,6 +240,22 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 }).create().show();
     }
 
+    private void deleteRecipe(final int recipeKey, String recipeName, final ViewHolder holder){
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle("Delete Recipe")
+                .setMessage("Are you sure you want to remove " + recipeName + " from your recipes?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new DeleteUserRecipe().execute(recipeKey);
+                        holder.recipe.setUserRecipe(false);
+                        notifyDataSetChanged();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder implements  View.OnClickListener {
 
         TextView recipeName;
@@ -274,6 +292,23 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         @Override
         protected Void doInBackground(Integer... params) {
             mQb.insertUserRecipe(mSettings.getUser(), params[0]);
+            return null;
+        }
+    }
+
+    private class DeleteUserRecipe extends AsyncTask<Integer, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            JSONResult userRecipe = mQb.getUserRecipe(mSettings.getUser(), params[0]);
+            mQb.deleteUserRecipe(mSettings.getUser(), params[0]);
+            if(userRecipe.getCount() > 0){
+                if(userRecipe.getInt("RecipeEditKey") != 0){
+                    mQb.deleteUserEditRecipe(userRecipe.getInt("RecipeEditKey"));
+                }
+            }
+            mQb.deleteUserRecipeToIngredients(mSettings.getUser(), params[0]);
             return null;
         }
     }

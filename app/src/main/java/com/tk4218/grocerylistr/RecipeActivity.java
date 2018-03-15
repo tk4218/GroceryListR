@@ -46,11 +46,13 @@ public class RecipeActivity extends AppCompatActivity {
     private ImageView mRecipeImage;
     private TextView mRecipeName;
     private FloatingActionButton mFab;
+    private FloatingActionButton mEditRecipe;
 
     private String mUsername;
     private int mRecipeKey;
     private Recipe mRecipe;
     private Date mLastMade;
+    private JSONResult mRecipeSchedule;
     final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
 
     @Override
@@ -103,7 +105,6 @@ public class RecipeActivity extends AppCompatActivity {
         }
 
         mFab = findViewById(R.id.fab);
-
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -133,6 +134,16 @@ public class RecipeActivity extends AppCompatActivity {
             }
         });
 
+        mEditRecipe = findViewById(R.id.button_recipe_edit);
+        mEditRecipe.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(RecipeActivity.this, EditRecipeActivity.class);
+                    intent.putExtra("recipeKey", mRecipeKey);
+                    startActivity(intent);
+                }
+            });
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -144,32 +155,53 @@ public class RecipeActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_recipe, menu);
 
-        MenuItem edit = menu.findItem(R.id.action_edit);
+        MenuItem delete = menu.findItem(R.id.action_delete);
+        MenuItem unschedule = menu.findItem(R.id.action_unschedule);
 
         if(mRecipe != null){
             if(!mRecipe.isUserRecipe()){
-                edit.setVisible(false);
+                delete.setVisible(false);
             }
         }
+
+        if(mRecipeSchedule == null){
+            unschedule.setVisible(false);
+        } else if(mRecipeSchedule.getCount() == 0){
+            unschedule.setVisible(false);
+        }
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_edit) {
-            Intent intent = new Intent(this, EditRecipeActivity.class);
-            intent.putExtra("recipeKey", mRecipeKey);
-            startActivity(intent);
-            return true;
+        switch (id){
+            case R.id.action_delete:
+                deleteRecipe();
+                return true;
+            case R.id.action_unschedule:
+                if(mRecipeSchedule != null){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    if(mRecipeSchedule.getCount() > 1){
+                        //TODO: Show list of scheduled recipes to choose from
+                    } else if(mRecipeSchedule.getCount() == 1){
+                        builder.setTitle("Un-schedule Recipe from Calendar")
+                                .setMessage("Are you sure you want to remove " + mRecipe.getRecipeName() + " from your calendar?")
+                                .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        new DeleteMealPlan().execute(mRecipeSchedule.getDate("MealPlanDate"), mRecipeKey);
+                                    }
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    }
+                }
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -178,10 +210,12 @@ public class RecipeActivity extends AppCompatActivity {
     private void setRecipeDetails(){
         if(!mRecipe.isUserRecipe()){
             mFab.setImageResource(android.R.drawable.ic_input_add);
+            mEditRecipe.setVisibility(View.GONE);
             mLastMadeLayout.setVisibility(View.GONE);
             invalidateOptionsMenu();
         } else{
             mFab.setImageResource(android.R.drawable.ic_menu_today);
+            mEditRecipe.setVisibility(View.VISIBLE);
             mLastMadeLayout.setVisibility(View.VISIBLE);
 
             if(mLastMade.getTime() == 0){
@@ -194,6 +228,20 @@ public class RecipeActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private void deleteRecipe(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Delete Recipe")
+                .setMessage("Are you sure you want to remove " + mRecipe.getRecipeName() + " from your recipes?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new DeleteUserRecipe().execute(mRecipeKey);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     /*--------------------------------------
@@ -219,6 +267,8 @@ public class RecipeActivity extends AppCompatActivity {
             mRecipe = new Recipe(mRecipeKey, mUsername);
             JSONResult recipeLastMade = mQb.getRecipeLastMade(mUsername, mRecipeKey);
             mLastMade = recipeLastMade.getDate("LastMade");
+
+            mRecipeSchedule = mQb.getRecipeSchedule(mUsername, mRecipeKey, new Date());
 
             return null;
         }
@@ -262,6 +312,42 @@ public class RecipeActivity extends AppCompatActivity {
             invalidateOptionsMenu();
             setRecipeDetails();
             Toast.makeText(RecipeActivity.this, mRecipe.getRecipeName() + " Saved!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private class DeleteUserRecipe extends AsyncTask<Integer, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            JSONResult userRecipe = mQb.getUserRecipe(mUsername, params[0]);
+            mQb.deleteUserRecipe(mUsername, params[0]);
+            if(userRecipe.getCount() > 0){
+                if(userRecipe.getInt("RecipeEditKey") != 0){
+                    mQb.deleteUserEditRecipe(userRecipe.getInt("RecipeEditKey"));
+                }
+            }
+            mQb.deleteUserRecipeToIngredients(mUsername, params[0]);
+            mRecipe.setUserRecipe(false);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            invalidateOptionsMenu();
+            setRecipeDetails();
+        }
+    }
+
+    private class DeleteMealPlan extends AsyncTask<Object, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
+        @Override
+        protected Void doInBackground(Object... params) {
+            Date mealPlanDate = (Date) params[0];
+            int recipeKey = (int) params[1];
+
+            mQb.deleteMealPlan(mUsername, mealPlanDate, recipeKey);
+            return null;
         }
     }
 }
