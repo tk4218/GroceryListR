@@ -9,7 +9,7 @@ import android.widget.DatePicker;
 
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.MealPlan;
+import com.tk4218.grocerylistr.Model.CalendarRecipes;
 import com.tk4218.grocerylistr.Model.Recipe;
 
 import java.util.Calendar;
@@ -53,9 +53,9 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
             calendar.set(params[0], params[1], params[2]);
 
             Date mealPlanDate = calendar.getTime();
-            MealPlan mealPlan = new MealPlan(mSettings.getUser(), mealPlanDate);
+            CalendarRecipes mealPlan = new CalendarRecipes(mSettings.getUser(), mealPlanDate);
 
-            mQb.insertMealPlan(mSettings.getUser(), mealPlanDate, recipe.getMealType(), mealPlan.getMealTypeMeals(recipe.getMealType()).size(), recipe.getRecipeKey(), 0, false);
+            mQb.insertCalendarRecipe(mSettings.getUser(), mealPlanDate, recipe.getMealType(), mealPlan.getRecipesByMealType(recipe.getMealType()).size(), recipe.getRecipeKey(), 0, false);
             return null;
         }
     }

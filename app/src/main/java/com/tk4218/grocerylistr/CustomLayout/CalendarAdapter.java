@@ -9,7 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.tk4218.grocerylistr.Model.MealPlan;
+import com.tk4218.grocerylistr.Model.CalendarRecipes;
 import com.tk4218.grocerylistr.R;
 
 import java.text.SimpleDateFormat;
@@ -24,11 +24,11 @@ import java.util.Locale;
 public class CalendarAdapter extends BaseAdapter {
 
     private Context mContext;
-    private ArrayList<MealPlan> mDaysOfMonth;
+    private ArrayList<CalendarRecipes> mDaysOfMonth;
     private int mCurrentMonth;
     private final SimpleDateFormat dayFormat = new SimpleDateFormat("dd", Locale.getDefault());
 
-    public CalendarAdapter(Context context, ArrayList<MealPlan> daysOfMonth, int currentMonth) {
+    public CalendarAdapter(Context context, ArrayList<CalendarRecipes> daysOfMonth, int currentMonth) {
         mContext = context;
         mDaysOfMonth = daysOfMonth;
         mCurrentMonth = currentMonth;
@@ -45,7 +45,7 @@ public class CalendarAdapter extends BaseAdapter {
     }
 
     @Override
-    public MealPlan getItem(int position) {
+    public CalendarRecipes getItem(int position) {
         return mDaysOfMonth.get(position);
     }
 
@@ -53,16 +53,19 @@ public class CalendarAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.gridview_calendar_day, null);
+            if(inflater == null){
+                return null;
+            }
+            convertView = inflater.inflate(R.layout.gridview_calendar_day, parent, false);
         }
 
         TextView dayOfMonth = convertView.findViewById(R.id.day_of_month);
-        dayOfMonth.setText(dayFormat.format(mDaysOfMonth.get(position).getMealPlanDate()));
+        dayOfMonth.setText(dayFormat.format(mDaysOfMonth.get(position).getCalendarDate()));
         ListView dayMeals = convertView.findViewById(R.id.listview_meals);
-        dayMeals.setAdapter(new CalendarDayAdapter(mContext, mDaysOfMonth.get(position).getMealPlanMeals()));
+        dayMeals.setAdapter(new CalendarDayAdapter(mContext, mDaysOfMonth.get(position).getCalendarRecipes(), mDaysOfMonth.get(position).getCalendarDate()));
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(mDaysOfMonth.get(position).getMealPlanDate());
+        calendar.setTime(mDaysOfMonth.get(position).getCalendarDate());
         if(calendar.get(Calendar.MONTH) != mCurrentMonth){
             dayOfMonth.setTextColor(Color.GRAY);
         } else {

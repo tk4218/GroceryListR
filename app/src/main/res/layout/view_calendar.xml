@@ -6,13 +6,6 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <ProgressBar
-        android:id="@+id/calendar_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal|center"
-        android:indeterminate="true" />
-
     <LinearLayout
         android:id="@+id/calendar_header"
         android:layout_width="match_parent"
@@ -23,7 +16,7 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/button_prev_month"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_weight="1"
@@ -42,15 +35,21 @@
             android:textStyle="bold" />
 
         <ImageButton
-            android:id="@+id/imageButton2"
+            android:id="@+id/button_next_month"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/right_arrow" />
-
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/calendar_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center_horizontal|center"
+        android:indeterminate="true" />
 
     <LinearLayout
         android:id="@+id/calendar_content"

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,8 +18,8 @@ import com.tk4218.grocerylistr.CustomLayout.CalendarAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Meal;
-import com.tk4218.grocerylistr.Model.MealPlan;
+import com.tk4218.grocerylistr.Model.CalendarRecipes;
+import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
 
 import java.text.SimpleDateFormat;
@@ -58,13 +59,45 @@ public  class CalendarFragment extends Fragment {
 
         mCurrentDate = new Date();
 
-        TextView calendarMonth = rootView.findViewById(R.id.calendar_month);
+        final TextView calendarMonth = rootView.findViewById(R.id.calendar_month);
         calendarMonth.setText(dateFormat.format(mCurrentDate));
 
         mLoading = rootView.findViewById(R.id.calendar_loading);
         mCalendarHeader = rootView.findViewById(R.id.calendar_header);
         mCalendarContent = rootView.findViewById(R.id.calendar_content);
         mCalendarDays = rootView.findViewById(R.id.grid_month_days);
+
+        ImageButton prevMonth = rootView.findViewById(R.id.button_prev_month);
+        prevMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(mCurrentDate);
+                calendar.add(Calendar.MONTH, -1);
+
+                mCurrentDate = calendar.getTime();
+                calendarMonth.setText(dateFormat.format(mCurrentDate));
+                mLoading.setVisibility(View.VISIBLE);
+
+                new RetrieveCalendar().execute();
+            }
+        });
+
+        ImageButton nextMonth = rootView.findViewById(R.id.button_next_month);
+        nextMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(mCurrentDate);
+                calendar.add(Calendar.MONTH, 1);
+
+                mCurrentDate = calendar.getTime();
+                calendarMonth.setText(dateFormat.format(mCurrentDate));
+                mLoading.setVisibility(View.VISIBLE);
+
+                new RetrieveCalendar().execute();
+            }
+        });
 
         return rootView;
     }
@@ -81,13 +114,13 @@ public  class CalendarFragment extends Fragment {
         new RetrieveCalendar().execute(mCurrentDate);
     }
 
-    private class RetrieveCalendar extends AsyncTask<Date, Void, ArrayList<MealPlan>> {
+    private class RetrieveCalendar extends AsyncTask<Date, Void, ArrayList<CalendarRecipes>> {
         QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected ArrayList<MealPlan> doInBackground(Date... params) {
+        protected ArrayList<CalendarRecipes> doInBackground(Date... params) {
 
-            ArrayList<MealPlan> cells = new ArrayList<>();
+            ArrayList<CalendarRecipes> cells = new ArrayList<>();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(mCurrentDate);
             calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0,0,0);
@@ -102,8 +135,8 @@ public  class CalendarFragment extends Fragment {
             calendar.add(Calendar.DAY_OF_MONTH, DAYS_COUNT);
             Date endDate = calendar.getTime();
 
-            JSONResult mealPlans = mQb.getMonthMealPlans(mSettings.getUser(), beginDate, endDate);
-            if(mealPlans == null){
+            JSONResult calendarRecipes = mQb.getMonthCalendarRecipes(mSettings.getUser(), beginDate, endDate);
+            if(calendarRecipes == null){
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -116,11 +149,11 @@ public  class CalendarFragment extends Fragment {
             calendar.setTime(beginDate);
 
             for(int i = 0; i < DAYS_COUNT; i++){
-                cells.add(new MealPlan(mSettings.getUser(), calendar.getTime(), new ArrayList<Meal>()));
-                if(mealPlans.findFirst("MealPlanDate", calendar.getTime())){
+                cells.add(new CalendarRecipes(mSettings.getUser(), calendar.getTime(), new ArrayList<Recipe>()));
+                if(calendarRecipes.findFirst("CalendarDate", calendar.getTime())){
                     do{
-                        cells.get(i).addMeal(new Meal(mSettings.getUser(), mealPlans.getDate("MealPlanDate"), mealPlans.getString("MealType"), mealPlans.getInt("Sequence"), mealPlans.getInt("RecipeKey"), mealPlans.getBoolean("MealCompleted")));
-                    } while (mealPlans.findNext("MealPlanDate", calendar.getTime()));
+                        cells.get(i).addRecipe(calendarRecipes.getInt("RecipeKey"), calendarRecipes.getString("RecipeName"), calendarRecipes.getString("MealType"));
+                    } while (calendarRecipes.findNext("CalendarDate", calendar.getTime()));
                 }
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
             }
@@ -129,7 +162,7 @@ public  class CalendarFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(final ArrayList<MealPlan> result) {
+        protected void onPostExecute(final ArrayList<CalendarRecipes> result) {
             if(isCancelled() || getActivity() == null) return;
             getActivity().runOnUiThread(new Runnable() {
                 @Override

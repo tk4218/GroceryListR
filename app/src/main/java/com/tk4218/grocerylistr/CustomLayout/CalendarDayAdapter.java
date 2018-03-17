@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Meal;
+import com.tk4218.grocerylistr.Model.Recipe;
 import com.tk4218.grocerylistr.R;
 import com.tk4218.grocerylistr.RecipeActivity;
 
@@ -24,22 +24,24 @@ public class CalendarDayAdapter extends BaseAdapter {
 
     private ApplicationSettings mSettings;
     private Context mContext;
-    private ArrayList<Meal> mMeals;
+    private ArrayList<Recipe> mRecipes;
+    private Date mCalendarDate;
 
-    CalendarDayAdapter(Context context, ArrayList<Meal> meals){
+    CalendarDayAdapter(Context context, ArrayList<Recipe> recipes, Date calendarDate){
         mSettings = new ApplicationSettings(context);
         mContext = context;
-        mMeals = meals;
+        mRecipes = recipes;
+        mCalendarDate = calendarDate;
     }
 
     @Override
     public int getCount() {
-        return mMeals.size();
+        return mRecipes.size();
     }
 
     @Override
-    public Meal getItem(int position) {
-        return mMeals.get(position);
+    public Recipe getItem(int position) {
+        return mRecipes.get(position);
     }
 
     @Override
@@ -55,12 +57,12 @@ public class CalendarDayAdapter extends BaseAdapter {
         }
 
         TextView recipeName = convertView.findViewById(R.id.list_day_meal);
-        recipeName.setText(mMeals.get(position).getRecipe().getRecipeName());
+        recipeName.setText(mRecipes.get(position).getRecipeName());
         recipeName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, RecipeActivity.class);
-                intent.putExtra("recipeKey", mMeals.get(position).getRecipe().getRecipeKey());
+                intent.putExtra("recipeKey", mRecipes.get(position).getRecipeKey());
                 mContext.startActivity(intent);
             }
         });
@@ -68,7 +70,7 @@ public class CalendarDayAdapter extends BaseAdapter {
         recipeName.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                deleteMealPlan(mMeals.get(position), position);
+                deleteMealPlan(mRecipes.get(position), position);
                 return true;
             }
         });
@@ -76,15 +78,15 @@ public class CalendarDayAdapter extends BaseAdapter {
         return convertView;
     }
 
-    private void deleteMealPlan(final Meal meal, final int position){
+    private void deleteMealPlan(final Recipe recipe, final int position){
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Un-schedule Recipe from Calendar")
-                .setMessage("Are you sure you want to remove " + meal.getRecipe().getRecipeName() + " from your calendar?")
+                .setMessage("Are you sure you want to remove " + recipe.getRecipeName() + " from your calendar?")
                 .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        new DeleteMealPlan().execute(meal.getMealPlanDate(), meal.getRecipe().getRecipeKey());
-                        mMeals.remove(position);
+                        new DeleteMealPlan().execute(mCalendarDate, recipe.getRecipeKey());
+                        mRecipes.remove(position);
                         notifyDataSetChanged();
                     }
                 })
@@ -99,7 +101,7 @@ public class CalendarDayAdapter extends BaseAdapter {
             Date mealPlanDate = (Date) params[0];
             int recipeKey = (int) params[1];
 
-            mQb.deleteMealPlan(mSettings.getUser(), mealPlanDate, recipeKey);
+            mQb.deleteCalendarRecipe(mSettings.getUser(), mealPlanDate, recipeKey);
             return null;
         }
     }

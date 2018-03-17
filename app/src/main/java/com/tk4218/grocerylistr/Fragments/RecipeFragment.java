@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,9 +32,13 @@ public  class RecipeFragment extends Fragment{
     private boolean mShowUserRecipes;
     private ProgressBar mLoading;
     private SwipeRefreshLayout mRefreshRecipes;
+    private GridLayoutManager mLayoutManager;
     private RecyclerView mRecyclerView;
     private RecipeAdapter mAdapter;
-    private  ArrayList<Recipe> mRecipes;
+    private ArrayList<Recipe> mRecipes;
+
+    private boolean mLoadingRecipes;
+    private boolean mAllRecipesLoaded;
 
     public RecipeFragment() {
 
@@ -63,13 +66,34 @@ public  class RecipeFragment extends Fragment{
         mLoading = rootView.findViewById(R.id.recipe_loading);
         mRefreshRecipes = rootView.findViewById(R.id.refresh_recipes);
         mRecyclerView = rootView.findViewById(R.id.recipeGridView);
-        mRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        mLayoutManager = new GridLayoutManager(getContext(), 2);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mAdapter = new RecipeAdapter(getContext(), mRecipes);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                int visibleItemCount = recyclerView.getChildCount();
+                int totalItemCount = mLayoutManager.getItemCount();
+                int firstVisibleItem = mLayoutManager.findFirstVisibleItemPosition();
+                int visibleThreshold = 6;
+
+                boolean loadMore = (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold);
+
+                if(loadMore && !mLoadingRecipes && !mAllRecipesLoaded){
+                    mLoadingRecipes = true;
+                    new RetrieveRecipes().execute(false);
+                }
+            }
+        });
 
         mRefreshRecipes.setColorSchemeColors(Color.RED);
         mRefreshRecipes.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new RetrieveRecipes().execute();
+                mLoadingRecipes = true;
+                new RetrieveRecipes().execute(true);
             }
         });
 
@@ -100,11 +124,11 @@ public  class RecipeFragment extends Fragment{
             updatePinterestRecipes.execute(mSettings.getUser());
         }
 
-        new RetrieveRecipes().execute();
+        mLoadingRecipes = true;
+        new RetrieveRecipes().execute(true);
     }
 
     public void filterRecipes(String filterString){
-        Log.d("SEARCH", "SEARCHING RECIPES");
         if(mAdapter != null)
             mAdapter.getFilter().filter(filterString);
     }
@@ -112,21 +136,27 @@ public  class RecipeFragment extends Fragment{
     public void toggleRecipeList(boolean showUserRecipes){
         mShowUserRecipes = showUserRecipes;
         mLoading.setVisibility(View.VISIBLE);
-        new RetrieveRecipes().execute();
+        mLoadingRecipes = true;
+        new RetrieveRecipes().execute(true);
     }
+
+
 
     private class RetrieveRecipes extends AsyncTask<Boolean, String, String>{
         QueryBuilder mQb = new QueryBuilder();
 
         @Override
         protected String doInBackground(Boolean... params) {
-            mRecipes.clear();
+            if(params[0]){
+                mRecipes.clear();
+                mAllRecipesLoaded = false;
+            }
             JSONResult recipes;
 
             if(mShowUserRecipes){
-                recipes = mQb.getUserRecipes(mSettings.getUser());
+                recipes = mQb.getUserRecipes(mSettings.getUser(), mRecipes.size());
             }else{
-                recipes = mQb.getAllRecipes(mSettings.getUser());
+                recipes = mQb.getAllRecipes(mSettings.getUser(), mRecipes.size());
                 recipes.addBooleanColumn("Favorite", false);
             }
 
@@ -145,6 +175,7 @@ public  class RecipeFragment extends Fragment{
                 recipes.moveNext();
             }
 
+            if(recipes.getCount() < 10) mAllRecipesLoaded = true;
             return null;
         }
 
@@ -156,10 +187,10 @@ public  class RecipeFragment extends Fragment{
 
                 @Override
                 public void run() {
-                    mAdapter = new RecipeAdapter(RecipeFragment.this.getContext(), mRecipes);
-                    mRecyclerView.setAdapter(mAdapter);
+                    mAdapter.notifyDataSetChanged();
                     mRefreshRecipes.setRefreshing(false);
                     mLoading.setVisibility(View.GONE);
+                    mLoadingRecipes = false;
                 }
             });
         }

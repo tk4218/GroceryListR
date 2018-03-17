@@ -346,7 +346,7 @@ public class RecipeActivity extends AppCompatActivity {
             Date mealPlanDate = (Date) params[0];
             int recipeKey = (int) params[1];
 
-            mQb.deleteMealPlan(mUsername, mealPlanDate, recipeKey);
+            mQb.deleteCalendarRecipe(mUsername, mealPlanDate, recipeKey);
             return null;
         }
     }

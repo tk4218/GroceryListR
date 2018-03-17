@@ -84,9 +84,9 @@ public class QueryBuilder {
     /*-----------------------------------*
      * Recipe Queries
      *-----------------------------------*/
-    public JSONResult getAllRecipes(String username){
+    public JSONResult getAllRecipes(String username, int startIndex){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select r.*, coalesce(ur.Username, '') as Username from tableRecipe r left join UserRecipes ur on r.RecipeKey = ur.RecipeKey and ur.Username = '"+username+"' where r.PinterestId = ''"));
+        parameters.add(addParameter("sql_query", "select r.*, coalesce(ur.Username, '') as Username from tableRecipe r left join UserRecipes ur on r.RecipeKey = ur.RecipeKey and ur.Username = '"+username+"' where r.PinterestId = '' limit "+startIndex+", 10"));
         parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited,Username"));
         return getResults(parameters);
     }
@@ -136,9 +136,9 @@ public class QueryBuilder {
     /*---------------------------------
      * User Recipes Queries
      *---------------------------------*/
-    public JSONResult getUserRecipes(String username){
+    public JSONResult getUserRecipes(String username, int startIndex){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select ur.RecipeKey, r.PinterestId, coalesce(e.RecipeName, r.RecipeName) as RecipeName, coalesce(e.MealType, r.MealType) as MealType, coalesce(e.CuisineType, r.CuisineType) as CuisineType, r.RecipeImage, ur.Favorite, r.Rating, coalesce(e.LastEdited, '0000-00-00 00:00:00') as LastEdited, ur.Username from UserRecipes ur left join UserEditRecipes e on ur.RecipeEditKey <> 0 and e.RecipeEditKey = ur.RecipeEditKey, tableRecipe r where ur.Username = '"+username+"' and r.RecipeKey = ur.RecipeKey"));
+        parameters.add(addParameter("sql_query", "select ur.RecipeKey, r.PinterestId, coalesce(e.RecipeName, r.RecipeName) as RecipeName, coalesce(e.MealType, r.MealType) as MealType, coalesce(e.CuisineType, r.CuisineType) as CuisineType, r.RecipeImage, ur.Favorite, r.Rating, coalesce(e.LastEdited, '0000-00-00 00:00:00') as LastEdited, ur.Username from UserRecipes ur left join UserEditRecipes e on ur.RecipeEditKey <> 0 and e.RecipeEditKey = ur.RecipeEditKey, tableRecipe r where ur.Username = '"+username+"' and r.RecipeKey = ur.RecipeKey limit "+startIndex+",10"));
         parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited,Username"));
         return getResults(parameters);
     }
@@ -275,40 +275,40 @@ public class QueryBuilder {
     }
 
     /*-----------------------------------
-     * Meal Plan Queries
+     * Calendar Recipes Queries
      *-----------------------------------*/
-    public boolean insertMealPlan(String username, Date mealPlanDate, String mealType, int sequence, int recipeKey, int groceryListKey, boolean mealCompleted){
+    public boolean insertCalendarRecipe(String username, Date calendarDate, String mealType, int sequence, int recipeKey, int groceryListKey, boolean mealCompleted){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "insert into UserMealPlans (Username,MealPlanDate,MealType,Sequence,RecipeKey,GroceryListKey,MealCompleted) values('"+username+"','" + dateString(mealPlanDate) + "','" + mealType + "'," + sequence + ","+ recipeKey+ ","+ groceryListKey + "," + mealCompleted + ")"));
+        parameters.add(addParameter("sql_query", "insert into UserCalendarRecipes (Username,CalendarDate,MealType,Sequence,RecipeKey,GroceryListKey,MealCompleted) values('"+username+"','" + dateString(calendarDate) + "','" + mealType + "'," + sequence + ","+ recipeKey+ ","+ groceryListKey + "," + mealCompleted + ")"));
         return insert(parameters);
     }
-    public JSONResult getMealPlan(String username, Date mealPlanDate){
+    public JSONResult getCalendarRecipes(String username, Date calendarDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select MealPlanDate, MealType, Sequence, RecipeKey, MealCompleted from UserMealPlans where Username = '"+username+"' and MealPlanDate = '"+ dateString(mealPlanDate) +"'"));
-        parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
+        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.RecipeKey, coalesce(e.RecipeName, r.RecipeName) as RecipeName, cr.MealCompleted from UserCalendarRecipes cr, tableRecipe r left join UserRecipes u on u.Username = '"+username+"' and u.RecipeKey = r.RecipeKey and u.RecipeEditKey <> 0 left join UserEditRecipes e on e.RecipeEditKey = u.RecipeEditKey and e.RecipeKey = u.RecipeKey and e.Username = u.Username where cr.Username = '"+username+"' and cr.CalendarDate = '"+ dateString(calendarDate) +"' and r.RecipeKey = cr.RecipeKey"));
+        parameters.add(addParameter("return_cols", "CalendarDate,MealType,Sequence,RecipeKey,RecipeName,MealCompleted"));
         return getResults(parameters);
     }
     public JSONResult getRecipeLastMade(String username, int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select MAX(MealPlanDate) as LastMade from UserMealPlans where Username = '"+username+"' and RecipeKey = "+ recipeKey));
+        parameters.add(addParameter("sql_query", "select MAX(CalendarDate) as LastMade from UserCalendarRecipes where Username = '"+username+"' and RecipeKey = "+ recipeKey));
         parameters.add(addParameter("return_cols", "LastMade"));
         return getResults(parameters);
     }
-    public JSONResult getMonthMealPlans(String username, Date beginDate, Date endDate){
+    public JSONResult getMonthCalendarRecipes(String username, Date beginDate, Date endDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select MealPlanDate, MealType, Sequence, RecipeKey, MealCompleted from UserMealPlans where Username = '"+username+"' and MealPlanDate >= '"+ dateString(beginDate) +"' and MealPlanDate <= '"+ dateString(endDate) +"' order by MealPlanDate,Sequence"));
-        parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
+        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.RecipeKey, coalesce(e.RecipeName, r.RecipeName) as RecipeName, cr.MealCompleted from UserCalendarRecipes cr, tableRecipe r left join UserRecipes u on u.Username = '"+username+"' and u.RecipeKey = r.RecipeKey and u.RecipeEditKey <> 0 left join UserEditRecipes e on e.RecipeEditKey = u.RecipeEditKey and e.RecipeKey = u.RecipeKey and e.Username = u.Username where cr.Username = '"+username+"' and cr.CalendarDate >= '"+ dateString(beginDate) +"' and cr.CalendarDate <= '"+ dateString(endDate) +"' and r.RecipeKey = cr.RecipeKey order by cr.CalendarDate,cr.Sequence"));
+        parameters.add(addParameter("return_cols", "CalendarDate,MealType,Sequence,RecipeKey,RecipeName,MealCompleted"));
         return getResults(parameters);
     }
     public JSONResult getRecipeSchedule(String username, int recipeKey, Date fromDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select m.MealPlanDate, m.Sequence, m.MealCompleted, r.RecipeKey, r.RecipeName from UserMealPlans m, tableRecipe r where m.Username = '"+username+"' and m.MealPlanDate >= '"+ dateString(fromDate) +"'  and m.RecipeKey = "+recipeKey+" and r.RecipeKey = m.RecipeKey order by MealPlanDate,Sequence"));
-        parameters.add(addParameter("return_cols", "MealPlanDate,MealType,Sequence,RecipeKey,MealCompleted"));
+        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.MealCompleted, r.RecipeKey, r.RecipeName from UserCalendarRecipes cr, tableRecipe r where cr.Username = '"+username+"' and cr.CalendarDate >= '"+ dateString(fromDate) +"'  and cr.RecipeKey = "+recipeKey+" and r.RecipeKey = cr.RecipeKey order by cr.CalendarDate,cr.Sequence"));
+        parameters.add(addParameter("return_cols", "CalendarDate,MealType,Sequence,RecipeKey,MealCompleted"));
         return getResults(parameters);
     }
-    public boolean deleteMealPlan(String username, Date mealPlanDate, int recipeKey) {
+    public boolean deleteCalendarRecipe(String username, Date calendarDate, int recipeKey) {
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "delete from UserMealPlans where Username = '"+username+"' and MealPlanDate = '"+dateString(mealPlanDate)+"' and RecipeKey = " + recipeKey));
+        parameters.add(addParameter("sql_query", "delete from UserCalendarRecipes where Username = '"+username+"' and CalendarDate = '"+dateString(calendarDate)+"' and RecipeKey = " + recipeKey));
         return insert(parameters);
     }
 
@@ -348,10 +348,10 @@ public class QueryBuilder {
         return insertReturnKey(parameters);
     }
 
-    public JSONResult getIngredientsForGroceryList(String username, Date mealPlanDateStart, Date mealPlanDateEnd){
+    public JSONResult getIngredientsForGroceryList(String username, Date calendarDateStart, Date calendarDateEnd){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query","Select i.IngredientType, coalesce(ur.IngredientAmount, ri.IngredientAmount) as IngredientAmount, coalesce(ur.IngredientUnit, ri.IngredientUnit) as IngredientUnit, i.IngredientName, i.IngredientKey, coalesce(ur.RemoveIngredient, 0) as RemoveIngredient from UserMealPlans mp, tableRecipeToIngredient ri left join UserRecipeToIngredient ur on ur.Username = '"+username+"' and ur.RecipeKey = ri.RecipeKey and ur.IngredientKey = ri.IngredientKey, tableIngredient i where mp.Username = '"+username+"' and mp.MealPlanDate >= '"+dateString(mealPlanDateStart)+"' and mp.MealPlanDate <= '"+dateString(mealPlanDateEnd)+"' and ri.RecipeKey = mp.RecipeKey and i.IngredientKey = ri.IngredientKey " +
-                "union all Select i.IngredientType, ur.IngredientAmount, ur.IngredientUnit, i.IngredientName, i.IngredientKey, ur.RemoveIngredient from UserMealPlans mp, UserRecipeToIngredient ur, tableIngredient i where mp.Username = '"+username+"' and mp.MealPlanDate >= '"+dateString(mealPlanDateStart)+"' and mp.MealPlanDate <= '"+dateString(mealPlanDateEnd)+"' and ur.Username = mp.Username and ur.RecipeKey = mp.RecipeKey and ur.RemoveIngredient = 0 and i.IngredientKey = ur.IngredientKey and not exists(select 1 from tableRecipeToIngredient where RecipeKey = ur.RecipeKey and IngredientKey = ur.IngredientKey)"));
+        parameters.add(addParameter("sql_query","Select i.IngredientType, coalesce(ur.IngredientAmount, ri.IngredientAmount) as IngredientAmount, coalesce(ur.IngredientUnit, ri.IngredientUnit) as IngredientUnit, i.IngredientName, i.IngredientKey, coalesce(ur.RemoveIngredient, 0) as RemoveIngredient from UserCalendarRecipes cr, tableRecipeToIngredient ri left join UserRecipeToIngredient ur on ur.Username = '"+username+"' and ur.RecipeKey = ri.RecipeKey and ur.IngredientKey = ri.IngredientKey, tableIngredient i where cr.Username = '"+username+"' and cr.CalendarDate >= '"+dateString(calendarDateStart)+"' and cr.CalendarDate <= '"+dateString(calendarDateEnd)+"' and ri.RecipeKey = cr.RecipeKey and i.IngredientKey = ri.IngredientKey " +
+                "union all Select i.IngredientType, ur.IngredientAmount, ur.IngredientUnit, i.IngredientName, i.IngredientKey, ur.RemoveIngredient from UserCalendarRecipes cr, UserRecipeToIngredient ur, tableIngredient i where cr.Username = '"+username+"' and cr.CalendarDate >= '"+dateString(calendarDateStart)+"' and cr.CalendarDate <= '"+dateString(calendarDateEnd)+"' and ur.Username = cr.Username and ur.RecipeKey = cr.RecipeKey and ur.RemoveIngredient = 0 and i.IngredientKey = ur.IngredientKey and not exists(select 1 from tableRecipeToIngredient where RecipeKey = ur.RecipeKey and IngredientKey = ur.IngredientKey)"));
         parameters.add(addParameter("return_cols", "IngredientType,IngredientAmount,IngredientUnit,IngredientName,IngredientKey,RemoveIngredient"));
         return getResults(parameters);
     }
