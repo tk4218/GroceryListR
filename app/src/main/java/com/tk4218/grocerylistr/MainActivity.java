@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity
         navView.setItemIconTintList(null);
         navView.setNavigationItemSelectedListener(this);
         final Menu navigationMenu = navView.getMenu();
+        navigationMenu.findItem(R.id.nav_pantry).setVisible(false);
         mPDKClient.getMe("id,image,counts,created_at,first_name,last_name,bio,username", new PDKCallback(){
             @Override
             public void onSuccess(PDKResponse response) {

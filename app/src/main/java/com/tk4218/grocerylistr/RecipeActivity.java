@@ -36,6 +36,7 @@ import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.Recipe;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -58,6 +59,7 @@ public class RecipeActivity extends AppCompatActivity {
     private Recipe mRecipe;
     private Date mLastMade;
     private JSONResult mRecipeSchedule;
+    final SimpleDateFormat weekDateFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault());
     final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
 
     @Override
@@ -201,15 +203,28 @@ public class RecipeActivity extends AppCompatActivity {
             case R.id.action_unschedule:
                 if(mRecipeSchedule != null){
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    ArrayList<CharSequence> dates = new ArrayList<>();
                     if(mRecipeSchedule.getCount() > 1){
-                        //TODO: Show list of scheduled recipes to choose from
+                        mRecipeSchedule.moveFirst();
+                        do{
+                            dates.add(weekDateFormat.format(mRecipeSchedule.getDate("CalendarDate")));
+                        }while (mRecipeSchedule.moveNext());
+                        CharSequence [] dateArray = new CharSequence[dates.size()];
+                        dates.toArray(dateArray);
+                        builder.setTitle("Choose Date to Un-Schedule Recipe");
+                        builder.setItems(dateArray, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                new DeleteMealPlan().execute(mRecipeSchedule.getDate(which, "CalendarDate"), mRecipeKey);
+                            }
+                        }).show();
                     } else if(mRecipeSchedule.getCount() == 1){
                         builder.setTitle("Un-schedule Recipe from Calendar")
                                 .setMessage("Are you sure you want to remove " + mRecipe.getRecipeName() + " from your calendar?")
                                 .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        new DeleteMealPlan().execute(mRecipeSchedule.getDate("MealPlanDate"), mRecipeKey);
+                                        new DeleteMealPlan().execute(mRecipeSchedule.getDate("CalendarDate"), mRecipeKey);
                                     }
                                 })
                                 .setNegativeButton("Cancel", null)
@@ -376,7 +391,20 @@ public class RecipeActivity extends AppCompatActivity {
             int recipeKey = (int) params[1];
 
             mQb.deleteCalendarRecipe(mUsername, mealPlanDate, recipeKey);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            mRecipeSchedule = mQb.getRecipeSchedule(mUsername, mRecipeKey, calendar.getTime());
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            invalidateOptionsMenu();
         }
     }
 

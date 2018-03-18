@@ -228,11 +228,16 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         @Override
         protected ViewHolder doInBackground(Object... params) {
             ViewHolder holder = (ViewHolder)params[0];
+            Ingredient ingredient = new Ingredient((String)params[2]);
             if((boolean)params[1]) {
-                int ingredientKey = mQb.insertIngredient((String)params[2], (String)params[3], (int)params[4]);
+                int ingredientKey;
+                if(ingredient.getIngredientKey() == 0){
+                    ingredientKey = mQb.insertIngredient((String)params[2], (String)params[3], (int)params[4]);
+                }else {
+                    ingredientKey = ingredient.getIngredientKey();
+                }
                 holder.mIngredient.setIngredientKey(ingredientKey);
             }else{
-                Ingredient ingredient = new Ingredient((String)params[2]);
                 holder.mIngredient.setIngredientKey(ingredient.getIngredientKey());
             }
 

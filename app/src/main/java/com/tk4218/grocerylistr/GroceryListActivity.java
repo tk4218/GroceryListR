@@ -1,11 +1,15 @@
 package com.tk4218.grocerylistr;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
@@ -61,6 +65,17 @@ public class GroceryListActivity extends AppCompatActivity {
         IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(GroceryListActivity.this, R.layout.dropdown_ingredient);
         mAddItemText.setAdapter(adapter);
 
+        mAddItemText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String selectedIngredient = (String) parent.getAdapter().getItem(position);
+                if(selectedIngredient.equals("+ New Ingredient")) {
+                    mAddItemText.setText("");
+                    showNewIngredientDialog();
+                }
+            }
+        });
+
         final FloatingActionButton addItem = findViewById(R.id.add_item);
         addItem.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,6 +100,7 @@ public class GroceryListActivity extends AppCompatActivity {
 
                     mAddItem.setVisibility(View.INVISIBLE);
                     mUndo.setVisibility(View.INVISIBLE);
+                    addItem.setImageResource(android.R.drawable.ic_input_add);
                 }
             }
         });
@@ -105,6 +121,36 @@ public class GroceryListActivity extends AppCompatActivity {
         if (mGroceryListView != null)
             mGroceryListView.setIndicatorBounds(mGroceryListView.getRight()- 150, mGroceryListView.getRight());
 
+    }
+
+    private void showNewIngredientDialog(){
+        @SuppressLint("InflateParams")
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_ingredient, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Add New Ingredient")
+                .setIcon(android.R.drawable.ic_input_add)
+                .setView(dialogView);
+
+        final EditText newIngredientName  = dialogView.findViewById(R.id.new_ingredient_name);
+        final Spinner newIngredientType = dialogView.findViewById(R.id.new_ingredient_type);
+        final EditText newIngredientExpAmount = dialogView.findViewById(R.id.new_ingredient_exp_amount);
+        final Spinner newIngredientExpInterval = dialogView.findViewById(R.id.new_ingredient_exp_interval);
+
+        newIngredientName.setText("");
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String ingredientType = newIngredientType.getSelectedItem().toString();
+                String interval = newIngredientExpInterval.getSelectedItem().toString();
+                int expiration = Integer.parseInt(newIngredientExpAmount.getText().toString());
+                if(interval.equals("Weeks")) expiration *= 7;
+                if(interval.equals("Months")) expiration *= 30;
+                new AddNewIngredient().execute(newIngredientName.getText().toString(), ingredientType, expiration);
+            }
+        })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
      private class GetGroceryList extends AsyncTask<Void, Void, Void> {
@@ -144,7 +190,9 @@ public class GroceryListActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Object... params) {
-            mQb.insertIngredient((String)params[0], (String)params[1], (int)params[2]);
+            Ingredient ingredient = new Ingredient((String)params[0]);
+            if(ingredient.getIngredientKey() == 0)
+                mQb.insertIngredient((String)params[0], (String)params[1], (int)params[2]);
             return (String)params[0];
         }
 
