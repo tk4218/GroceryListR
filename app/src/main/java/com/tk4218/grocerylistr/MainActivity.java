@@ -52,6 +52,9 @@ public class MainActivity extends AppCompatActivity
     private ApplicationSettings mSettings;
 
     private boolean mShowUserRecipes;
+    private boolean mShowFavorites;
+
+    private TextView mNavUsername;
 
     private MainViewPagerAdapter mMainViewPagerAdapter;
     private ViewPager mViewPager;
@@ -103,6 +106,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        View header = navView.getHeaderView(0);
+        mNavUsername = header.findViewById(R.id.navigation_username);
+        mNavUsername.setText(mSettings.getUserFirstName() + " " + mSettings.getUserLastName());
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
@@ -152,6 +159,13 @@ public class MainActivity extends AppCompatActivity
             recipeToggle.setTitle("Explore Recipes");
         }
 
+        MenuItem favoriteToggle = menu.findItem(R.id.action_my_favorites);
+        if(mShowFavorites){
+            favoriteToggle.setTitle("My Recipes");
+        } else{
+            favoriteToggle.setTitle("My Favorites");
+        }
+
         return true;
     }
 
@@ -161,15 +175,36 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
 
-        if (id == R.id.action_toggle_recipes) {
-            mShowUserRecipes = !mShowUserRecipes;
-            RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
-            viewPagerFragment.toggleRecipeList(mShowUserRecipes);
-            invalidateOptionsMenu();
-            return true;
-        } else if (id == R.id.app_bar_search) {
-            return true;
+        if(mViewPager.getCurrentItem() != 1){
+            mViewPager.setCurrentItem(1);
+        }
+
+        switch (id){
+            case R.id.action_toggle_recipes:
+                mShowFavorites = false;
+                mShowUserRecipes = !mShowUserRecipes;
+                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "", false);
+                invalidateOptionsMenu();
+                return true;
+            case R.id.app_bar_search:
+                return true;
+            case R.id.action_my_favorites:
+                mShowUserRecipes = true;
+                mShowFavorites = !mShowFavorites;
+                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "", mShowFavorites);
+                invalidateOptionsMenu();
+                return true;
+            case R.id.action_sort_rating:
+                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by Rating desc", mShowFavorites);
+                return true;
+            case R.id.action_sort_name_asc:
+                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by RecipeName", mShowFavorites);
+                return true;
+            case R.id.action_sort_name_desc:
+                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by RecipeName desc", mShowFavorites);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

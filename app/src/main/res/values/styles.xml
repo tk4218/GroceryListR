@@ -22,4 +22,10 @@
 
     <style name="AppTheme.AppBarOverlayLight" parent="ThemeOverlay.AppCompat.ActionBar"></style>
 
+    <style name="CustomRatingBar" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@color/colorPrimary</item>
+        <item name="colorControlActivated">@color/colorPrimaryDark</item>
+    </style>
+
+
 </resources>

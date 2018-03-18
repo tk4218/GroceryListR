@@ -151,6 +151,8 @@ public class NewAccountActivity extends AppCompatActivity {
             }else{
                 Intent intent = new Intent();
                 intent.putExtra("Username", mUsername.getText().toString());
+                intent.putExtra("FirstName", mFirstName.getText().toString());
+                intent.putExtra("LastName", mLastName.getText().toString());
                 setResult(ACCOUNT_CREATED, intent);
                 finish();
             }

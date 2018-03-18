@@ -30,6 +30,8 @@ public  class RecipeFragment extends Fragment{
     private ApplicationSettings mSettings;
 
     private boolean mShowUserRecipes;
+    private boolean mShowFavorites;
+    private String mRecipeSort;
     private ProgressBar mLoading;
     private SwipeRefreshLayout mRefreshRecipes;
     private GridLayoutManager mLayoutManager;
@@ -62,6 +64,7 @@ public  class RecipeFragment extends Fragment{
          *  Set recipes on grid view
          *--------------------------------*/
         mShowUserRecipes = true;
+        mRecipeSort = "";
         mRecipes = new ArrayList<>();
         mLoading = rootView.findViewById(R.id.recipe_loading);
         mRefreshRecipes = rootView.findViewById(R.id.refresh_recipes);
@@ -133,14 +136,18 @@ public  class RecipeFragment extends Fragment{
             mAdapter.getFilter().filter(filterString);
     }
 
-    public void toggleRecipeList(boolean showUserRecipes){
-        mShowUserRecipes = showUserRecipes;
+    public void toggleRecipeList(boolean showUserRecipes, String recipeSort, boolean favorites){
+        if(favorites){
+            mShowUserRecipes = true;
+        } else {
+            mShowUserRecipes = showUserRecipes;
+        }
+        mShowFavorites = favorites;
+        mRecipeSort = recipeSort;
         mLoading.setVisibility(View.VISIBLE);
         mLoadingRecipes = true;
         new RetrieveRecipes().execute(true);
     }
-
-
 
     private class RetrieveRecipes extends AsyncTask<Boolean, String, String>{
         QueryBuilder mQb = new QueryBuilder();
@@ -154,24 +161,23 @@ public  class RecipeFragment extends Fragment{
             JSONResult recipes;
 
             if(mShowUserRecipes){
-                recipes = mQb.getUserRecipes(mSettings.getUser(), mRecipes.size());
+                recipes = mQb.getUserRecipes(mSettings.getUser(), mRecipes.size(), mShowFavorites, mRecipeSort);
             }else{
-                recipes = mQb.getAllRecipes(mSettings.getUser(), mRecipes.size());
-                recipes.addBooleanColumn("Favorite", false);
+                recipes = mQb.getAllRecipes(mSettings.getUser(), mRecipes.size(), mRecipeSort);
             }
 
             recipes.moveFirst();
             for(int i = 0; i < recipes.getCount(); i++){
                 addRecipe(recipes.getInt("RecipeKey"),
-                        recipes.getString("PinterestId"),
-                        recipes.getString("RecipeName"),
-                        recipes.getString("MealType"),
-                        recipes.getString("CuisineType"),
-                        recipes.getString("RecipeImage"),
-                        recipes.getBoolean("Favorite"),
-                        recipes.getInt("Rating"),
-                        recipes.getDate("LastEdited"),
-                        recipes.getString("Username"));
+                          recipes.getString("PinterestId"),
+                          recipes.getString("RecipeName"),
+                          recipes.getString("MealType"),
+                          recipes.getString("CuisineType"),
+                          recipes.getString("RecipeImage"),
+                          recipes.getBoolean("Favorite"),
+                          recipes.getInt("Rating"),
+                          recipes.getDate("LastEdited"),
+                          recipes.getString("Username"));
                 recipes.moveNext();
             }
 

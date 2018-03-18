@@ -114,6 +114,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                     String email = object.getString("email");
                                     String name = object.getString("name");
 
+                                    showProgress(true);
                                     FacebookLogin facebookLogin = new FacebookLogin(userId, email, name);
                                     facebookLogin.execute();
 
@@ -177,7 +178,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         if(requestCode == REQUEST_CREATE_ACCOUNT){
             if(resultCode == ACCOUNT_CREATED){
                 String username = data.getStringExtra("Username");
-                mSettings.login(username);
+                String firstName = data.getStringExtra("FirstName");
+                String lastName = data.getStringExtra("LastName");
+                mSettings.login(username, firstName, lastName);
                 goToMainActivity();
             }
         }
@@ -384,6 +387,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         private final String mUsername;
         private final String mPassword;
+        private String mFirstName;
+        private String mLastName;
 
         UserLoginTask(String username, String password) {
             mUsername = username;
@@ -400,6 +405,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             if(existingUser.getCount() > 0){
                 try {
+                    mFirstName = existingUser.getString("FirstName");
+                    mLastName = existingUser.getString("LastName");
                     return PasswordStorage.verifyPassword(mPassword, existingUser.getString("Password"));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -418,7 +425,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                mSettings.login(mUsername);
+                mSettings.login(mUsername, mFirstName, mLastName);
                 goToMainActivity();
             } else {
                 mPasswordView.setError("The username or password is incorrect");
@@ -439,6 +446,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         private String mUserId;
         private String mEmail;
         private String mName;
+        private String mFirstName;
+        private String mLastName;
 
         FacebookLogin(String userId, String email, String name){
             mUserId = userId;
@@ -454,17 +463,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
             if(existingUser.getCount() == 0){
                 String[] names = mName.split(" ",2);
-                String firstName = names[0];
-                String lastName = names.length > 1 ? names[1] : "";
-                mQb.insertUser(mUserId, mEmail, "", firstName, lastName);
+                mFirstName = names[0];
+                mLastName = names.length > 1 ? names[1] : "";
+                mQb.insertUser(mUserId, mEmail, "", mFirstName, mLastName);
             } else {
                 mUserId = existingUser.getString("Username");
+                mFirstName = existingUser.getString("FirstName");
+                mLastName = existingUser.getString("LastName");
             }
             return null;
         }
         @Override
         protected void onPostExecute(Void aVoid) {
-            mSettings.login(mUserId);
+            showProgress(false);
+            mSettings.login(mUserId, mFirstName, mLastName);
             goToMainActivity();
         }
     }

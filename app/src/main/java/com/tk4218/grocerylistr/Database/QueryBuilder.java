@@ -84,28 +84,33 @@ public class QueryBuilder {
     /*-----------------------------------*
      * Recipe Queries
      *-----------------------------------*/
-    public JSONResult getAllRecipes(String username, int startIndex){
+    public JSONResult getAllRecipes(String username, int startIndex, String sortString){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select r.*, coalesce(ur.Username, '') as Username from tableRecipe r left join UserRecipes ur on r.RecipeKey = ur.RecipeKey and ur.Username = '"+username+"' where r.PinterestId = '' limit "+startIndex+", 10"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited,Username"));
+        parameters.add(addParameter("sql_query", "select r.*, coalesce(ur.Favorite, 0) as Favorite, coalesce(ur.Username, '') as Username from Recipes r left join UserRecipes ur on r.RecipeKey = ur.RecipeKey and ur.Username = '"+username+"' where r.PinterestId = '' "+sortString+" limit "+startIndex+", 10"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited,Favorite,Username"));
         return getResults(parameters);
     }
     public JSONResult getRecipe(int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select * from tableRecipe where RecipeKey = " + recipeKey));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited"));
+        parameters.add(addParameter("sql_query", "select * from Recipes where RecipeKey = " + recipeKey));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,RatingCount,LastEdited"));
         return getResults(parameters);
     }
     public JSONResult getPinterestRecipes(String username){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select r.* from UserRecipes u, tableRecipe r Where u.Username = '"+username+"' and r.RecipeKey = u.RecipeKey and r.PinterestId <> ''"));
-        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited"));
+        parameters.add(addParameter("sql_query", "select r.* from UserRecipes u, Recipes r Where u.Username = '"+username+"' and r.RecipeKey = u.RecipeKey and r.PinterestId <> ''"));
+        parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,RatingCount,LastEdited"));
         return getResults(parameters);
     }
     public int insertRecipe(String pinterestId, String recipeName, String mealType, String cuisineType, String recipeImage){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "insert into tableRecipe (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,LastEdited) values('"+ pinterestId +"','" + recipeName.replace("'", "''") + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0, current_timestamp())"));
+        parameters.add(addParameter("sql_query", "insert into Recipes (PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Rating,RatingCount,LastEdited) values('"+ pinterestId +"','" + recipeName.replace("'", "''") + "','" + mealType + "','" + cuisineType + "','" + recipeImage + "',0,0, current_timestamp())"));
         return insertReturnKey(parameters);
+    }
+    public boolean updateRecipeRating(int recipeKey, double rating, int ratingCount){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "update Recipes set Rating = " + rating + ", RatingCount = "+ratingCount+" where RecipeKey = " + recipeKey));
+        return insert(parameters);
     }
 
     /*---------------------------------
@@ -136,21 +141,21 @@ public class QueryBuilder {
     /*---------------------------------
      * User Recipes Queries
      *---------------------------------*/
-    public JSONResult getUserRecipes(String username, int startIndex){
+    public JSONResult getUserRecipes(String username, int startIndex, boolean favorites, String sortString){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select ur.RecipeKey, r.PinterestId, coalesce(e.RecipeName, r.RecipeName) as RecipeName, coalesce(e.MealType, r.MealType) as MealType, coalesce(e.CuisineType, r.CuisineType) as CuisineType, r.RecipeImage, ur.Favorite, r.Rating, coalesce(e.LastEdited, '0000-00-00 00:00:00') as LastEdited, ur.Username from UserRecipes ur left join UserEditRecipes e on ur.RecipeEditKey <> 0 and e.RecipeEditKey = ur.RecipeEditKey, tableRecipe r where ur.Username = '"+username+"' and r.RecipeKey = ur.RecipeKey limit "+startIndex+",10"));
+        parameters.add(addParameter("sql_query", "select ur.RecipeKey, r.PinterestId, coalesce(e.RecipeName, r.RecipeName) as RecipeName, coalesce(e.MealType, r.MealType) as MealType, coalesce(e.CuisineType, r.CuisineType) as CuisineType, r.RecipeImage, ur.Favorite, r.Rating, coalesce(e.LastEdited, '0000-00-00 00:00:00') as LastEdited, ur.Username from UserRecipes ur left join UserEditRecipes e on ur.RecipeEditKey <> 0 and e.RecipeEditKey = ur.RecipeEditKey, Recipes r where ur.Username = '"+username+"' and r.RecipeKey = ur.RecipeKey"+(favorites ? " and ur.Favorite = 1 " : " ")+sortString+" limit "+startIndex+",10"));
         parameters.add(addParameter("return_cols", "RecipeKey,PinterestId,RecipeName,MealType,CuisineType,RecipeImage,Favorite,Rating,LastEdited,Username"));
         return getResults(parameters);
     }
     public JSONResult getUserRecipe(String username, int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "select * from UserRecipes where Username = '"+username+"' and RecipeKey = " + recipeKey));
-        parameters.add(addParameter("return_cols", "Username,RecipeKey,RecipeEditKey,Favorite"));
+        parameters.add(addParameter("return_cols", "Username,RecipeKey,RecipeEditKey,Favorite,Rating"));
         return getResults(parameters);
     }
     public boolean insertUserRecipe(String username, int recipeKey){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "insert into UserRecipes (Username,RecipeKey,RecipeEditKey,Favorite) values('"+ username +"'," + recipeKey + ",0,0)"));
+        parameters.add(addParameter("sql_query", "insert into UserRecipes (Username,RecipeKey,RecipeEditKey,Favorite,Rating) values('"+ username +"'," + recipeKey + ",0,0,0)"));
         return insert(parameters);
     }
     public boolean updateUserRecipeEditKey(String username, int recipeKey, int recipeEditKey){
@@ -161,6 +166,11 @@ public class QueryBuilder {
     public boolean updateRecipeFavorite(String username, int recipeKey, boolean favorite){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
         parameters.add(addParameter("sql_query", "update UserRecipes set Favorite = " + (favorite ? 1 : 0) + " where Username = '"+username+"' and RecipeKey = " + recipeKey));
+        return insert(parameters);
+    }
+    public boolean updateUserRecipeRating(String username, int recipeKey, double rating){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "update UserRecipes set Rating = " + rating + " where Username = '"+username+"' and RecipeKey = " + recipeKey));
         return insert(parameters);
     }
     public boolean deleteUserRecipe(String username, int recipeKey){
@@ -284,7 +294,7 @@ public class QueryBuilder {
     }
     public JSONResult getCalendarRecipes(String username, Date calendarDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.RecipeKey, coalesce(e.RecipeName, r.RecipeName) as RecipeName, cr.MealCompleted from UserCalendarRecipes cr, tableRecipe r left join UserRecipes u on u.Username = '"+username+"' and u.RecipeKey = r.RecipeKey and u.RecipeEditKey <> 0 left join UserEditRecipes e on e.RecipeEditKey = u.RecipeEditKey and e.RecipeKey = u.RecipeKey and e.Username = u.Username where cr.Username = '"+username+"' and cr.CalendarDate = '"+ dateString(calendarDate) +"' and r.RecipeKey = cr.RecipeKey"));
+        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.RecipeKey, coalesce(e.RecipeName, r.RecipeName) as RecipeName, cr.MealCompleted from UserCalendarRecipes cr, Recipes r left join UserRecipes u on u.Username = '"+username+"' and u.RecipeKey = r.RecipeKey and u.RecipeEditKey <> 0 left join UserEditRecipes e on e.RecipeEditKey = u.RecipeEditKey and e.RecipeKey = u.RecipeKey and e.Username = u.Username where cr.Username = '"+username+"' and cr.CalendarDate = '"+ dateString(calendarDate) +"' and r.RecipeKey = cr.RecipeKey"));
         parameters.add(addParameter("return_cols", "CalendarDate,MealType,Sequence,RecipeKey,RecipeName,MealCompleted"));
         return getResults(parameters);
     }
@@ -296,13 +306,13 @@ public class QueryBuilder {
     }
     public JSONResult getMonthCalendarRecipes(String username, Date beginDate, Date endDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.RecipeKey, coalesce(e.RecipeName, r.RecipeName) as RecipeName, cr.MealCompleted from UserCalendarRecipes cr, tableRecipe r left join UserRecipes u on u.Username = '"+username+"' and u.RecipeKey = r.RecipeKey and u.RecipeEditKey <> 0 left join UserEditRecipes e on e.RecipeEditKey = u.RecipeEditKey and e.RecipeKey = u.RecipeKey and e.Username = u.Username where cr.Username = '"+username+"' and cr.CalendarDate >= '"+ dateString(beginDate) +"' and cr.CalendarDate <= '"+ dateString(endDate) +"' and r.RecipeKey = cr.RecipeKey order by cr.CalendarDate,cr.Sequence"));
+        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.RecipeKey, coalesce(e.RecipeName, r.RecipeName) as RecipeName, cr.MealCompleted from UserCalendarRecipes cr, Recipes r left join UserRecipes u on u.Username = '"+username+"' and u.RecipeKey = r.RecipeKey and u.RecipeEditKey <> 0 left join UserEditRecipes e on e.RecipeEditKey = u.RecipeEditKey and e.RecipeKey = u.RecipeKey and e.Username = u.Username where cr.Username = '"+username+"' and cr.CalendarDate >= '"+ dateString(beginDate) +"' and cr.CalendarDate <= '"+ dateString(endDate) +"' and r.RecipeKey = cr.RecipeKey order by cr.CalendarDate,cr.Sequence"));
         parameters.add(addParameter("return_cols", "CalendarDate,MealType,Sequence,RecipeKey,RecipeName,MealCompleted"));
         return getResults(parameters);
     }
     public JSONResult getRecipeSchedule(String username, int recipeKey, Date fromDate){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.MealCompleted, r.RecipeKey, r.RecipeName from UserCalendarRecipes cr, tableRecipe r where cr.Username = '"+username+"' and cr.CalendarDate >= '"+ dateString(fromDate) +"'  and cr.RecipeKey = "+recipeKey+" and r.RecipeKey = cr.RecipeKey order by cr.CalendarDate,cr.Sequence"));
+        parameters.add(addParameter("sql_query", "select cr.CalendarDate, cr.MealType, cr.Sequence, cr.MealCompleted, r.RecipeKey, r.RecipeName from UserCalendarRecipes cr, Recipes r where cr.Username = '"+username+"' and cr.CalendarDate >= '"+ dateString(fromDate) +"'  and cr.RecipeKey = "+recipeKey+" and r.RecipeKey = cr.RecipeKey order by cr.CalendarDate,cr.Sequence"));
         parameters.add(addParameter("return_cols", "CalendarDate,MealType,Sequence,RecipeKey,MealCompleted"));
         return getResults(parameters);
     }
@@ -409,26 +419,26 @@ public class QueryBuilder {
      *-----------------------------------*/
     public JSONResult getUserByUsername(String username){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select Username,Email from Users where Username = '"+ username +"'"));
-        parameters.add(addParameter("return_cols", "Username,Email"));
+        parameters.add(addParameter("sql_query", "select Username,Email,FirstName,LastName from Users where Username = '"+ username +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email,FirstName,LastName"));
         return getResults(parameters);
     }
     public JSONResult getUserByEmail(String email){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select Username,Email from Users where Email = '"+ email +"'"));
-        parameters.add(addParameter("return_cols", "Username,Email"));
+        parameters.add(addParameter("sql_query", "select Username,Email,FirstName,LastName from Users where Email = '"+ email +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email,FirstName,LastName"));
         return getResults(parameters);
     }
     public JSONResult getUserPasswordByUsername(String username){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select Username,Email,Password from Users where Username = '"+ username +"'"));
-        parameters.add(addParameter("return_cols", "Username,Email,Password"));
+        parameters.add(addParameter("sql_query", "select Username,Email,Password,FirstName,LastName from Users where Username = '"+ username +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email,Password,FirstName,LastName"));
         return getResults(parameters);
     }
     public JSONResult getUserPasswordByEmail(String email){
         ArrayList<ArrayList<String>> parameters = new ArrayList<>();
-        parameters.add(addParameter("sql_query", "select Username,Email,Password from Users where Email = '"+ email +"'"));
-        parameters.add(addParameter("return_cols", "Username,Email,Password"));
+        parameters.add(addParameter("sql_query", "select Username,Email,Password,FirstName,LastName from Users where Email = '"+ email +"'"));
+        parameters.add(addParameter("return_cols", "Username,Email,Password,FirstName,LastName"));
         return getResults(parameters);
     }
     public boolean insertUser(String username, String email, String password, String firstName, String lastName) {

@@ -33,6 +33,7 @@
             android:src="@drawable/user_icon" />
 
         <TextView
+            android:id="@+id/navigation_username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"

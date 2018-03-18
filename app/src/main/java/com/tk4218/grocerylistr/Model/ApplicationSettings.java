@@ -32,9 +32,11 @@ public class ApplicationSettings {
         pinterestLogout();
     }
 
-    public void login(String username){
+    public void login(String username, String firstName, String lastName){
         mSp.edit().putBoolean("LoggedIn", true).apply();
         mSp.edit().putString("Username", username).apply();
+        mSp.edit().putString("UserFirstName", firstName).apply();
+        mSp.edit().putString("UserLastName", lastName).apply();
     }
 
     public void pinterestLogin(){

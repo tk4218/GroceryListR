@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.LayerDrawable;
+import android.media.Rating;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -20,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +36,7 @@ import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.Recipe;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -42,6 +46,7 @@ public class RecipeActivity extends AppCompatActivity {
     private CollapsingToolbarLayout mCollapseToolbar;
     private RecyclerView mRecipeIngredientList;
     private LinearLayout mLastMadeLayout;
+    private RatingBar mRecipeRating;
     private TextView mRecipeLastMade;
     private ImageView mRecipeImage;
     private TextView mRecipeName;
@@ -71,6 +76,7 @@ public class RecipeActivity extends AppCompatActivity {
         mRecipeIngredientList = findViewById(R.id.recipe_ingredient_list);
         mRecipeIngredientList.setLayoutManager(new LinearLayoutManager(this));
         mLastMadeLayout = findViewById(R.id.layout_last_made);
+        mRecipeRating = findViewById(R.id.recipe_rating);
         mRecipeLastMade = findViewById(R.id.recipe_last_made);
         mRecipeImage = findViewById(R.id.recipe_image);
         mRecipeName = findViewById(R.id.recipe_name_title);
@@ -144,6 +150,15 @@ public class RecipeActivity extends AppCompatActivity {
                 }
             });
 
+
+        mRecipeRating.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                if(fromUser){
+                    new SetRecipeRating().execute(rating);
+                }
+            }
+        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -209,11 +224,18 @@ public class RecipeActivity extends AppCompatActivity {
 
     private void setRecipeDetails(){
         if(!mRecipe.isUserRecipe()){
+            mRecipeRating.setRating((float)mRecipe.getRating());
+            mRecipeRating.setEnabled(false);
             mFab.setImageResource(android.R.drawable.ic_input_add);
             mEditRecipe.setVisibility(View.GONE);
             mLastMadeLayout.setVisibility(View.GONE);
             invalidateOptionsMenu();
         } else{
+            mRecipeRating.setEnabled(true);
+            if(mRecipe.getUserRating() > 0)
+                mRecipeRating.setRating((float)mRecipe.getUserRating());
+            else
+                mRecipeRating.setRating((float)mRecipe.getRating());
             mFab.setImageResource(android.R.drawable.ic_menu_today);
             mEditRecipe.setVisibility(View.VISIBLE);
             mLastMadeLayout.setVisibility(View.VISIBLE);
@@ -268,7 +290,13 @@ public class RecipeActivity extends AppCompatActivity {
             JSONResult recipeLastMade = mQb.getRecipeLastMade(mUsername, mRecipeKey);
             mLastMade = recipeLastMade.getDate("LastMade");
 
-            mRecipeSchedule = mQb.getRecipeSchedule(mUsername, mRecipeKey, new Date());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            mRecipeSchedule = mQb.getRecipeSchedule(mUsername, mRecipeKey, calendar.getTime());
 
             return null;
         }
@@ -293,6 +321,7 @@ public class RecipeActivity extends AppCompatActivity {
 
                 }
             });
+            invalidateOptionsMenu();
             mDialog.dismiss();
         }
     }
@@ -347,6 +376,28 @@ public class RecipeActivity extends AppCompatActivity {
             int recipeKey = (int) params[1];
 
             mQb.deleteCalendarRecipe(mUsername, mealPlanDate, recipeKey);
+            return null;
+        }
+    }
+
+    private class SetRecipeRating extends AsyncTask<Float, Void, Void> {
+        private QueryBuilder mQb = new QueryBuilder();
+        @Override
+        protected Void doInBackground(Float... floats) {
+
+            double ratingSum = mRecipe.getRating() * mRecipe.getRatingCount();
+            if(mRecipe.getUserRating() > 0){
+                ratingSum -= mRecipe.getUserRating();
+            } else{
+                mRecipe.setRatingCount(mRecipe.getRatingCount() + 1);
+            }
+
+            ratingSum += floats[0];
+            double newRating = ratingSum / (double)mRecipe.getRatingCount();
+            mQb.updateUserRecipeRating(mUsername, mRecipeKey, (double)floats[0]);
+            mQb.updateRecipeRating(mRecipeKey, newRating, mRecipe.getRatingCount());
+            mRecipe.setUserRating((double)floats[0]);
+            mRecipe.setRating(newRating);
             return null;
         }
     }

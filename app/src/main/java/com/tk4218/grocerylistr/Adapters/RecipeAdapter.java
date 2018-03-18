@@ -139,6 +139,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                                 Intent editIntent = new Intent(mContext, EditRecipeActivity.class);
                                 editIntent.putExtra("recipeKey", holder.recipe.getRecipeKey());
                                 mContext.startActivity(editIntent);
+                                break;
                             case R.id.option_favorite:
                                 holder.recipe.setFavorite(!holder.recipe.getFavorite());
 
@@ -152,10 +153,13 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                                 } else{
                                     Toast.makeText(RecipeAdapter.this.mContext, "Oops! Something went wrong.", Toast.LENGTH_SHORT).show();
                                 }
+                                break;
                             case R.id.option_save_recipe:
                                 saveRecipe(holder.recipe.getRecipeKey(), holder.recipe.getRecipeName(), holder);
+                                break;
                             case R.id.option_delete_recipe:
                                 deleteRecipe(holder.recipe.getRecipeKey(), holder.recipe.getRecipeName(), holder);
+                                break;
                         }
                         return false;
                     }

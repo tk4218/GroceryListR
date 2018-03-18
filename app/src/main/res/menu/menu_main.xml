@@ -10,9 +10,34 @@
         android:visible="true"
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
+
     <item
         android:id="@+id/action_toggle_recipes"
         android:orderInCategory="200"
         android:title="Explore Recipes"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_my_favorites"
+        android:orderInCategory="300"
+        android:title="My Favorites"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_rating"
+        android:orderInCategory="400"
+        android:title="Sort By Rating"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_name_asc"
+        android:orderInCategory="500"
+        android:title="Sort A to Z"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_name_desc"
+        android:orderInCategory="600"
+        android:title="Sort Z to A"
         app:showAsAction="never" />
 </menu>
