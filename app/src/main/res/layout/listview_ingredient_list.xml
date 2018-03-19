@@ -35,7 +35,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:scaleType="fitXY"
-                android:src="@drawable/pantry_icon" />
+                android:src="@mipmap/ic_shopping_cart_black_24dp" />
 
             <TextView
                 android:id="@+id/list_ingredient_type"

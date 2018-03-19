@@ -112,6 +112,11 @@ public class QueryBuilder {
         parameters.add(addParameter("sql_query", "update Recipes set Rating = " + rating + ", RatingCount = "+ratingCount+" where RecipeKey = " + recipeKey));
         return insert(parameters);
     }
+    public boolean updateRecipeImage(String recipeImage, int recipeKey){
+        ArrayList<ArrayList<String>> parameters = new ArrayList<>();
+        parameters.add(addParameter("sql_query", "update Recipes set RecipeImage = '" + recipeImage + "' where RecipeKey = " + recipeKey));
+        return insert(parameters);
+    }
 
     /*---------------------------------
      * User Edit Recipe Queries

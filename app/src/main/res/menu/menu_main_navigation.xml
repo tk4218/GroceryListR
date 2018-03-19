@@ -14,11 +14,11 @@
     <item
         android:id="@+id/nav_pantry"
         android:title="Pantry"
-        android:icon="@drawable/pantry_icon"/>
+        android:icon="@mipmap/ic_shopping_cart_black_24dp"/>
 
     <item
         android:id="@+id/nav_ingredients"
-        android:icon="@drawable/ingredient_icon"
+        android:icon="@mipmap/ic_content_paste_black_18dp"
         android:title="Ingredients" />
 
     <item

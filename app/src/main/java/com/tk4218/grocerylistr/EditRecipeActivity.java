@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,10 +23,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.AWSStartupHandler;
+import com.amazonaws.mobile.client.AWSStartupResult;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Adapters.AddIngredientAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
@@ -39,14 +44,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.amazonaws.mobileconnectors.s3.transferutility.*;
 
 public class EditRecipeActivity extends AppCompatActivity {
     ApplicationSettings mSettings;
 
+    private static final String AWS_S3_URL = "https://s3-us-west-1.amazonaws.com/elasticbeanstalk-us-west-1-185867131873/";
     private static final int REQUEST_PERMISSIONS = 100;
     String mCurrentPhotoPath = "";
+    String mNewPhotoPath = "";
+    boolean mTempImage;
 
-    ImageButton mRecipeImage;
+    ImageView mRecipeImage;
     ImageManager mImageManager = new ImageManager();
     EditText mRecipeName;
     Spinner mMealType;
@@ -71,6 +80,7 @@ public class EditRecipeActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mTempImage = false;
         mRecipeImage = findViewById(R.id.edit_recipe_image);
         mRecipeName = findViewById(R.id.edit_recipe_name);
         mMealType = findViewById(R.id.edit_meal_type);
@@ -144,14 +154,16 @@ public class EditRecipeActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         if(which == 0){
                             Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            File f;
                             try {
-                                f = mImageManager.createNewPhotoFile();
-                                mCurrentPhotoPath = f.getAbsolutePath();
-                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
+                                File f = mImageManager.createNewPhotoFile(EditRecipeActivity.this, mRecipeKey, true);
+                                mNewPhotoPath = f.getAbsolutePath();
+                                mTempImage = true;
+                                Uri photoURI = FileProvider.getUriForFile(EditRecipeActivity.this,
+                                        "com.example.android.fileprovider", f);
+                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                             } catch (IOException e) {
                                 e.printStackTrace();
-                                mCurrentPhotoPath = "";
+                                mNewPhotoPath = "";
                             }
                             startActivityForResult(takePictureIntent, ImageManager.REQUEST_TAKE_PHOTO);
                         }
@@ -174,23 +186,17 @@ public class EditRecipeActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode){
             case ImageManager.REQUEST_TAKE_PHOTO:
-                Intent intent = new Intent("com.android.camera.action.CROP");
-
-                File f = new File(mCurrentPhotoPath);
-                Uri contentUri = Uri.fromFile(f);
-                Bundle extras = data.getExtras();
-
-                Log.d("Intent Data", ""+extras.size());
-
-                intent.setType("image/*");
-                intent.putExtra("outputX", 1024);
-                intent.putExtra("outputY", 1024);
-                intent.putExtra("aspectX", 1);
-                intent.putExtra("aspectY", 1);
-                intent.putExtra("return-data", true);
-                startActivityForResult(intent, ImageManager.REQUEST_CROP_PHOTO);
+                if(!mNewPhotoPath.equals("")) {
+                    Picasso.with(this)
+                            .load(new File(mNewPhotoPath))
+                            .fit()
+                            .centerCrop()
+                            .into(mRecipeImage);
+                }
                 break;
             case ImageManager.REQUEST_LOAD_IMAGE:
+                if(data == null) break;
+
                 Uri selectedImage = data.getData();
                 String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
@@ -198,32 +204,22 @@ public class EditRecipeActivity extends AppCompatActivity {
                         filePathColumn, null, null, null);
                 if(cursor != null){
                     cursor.moveToFirst();
-
                     int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    mCurrentPhotoPath = cursor.getString(columnIndex);
+                    mNewPhotoPath = cursor.getString(columnIndex);
+                    mTempImage = false;
                     cursor.close();
+                    if(!mNewPhotoPath.equals("")){
+                        Picasso.with(this)
+                                .load(new File(mNewPhotoPath))
+                                .fit()
+                                .centerCrop()
+                                .into(mRecipeImage);
+                    }
                 }
 
                 break;
-            case ImageManager.REQUEST_CROP_PHOTO:
-                break;
             default:
                 break;
-        }
-
-        if(requestCode == ImageManager.REQUEST_LOAD_IMAGE){
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
-            Cursor cursor = getContentResolver().query(selectedImage,
-                    filePathColumn, null, null, null);
-            if(cursor != null){
-                cursor.moveToFirst();
-
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                mCurrentPhotoPath = cursor.getString(columnIndex);
-                cursor.close();
-            }
         }
     }
 
@@ -260,11 +256,57 @@ public class EditRecipeActivity extends AppCompatActivity {
             return;
         }
 
+        if(!mNewPhotoPath.equals("") && !mNewPhotoPath.equals(mCurrentPhotoPath)){
+            AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
+                @Override
+                public void onComplete(AWSStartupResult awsStartupResult) {
+                    uploadImageToAWS();
+                    manageRecipe();
+                }
+            }).execute();
+        } else {
+            manageRecipe();
+        }
+    }
+
+    private void manageRecipe(){
         if(mRecipeKey == 0){
             new SaveRecipe().execute(mRecipeName.getText().toString(), mMealType.getSelectedItem().toString(), mCuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
         } else {
             new UpdateRecipe().execute(mRecipeName.getText().toString(), mMealType.getSelectedItem().toString(), mCuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
         }
+    }
+
+    private void uploadImageToAWS(){
+        TransferUtility transferUtility =
+                TransferUtility.builder()
+                        .context(getApplicationContext())
+                        .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
+                        .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
+                        .build();
+
+        final File newImage = new File(mNewPhotoPath);
+        mCurrentPhotoPath = "GroceryListR/Images/"+mSettings.getUser()+"/"+mRecipeKey+"."+android.webkit.MimeTypeMap.getFileExtensionFromUrl(mNewPhotoPath);
+        TransferObserver uploadObserver = transferUtility.upload(mCurrentPhotoPath, newImage);
+        mCurrentPhotoPath = AWS_S3_URL + mCurrentPhotoPath;
+        uploadObserver.setTransferListener(new TransferListener() {
+            @Override
+            public void onStateChanged(int id, TransferState state) {
+                if(TransferState.COMPLETED == state){
+                    if(mTempImage) { newImage.delete(); }
+                }
+            }
+
+            @Override
+            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+
+            }
+
+            @Override
+            public void onError(int id, Exception ex) {
+
+            }
+        });
     }
 
     private class SaveRecipe extends AsyncTask<String, Void, Void> {
@@ -342,6 +384,10 @@ public class EditRecipeActivity extends AppCompatActivity {
                 mQb.updateUserRecipeEditKey(mSettings.getUser(), mRecipeKey, recipeEditKey);
             }
 
+            if(!mRecipe.getRecipeImage().equals(mCurrentPhotoPath)){
+                mQb.updateRecipeImage(mCurrentPhotoPath, mRecipeKey);
+            }
+
             JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
             recipeIngredients.addBooleanColumn("Delete", true);
             JSONResult recipeEditIngredients = mQb.getUserRecipeIngredients(mSettings.getUser(), mRecipeKey);
@@ -413,6 +459,13 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         @Override
         protected  void onPostExecute(Void result){
+            if(!mRecipe.getRecipeImage().equals(mCurrentPhotoPath)) {
+                ImageManager imageManager = new ImageManager();
+                try{
+                    File f = imageManager.createNewPhotoFile(EditRecipeActivity.this, mRecipeKey);
+                    if(f.isFile()) f.delete();
+                }catch(Exception e){ e.printStackTrace(); }
+            }
             mDialog.dismiss();
             finish();
         }
@@ -442,6 +495,7 @@ public class EditRecipeActivity extends AppCompatActivity {
                                 .fit()
                                 .centerCrop()
                                 .into(mRecipeImage);
+
                     }
 
 

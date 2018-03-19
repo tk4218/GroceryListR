@@ -30,7 +30,7 @@
             android:id="@+id/imageView"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/user_icon" />
+            android:src="@mipmap/ic_account_circle_black_24dp" />
 
         <TextView
             android:id="@+id/navigation_username"

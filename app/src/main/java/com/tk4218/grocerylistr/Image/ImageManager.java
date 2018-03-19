@@ -54,39 +54,15 @@ public class ImageManager {
         };
     }
 
-    public File createNewPhotoFile() throws IOException {
-        File f = createImageFile();
-        return f;
+    public File createNewPhotoFile(Context context, int recipeKey) throws IOException {
+        return createNewPhotoFile(context, recipeKey, false);
     }
 
-    private File createImageFile() throws IOException {
+    public File createNewPhotoFile(Context context, int recipeKey, boolean temp) throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "IMG_" + timeStamp + "_";
-        File albumF = getAlbumDir();
-        File imageF = File.createTempFile(imageFileName, ".jpg", albumF);
-        return imageF;
-    }
-
-    private File getAlbumDir() {
-        File storageDir = null;
-
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-
-            storageDir = mAlbumStorageDirFactory.getAlbumStorageDir("GroceryListR");
-
-            if (storageDir != null) {
-                if (! storageDir.mkdirs()) {
-                    if (! storageDir.exists()){
-                        Log.d("LuLaRoe", "failed to create directory");
-                        return null;
-                    }
-                }
-            }
-
-        }
-
-        return storageDir;
+        File storagePath = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        String photoPath = storagePath.getAbsolutePath() + "/" + recipeKey +(temp ? "_tmp" : "") +".jpg";
+        return new File(photoPath);
     }
 
     public Bitmap setPic(String photoPath, int reqWidth, int reqHeight) {

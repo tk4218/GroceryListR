@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.amazonaws.mobile.client.AWSMobileClient;
+
 import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
@@ -79,6 +81,8 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        AWSMobileClient.getInstance().initialize(this).execute();
 
         mPDKClient = PDKClient.configureInstance(this, PINTEREST_APP_ID);
         mPDKClient.onConnect(this);
