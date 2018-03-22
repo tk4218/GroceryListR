@@ -9,7 +9,7 @@
         android:id="@+id/list_day_meal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
+        android:background="@drawable/bg_calendar_day"
         android:ellipsize="end"
         android:maxLines="2"
         android:scrollHorizontally="true"

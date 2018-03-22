@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
@@ -10,10 +11,14 @@
         android:id="@+id/calendar_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_calendar_month"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="12dp"
+        android:paddingTop="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
             android:id="@+id/button_prev_month"
@@ -22,7 +27,7 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/left_arrow" />
+            app:srcCompat="@mipmap/ic_keyboard_arrow_left_white_24dp" />
 
         <TextView
             android:id="@+id/calendar_month"
@@ -31,6 +36,7 @@
             android:layout_weight="1"
             android:gravity="center_horizontal"
             android:text="TextView"
+            android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -41,21 +47,18 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
-            app:srcCompat="@drawable/right_arrow" />
+            app:srcCompat="@mipmap/ic_keyboard_arrow_right_white_24dp" />
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/calendar_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|center_horizontal|center"
-        android:indeterminate="true" />
 
     <LinearLayout
         android:id="@+id/calendar_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/calendar_header">
 
         <TextView
             android:id="@+id/day_sunday"
@@ -117,7 +120,27 @@
     <GridView
         android:id="@+id/grid_month_days"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:numColumns="7" />
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:numColumns="7"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/calendar_content" />
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/calendar_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center_horizontal|center"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

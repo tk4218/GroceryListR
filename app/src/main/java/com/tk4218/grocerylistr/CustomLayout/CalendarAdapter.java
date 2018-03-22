@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -15,6 +16,7 @@ import com.tk4218.grocerylistr.R;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 /*
@@ -59,6 +61,7 @@ public class CalendarAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.gridview_calendar_day, parent, false);
         }
 
+        LinearLayout calendarDay = convertView.findViewById(R.id.list_calendar_day);
         TextView dayOfMonth = convertView.findViewById(R.id.day_of_month);
         dayOfMonth.setText(dayFormat.format(mDaysOfMonth.get(position).getCalendarDate()));
         ListView dayMeals = convertView.findViewById(R.id.listview_meals);
@@ -70,6 +73,16 @@ public class CalendarAdapter extends BaseAdapter {
             dayOfMonth.setTextColor(Color.GRAY);
         } else {
             dayOfMonth.setTextColor(Color.BLACK);
+        }
+
+        calendar.setTime(new Date());
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        if(mDaysOfMonth.get(position).getCalendarDate().equals(calendar.getTime())){
+            calendarDay.setBackgroundResource(R.drawable.bg_current_day);
         }
 
         return convertView;
