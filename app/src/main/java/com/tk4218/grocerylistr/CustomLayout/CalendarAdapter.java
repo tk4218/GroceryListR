@@ -2,6 +2,8 @@ package com.tk4218.grocerylistr.CustomLayout;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,10 +72,11 @@ public class CalendarAdapter extends BaseAdapter {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(mDaysOfMonth.get(position).getCalendarDate());
         if(calendar.get(Calendar.MONTH) != mCurrentMonth){
-            dayOfMonth.setTextColor(Color.GRAY);
+            dayOfMonth.setTextColor(Color.LTGRAY);
         } else {
             dayOfMonth.setTextColor(Color.BLACK);
         }
+
 
         calendar.setTime(new Date());
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -85,6 +88,12 @@ public class CalendarAdapter extends BaseAdapter {
             calendarDay.setBackgroundResource(R.drawable.bg_current_day);
         }
 
+        ViewGroup.LayoutParams params = convertView.getLayoutParams();
+        TypedValue tv = new TypedValue();
+        mContext.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
+        int actionBarHeight = mContext.getResources().getDimensionPixelSize(tv.resourceId);
+        params.height = ((parent.getHeight() - actionBarHeight) / 6);
+        convertView.setLayoutParams(params);
         return convertView;
     }
 }
