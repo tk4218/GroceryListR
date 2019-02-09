@@ -19,7 +19,6 @@ import android.widget.Spinner;
 import com.tk4218.grocerylistr.Adapters.IngredientListAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Model.Ingredient;
 
 import java.util.ArrayList;
 
@@ -75,7 +74,7 @@ public class IngredientListActivity extends AppCompatActivity {
 
             ArrayList<Ingredient> ingredientList = new ArrayList<>();
             for(int i = 0; i < ingredients.getCount(); i++){
-                ingredientList.add(new Ingredient(ingredients.getInt(i, "IngredientKey"),
+                ingredientList.add(new Ingredient(ingredients.getString(i, "IngredientKey"),
                                                   ingredients.getString(i, "IngredientName"),
                                                   ingredients.getString(i, "IngredientType"),
                                                   ingredients.getInt(i, "ShelfLife"),

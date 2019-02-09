@@ -2,6 +2,7 @@ package com.tk4218.grocerylistr.Model;
 
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Recipe;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,7 +62,7 @@ public class CalendarRecipes {
         mRecipes = calendarRecipes;
     }
 
-    public void addRecipe(int recipeKey, String recipeName, String mealType){
+    public void addRecipe(String recipeKey, String recipeName, String mealType){
         mRecipes.add(new Recipe(recipeKey, "", recipeName, mealType, "", "", false, 0, new Date(0), false));
     }
 
@@ -94,7 +95,7 @@ public class CalendarRecipes {
 
     private void convertMeals(JSONResult calendarRecipes){
         for(int i = 0; i < calendarRecipes.getCount(); i++) {
-            addRecipe(calendarRecipes.getInt(i, "RecipeKey"),
+            addRecipe(calendarRecipes.getString(i, "RecipeKey"),
                       calendarRecipes.getString(i, "RecipeName"),
                       calendarRecipes.getString(i, "MealType"));
         }

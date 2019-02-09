@@ -1,4 +1,4 @@
-package com.tk4218.grocerylistr.CustomLayout;
+package com.tk4218.grocerylistr;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

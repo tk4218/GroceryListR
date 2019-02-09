@@ -4,10 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -24,24 +22,16 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 import com.tk4218.grocerylistr.EditRecipeActivity;
-import com.tk4218.grocerylistr.Image.ImageManager;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Recipe;
+import com.tk4218.grocerylistr.Recipe;
 import com.tk4218.grocerylistr.R;
 import com.tk4218.grocerylistr.RecipeActivity;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> implements Filterable{
@@ -113,7 +103,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 public void onClick(View v) {
                     DialogFragment datePicker = new DatePickerFragment();
                     Bundle arguments = new Bundle();
-                    arguments.putInt("recipeKey", holder.recipe.getRecipeKey());
+                    arguments.putString("recipeKey", holder.recipe.getRecipeKey());
                     datePicker.setArguments(arguments);
                     datePicker.show(((AppCompatActivity) mContext).getSupportFragmentManager(), "datePicker");
                 }
@@ -236,7 +226,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         };
     }
 
-    private void saveRecipe(final int recipeKey, String recipeName, final ViewHolder holder){
+    private void saveRecipe(final String recipeKey, String recipeName, final ViewHolder holder){
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Save Recipe")
                 .setMessage("Save " + recipeName + " to your recipes?")
@@ -254,7 +244,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 }).create().show();
     }
 
-    private void deleteRecipe(final int recipeKey, String recipeName, final ViewHolder holder){
+    private void deleteRecipe(final String recipeKey, String recipeName, final ViewHolder holder){
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Delete Recipe")
                 .setMessage("Are you sure you want to remove " + recipeName + " from your recipes?")
@@ -300,21 +290,21 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         }
     }
 
-    private class SaveUserRecipe extends AsyncTask<Integer, Void, Void> {
+    private class SaveUserRecipe extends AsyncTask<String, Void, Void> {
         private QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected Void doInBackground(Integer... params) {
+        protected Void doInBackground(String... params) {
             mQb.insertUserRecipe(mSettings.getUser(), params[0]);
             return null;
         }
     }
 
-    private class DeleteUserRecipe extends AsyncTask<Integer, Void, Void> {
+    private class DeleteUserRecipe extends AsyncTask<String, Void, Void> {
         private QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected Void doInBackground(Integer... params) {
+        protected Void doInBackground(String... params) {
             JSONResult userRecipe = mQb.getUserRecipe(mSettings.getUser(), params[0]);
             mQb.deleteUserRecipe(mSettings.getUser(), params[0]);
             if(userRecipe.getCount() > 0){

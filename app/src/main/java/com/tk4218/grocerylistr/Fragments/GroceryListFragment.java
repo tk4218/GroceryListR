@@ -1,14 +1,17 @@
-package com.tk4218.grocerylistr;
+package com.tk4218.grocerylistr.Fragments;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -19,14 +22,30 @@ import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Adapters.GroceryListAdapter;
 import com.tk4218.grocerylistr.Adapters.IngredientDropdownAdapter;
+import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.GroceryList;
 import com.tk4218.grocerylistr.Model.GroceryListItem;
+import com.tk4218.grocerylistr.Ingredient;
+import com.tk4218.grocerylistr.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-public class GroceryListActivity extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link GroceryListFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link GroceryListFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class GroceryListFragment extends Fragment {
+    private ApplicationSettings mSettings;
+
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_GROCERY_LIST_KEY = "GroceryListKey";
 
     private int mGroceryListKey;
     private GroceryList mGroceryList;
@@ -38,30 +57,56 @@ public class GroceryListActivity extends AppCompatActivity {
     private AutoCompleteTextView mAddItemText;
     private GroceryListAdapter mAdapter;
     private TextView mUndo;
-
     final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+
+    //private OnFragmentInteractionListener mListener;
+
+    public GroceryListFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param groceryListKey Parameter 1.
+     * @return A new instance of fragment GroceryListFragment.
+     */
+    public static GroceryListFragment newInstance(int groceryListKey) {
+        GroceryListFragment fragment = new GroceryListFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_GROCERY_LIST_KEY, groceryListKey);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_grocery_list);
+        mSettings = new ApplicationSettings(getActivity());
 
-        Bundle extras = getIntent().getExtras();
-
-        if(extras != null){
-            mGroceryListKey = extras.getInt("groceryListKey");
-            new GetGroceryList().execute();
+        if (getArguments() != null) {
+            mGroceryListKey = getArguments().getInt(ARG_GROCERY_LIST_KEY);
         }
+    }
 
-        mAddItem = findViewById(R.id.add_item_layout);
-        mAddItemAmount = findViewById(R.id.add_item_amount);
-        mAddItemMeasurement = findViewById(R.id.add_item_measurement);
-        mAddItemText = findViewById(R.id.add_item_name);
-        mUndo = findViewById(R.id.undo);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.activity_grocery_list, container, false);
+        mGroceryListView = rootView.findViewById(R.id.list_grocerylist);
+        new GetGroceryList().execute();
+
+        mAddItem = rootView.findViewById(R.id.add_item_layout);
+        mAddItemAmount = rootView.findViewById(R.id.add_item_amount);
+        mAddItemMeasurement = rootView.findViewById(R.id.add_item_measurement);
+        mAddItemText = rootView.findViewById(R.id.add_item_name);
+        mUndo = rootView.findViewById(R.id.undo);
 
         mAddItem.setVisibility(View.INVISIBLE);
         mUndo.setVisibility(View.INVISIBLE);
 
-        IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(GroceryListActivity.this, R.layout.dropdown_ingredient);
+        IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(getContext(), R.layout.dropdown_ingredient);
         mAddItemText.setAdapter(adapter);
 
         mAddItemText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -75,7 +120,7 @@ public class GroceryListActivity extends AppCompatActivity {
             }
         });
 
-        final FloatingActionButton addItem = findViewById(R.id.add_item);
+        final FloatingActionButton addItem = rootView.findViewById(R.id.add_item);
         addItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,19 +157,50 @@ public class GroceryListActivity extends AppCompatActivity {
                 addItem.setImageResource(android.R.drawable.ic_input_add);
             }
         });
+        return rootView;
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (mGroceryListView != null)
-            mGroceryListView.setIndicatorBounds(mGroceryListView.getRight()- 150, mGroceryListView.getRight());
+    public void onResume() {
+        super.onResume();
+    }
+
+    /*@Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }*/
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        //mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
     }
 
     private void showNewIngredientDialog(){
         @SuppressLint("InflateParams")
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_new_ingredient, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
         builder.setTitle("Add New Ingredient")
                 .setIcon(android.R.drawable.ic_input_add)
@@ -151,13 +227,14 @@ public class GroceryListActivity extends AppCompatActivity {
                 .show();
     }
 
-     private class GetGroceryList extends AsyncTask<Void, Void, Void> {
+    private class GetGroceryList extends AsyncTask<Void, Void, Void> {
         ProgressDialog mDialog;
+        private QueryBuilder mQb = new QueryBuilder();
 
         @Override
         protected void onPreExecute(){
             super.onPreExecute();
-            mDialog = new ProgressDialog(GroceryListActivity.this);
+            mDialog = new ProgressDialog(getContext());
             mDialog.setMessage("Getting Grocery List...");
             mDialog.setIndeterminate(false);
             mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -166,20 +243,25 @@ public class GroceryListActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            mGroceryList = new GroceryList(mGroceryListKey);
+            JSONResult currentGroceryList = mQb.getCurrentGroceryList(mSettings.getUser());
+            if(currentGroceryList.getCount() != 0){
+                mGroceryListKey = currentGroceryList.getInt(("GroceryListKey"));
+                mGroceryList = new GroceryList(mGroceryListKey);
+            }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result){
-                mGroceryListView = findViewById(R.id.list_grocerylist);
-                mAdapter = new GroceryListAdapter(GroceryListActivity.this, mGroceryList.getIngredientTypes(), mGroceryList);
+            if(mGroceryListKey != 0){
+                mAdapter = new GroceryListAdapter(getContext(), mGroceryList.getIngredientTypes(), mGroceryList);
                 mGroceryListView.setAdapter(mAdapter);
                 if(mAdapter.getGroupCount() > 0)
                     mGroceryListView.expandGroup(0);
+            }
 
-                setTitle(dateFormat.format(mGroceryList.getMealPlanDateStart()) + " To " + dateFormat.format(mGroceryList.getMealPlanDateEnd()));
-                mDialog.dismiss();
+            //setTitle(dateFormat.format(mGroceryList.getMealPlanDateStart()) + " To " + dateFormat.format(mGroceryList.getMealPlanDateEnd()));
+            mDialog.dismiss();
         }
     }
 

@@ -19,7 +19,7 @@ import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Recipe;
+import com.tk4218.grocerylistr.Recipe;
 import com.tk4218.grocerylistr.Model.UpdatePinterestRecipes;
 import com.tk4218.grocerylistr.R;
 
@@ -168,7 +168,7 @@ public  class RecipeFragment extends Fragment{
 
             recipes.moveFirst();
             for(int i = 0; i < recipes.getCount(); i++){
-                addRecipe(recipes.getInt("RecipeKey"),
+                addRecipe(recipes.getString("RecipeKey"),
                           recipes.getString("PinterestId"),
                           recipes.getString("RecipeName"),
                           recipes.getString("MealType"),
@@ -201,7 +201,7 @@ public  class RecipeFragment extends Fragment{
             });
         }
 
-        private void addRecipe(int recipeKey, String pinterestId, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastEdited, String username){
+        private void addRecipe(String recipeKey, String pinterestId, String recipeName, String mealType, String mealStyle, String recipeImage, boolean favorite, int rating, Date lastEdited, String username){
             boolean userRecipe = username.equals(mSettings.getUser());
             mRecipes.add(new Recipe(recipeKey, pinterestId, recipeName, mealType, mealStyle, recipeImage, favorite, rating, lastEdited, userRecipe));
         }

@@ -1,61 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <EditText
-        android:id="@+id/new_ingredient_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="textCapWords"
-        android:paddingLeft="8dp"
-        android:text="Name" />
-
-    <TextView
-        android:id="@+id/ingredient_type"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="8dp"
-        android:paddingTop="16dp"
-        android:text="Ingredient Type" />
-
-    <Spinner
-        android:id="@+id/new_ingredient_type"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:entries="@array/ingredient_type"
-        android:paddingTop="8dp" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingLeft="8dp"
-        android:paddingTop="16dp"
-        android:text="Expires" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="8dp">
+<layout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <EditText
-            android:id="@+id/new_ingredient_exp_amount"
+            android:id="@+id/new_ingredient_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:inputType="number"
-            android:paddingTop="8dp" />
+            android:ems="10"
+            android:inputType="textCapWords"
+            android:paddingLeft="8dp"
+            android:text="Name" />
+
+        <TextView
+            android:id="@+id/ingredient_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingTop="16dp"
+            android:text="Ingredient Type" />
 
         <Spinner
-            android:id="@+id/new_ingredient_exp_interval"
+            android:id="@+id/new_ingredient_type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight=".5"
-            android:entries="@array/expiration_interval"
+            android:entries="@array/ingredient_type"
             android:paddingTop="8dp" />
-    </LinearLayout>
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingTop="16dp"
+            android:text="Expires" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="8dp">
+
+            <EditText
+                android:id="@+id/new_ingredient_exp_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="number"
+                android:paddingTop="8dp" />
+
+            <Spinner
+                android:id="@+id/new_ingredient_exp_interval"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight=".5"
+                android:entries="@array/expiration_interval"
+                android:paddingTop="8dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>
+

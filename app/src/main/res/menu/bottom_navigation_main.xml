@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_calendar"
+        android:icon="@mipmap/outline_date_range_black_24"
+        android:title="Calendar"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_recipes"
+        android:icon="@mipmap/baseline_restaurant_menu_black_24"
+        android:title="Recipes"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_grocerylist"
+        android:icon="@mipmap/ic_shopping_cart_black_24dp"
+        android:title="Grocery List"
+        app:showAsAction="always" />
+</menu>

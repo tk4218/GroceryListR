@@ -6,8 +6,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,7 +18,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,9 +32,15 @@ import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.amazonaws.mobile.client.AWSMobileClient;
 
-import com.tk4218.grocerylistr.Adapters.MainViewPagerAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Fragments.CalendarFragment;
+import com.tk4218.grocerylistr.Fragments.GroceryListFragment;
 import com.tk4218.grocerylistr.Fragments.RecipeFragment;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.GroceryList;
@@ -58,8 +66,6 @@ public class MainActivity extends AppCompatActivity
 
     private TextView mNavUsername;
 
-    private MainViewPagerAdapter mMainViewPagerAdapter;
-    private ViewPager mViewPager;
     private SearchView mSearchView;
 
     private boolean mFromDateSelected;
@@ -80,6 +86,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
+        final AppBarLayout appBar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
 
         AWSMobileClient.getInstance().initialize(this).execute();
@@ -119,17 +126,30 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        // Create the adapter that will return a fragment for each of the two
-        // primary sections of the activity.
-        mMainViewPagerAdapter = new MainViewPagerAdapter(getSupportFragmentManager());
+        replaceFragment(CalendarFragment.newInstance());
 
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = findViewById(R.id.container);
-        mViewPager.setAdapter(mMainViewPagerAdapter);
-
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch(item.getItemId()){
+                    case R.id.action_calendar:
+                        //mViewPager.setCurrentItem(0);
+                        replaceFragment(CalendarFragment.newInstance());
+                        break;
+                    case R.id.action_recipes:
+                        //mViewPager.setCurrentItem(1);
+                        replaceFragment(RecipeFragment.newInstance());
+                        break;
+                    case R.id.action_grocerylist:
+                        //mViewPager.setCurrentItem(2);
+                        replaceFragment(GroceryListFragment.newInstance(0));
+                        break;
+                }
+                appBar.setExpanded(true, true);
+                return true;
+            }
+        });
     }
 
     @Override
@@ -147,12 +167,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(mViewPager.getCurrentItem() != 1){
-                    mViewPager.setCurrentItem(1);
-                }
+             //   if(mViewPager.getCurrentItem() != 1){
+              //      mViewPager.setCurrentItem(1);
+               // }
 
-                RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
-                viewPagerFragment.filterRecipes(newText);
+               // RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
+               // viewPagerFragment.filterRecipes(newText);
                 return false;
             }
         });
@@ -180,17 +200,17 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
+        //RecipeFragment viewPagerFragment = (RecipeFragment) mViewPager.getAdapter().instantiateItem(mViewPager, 1);
 
-        if(mViewPager.getCurrentItem() != 1){
-            mViewPager.setCurrentItem(1);
-        }
+        //if(mViewPager.getCurrentItem() != 1){
+         //   mViewPager.setCurrentItem(1);
+        //}
 
         switch (id){
             case R.id.action_toggle_recipes:
                 mShowFavorites = false;
                 mShowUserRecipes = !mShowUserRecipes;
-                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "", false);
+                //viewPagerFragment.toggleRecipeList(mShowUserRecipes, "", false);
                 invalidateOptionsMenu();
                 return true;
             case R.id.app_bar_search:
@@ -198,17 +218,17 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_my_favorites:
                 mShowUserRecipes = true;
                 mShowFavorites = !mShowFavorites;
-                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "", mShowFavorites);
+                //viewPagerFragment.toggleRecipeList(mShowUserRecipes, "", mShowFavorites);
                 invalidateOptionsMenu();
                 return true;
             case R.id.action_sort_rating:
-                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by Rating desc", mShowFavorites);
+                //viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by Rating desc", mShowFavorites);
                 return true;
             case R.id.action_sort_name_asc:
-                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by RecipeName", mShowFavorites);
+                //viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by RecipeName", mShowFavorites);
                 return true;
             case R.id.action_sort_name_desc:
-                viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by RecipeName desc", mShowFavorites);
+               // viewPagerFragment.toggleRecipeList(mShowUserRecipes, "order by RecipeName desc", mShowFavorites);
                 return true;
         }
 
@@ -256,6 +276,14 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+
+        transaction.commit();
     }
 
     private void createNewGroceryList(){

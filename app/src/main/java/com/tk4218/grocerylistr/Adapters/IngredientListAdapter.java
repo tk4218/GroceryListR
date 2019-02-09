@@ -17,7 +17,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Model.Ingredient;
+import com.tk4218.grocerylistr.Ingredient;
 import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;

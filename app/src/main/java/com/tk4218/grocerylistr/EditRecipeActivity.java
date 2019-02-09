@@ -1,16 +1,15 @@
 package com.tk4218.grocerylistr;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
-import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -22,29 +21,23 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobile.client.AWSStartupHandler;
-import com.amazonaws.mobile.client.AWSStartupResult;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.squareup.picasso.Picasso;
-import com.tk4218.grocerylistr.Adapters.AddIngredientAdapter;
-import com.tk4218.grocerylistr.Database.JSONResult;
-import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.tk4218.grocerylistr.Image.ImageManager;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Ingredient;
-import com.tk4218.grocerylistr.Model.Recipe;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import com.amazonaws.mobileconnectors.s3.transferutility.*;
+import com.tk4218.grocerylistr.databinding.ActivityEditRecipeBinding;
 
 public class EditRecipeActivity extends AppCompatActivity {
     ApplicationSettings mSettings;
@@ -55,15 +48,11 @@ public class EditRecipeActivity extends AppCompatActivity {
     String mNewPhotoPath = "";
     boolean mTempImage;
 
-    ImageView mRecipeImage;
     ImageManager mImageManager = new ImageManager();
-    EditText mRecipeName;
-    Spinner mMealType;
-    Spinner mCuisineType;
     RecyclerView mIngredientListView;
     AddIngredientAdapter mAdapter;
 
-    int mRecipeKey;
+    String mRecipeKey;
     Recipe mRecipe;
     ArrayList<Ingredient> mIngredientList;
 
@@ -72,35 +61,43 @@ public class EditRecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mSettings = new ApplicationSettings(this);
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        setContentView(R.layout.activity_edit_recipe);
+        ActivityEditRecipeBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_edit_recipe);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mTempImage = false;
-        mRecipeImage = findViewById(R.id.edit_recipe_image);
-        mRecipeName = findViewById(R.id.edit_recipe_name);
-        mMealType = findViewById(R.id.edit_meal_type);
-        mCuisineType = findViewById(R.id.edit_meal_style);
         mIngredientListView = findViewById(R.id.edit_ingredient_list);
         mIngredientListView.setLayoutManager(new LinearLayoutManager(this));
 
         Bundle extras = getIntent().getExtras();
         if(extras != null){
-            mRecipeKey = extras.getInt("recipeKey");
+            mRecipeKey = extras.getString("recipeKey");
         }
 
-        if(mRecipeKey != 0) {
-            new GetRecipeInfo().execute(mRecipeKey);
+        if(mRecipeKey != null) {
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference recipeRef = database.getReference("recipe/" + mRecipeKey);
+            recipeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    mRecipe = dataSnapshot.getValue(Recipe.class);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("Recipe Error", "Unable to Retrieve Recipe: " + mRecipeKey);
+                }
+            });
         } else {
             setTitle("Add New Recipe");
+            mRecipe = new Recipe(this);
             mIngredientList = new ArrayList<>();
             mAdapter = new AddIngredientAdapter(this, mIngredientList);
             mIngredientListView.setAdapter(mAdapter);
         }
+
+        binding.setRecipe(mRecipe);
     }
 
     @Override
@@ -119,7 +116,9 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_save) {
-            saveRecipe();
+            mRecipe.setIngredients(mIngredientList);
+            mRecipe.save();
+            finish();
             return true;
         }
 
@@ -130,7 +129,7 @@ public class EditRecipeActivity extends AppCompatActivity {
      *  Event Handlers
      *********************************************/
     public void addIngredient(View view){
-        mIngredientList.add(new Ingredient());
+        mIngredientList.add(new Ingredient(this));
         mAdapter.notifyItemInserted(mIngredientList.size()-1);
     }
 
@@ -187,13 +186,10 @@ public class EditRecipeActivity extends AppCompatActivity {
         switch (requestCode){
             case ImageManager.REQUEST_TAKE_PHOTO:
                 if(!mNewPhotoPath.equals("")) {
-                    Picasso.with(this)
-                            .load(new File(mNewPhotoPath))
-                            .fit()
-                            .centerCrop()
-                            .into(mRecipeImage);
+                    mRecipe.setRecipeImage(mNewPhotoPath);
                 }
                 break;
+
             case ImageManager.REQUEST_LOAD_IMAGE:
                 if(data == null) break;
 
@@ -209,15 +205,11 @@ public class EditRecipeActivity extends AppCompatActivity {
                     mTempImage = false;
                     cursor.close();
                     if(!mNewPhotoPath.equals("")){
-                        Picasso.with(this)
-                                .load(new File(mNewPhotoPath))
-                                .fit()
-                                .centerCrop()
-                                .into(mRecipeImage);
+                        mRecipe.setRecipeImage(mNewPhotoPath);
                     }
                 }
-
                 break;
+
             default:
                 break;
         }
@@ -241,42 +233,6 @@ public class EditRecipeActivity extends AppCompatActivity {
 
         }
     }
-
-
-    /************************************************
-     * Save Recipe
-     ************************************************/
-    public void saveRecipe(){
-        if(mRecipeName.getText().toString().equals("")){
-            Toast.makeText(this, "Please Add a Name for This Recipe", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if(mIngredientList.size() ==0){
-            Toast.makeText(this, "Please Add At Least One Ingredient", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if(!mNewPhotoPath.equals("") && !mNewPhotoPath.equals(mCurrentPhotoPath)){
-            AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
-                @Override
-                public void onComplete(AWSStartupResult awsStartupResult) {
-                    uploadImageToAWS();
-                    manageRecipe();
-                }
-            }).execute();
-        } else {
-            manageRecipe();
-        }
-    }
-
-    private void manageRecipe(){
-        if(mRecipeKey == 0){
-            new SaveRecipe().execute(mRecipeName.getText().toString(), mMealType.getSelectedItem().toString(), mCuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
-        } else {
-            new UpdateRecipe().execute(mRecipeName.getText().toString(), mMealType.getSelectedItem().toString(), mCuisineType.getSelectedItem().toString(), mCurrentPhotoPath);
-        }
-    }
-
     private void uploadImageToAWS(){
         TransferUtility transferUtility =
                 TransferUtility.builder()
@@ -307,219 +263,5 @@ public class EditRecipeActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private class SaveRecipe extends AsyncTask<String, Void, Void> {
-        QueryBuilder mQb = new QueryBuilder();
-
-        private ProgressDialog mDialog;
-
-        @Override
-        protected void onPreExecute(){
-            super.onPreExecute();
-            mDialog = new ProgressDialog(EditRecipeActivity.this);
-            mDialog.setMessage("Creating Recipe...");
-            mDialog.setCancelable(false);
-            mDialog.setIndeterminate(false);
-            mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mDialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(String... params) {
-            int recipeKey = mQb.insertRecipe("", params[0], params[1], params[2], params[3]);
-
-            if(recipeKey != 0){
-                int ingredientKey;
-                for(int i = 0; i < mIngredientList.size(); i++){
-                    Ingredient ingredient = new Ingredient(mIngredientList.get(i).getIngredientName().trim());
-                    if(ingredient.getIngredientKey() == 0){
-                        ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName().trim(), "", 0);
-                    } else {
-                        ingredientKey = ingredient.getIngredientKey();
-                    }
-
-                    mQb.insertRecipeToIngredient(recipeKey, ingredientKey, mIngredientList.get(i).getIngredientAmount(), mIngredientList.get(i).getIngredientUnit(), "", "", false);
-                }
-            }
-            mQb.insertUserRecipe(mSettings.getUser(), recipeKey);
-
-            return null;
-        }
-
-        @Override
-        protected  void onPostExecute(Void result){
-            mDialog.dismiss();
-            finish();
-        }
-    }
-
-    private class UpdateRecipe extends  AsyncTask<String, Void, Void>{
-        QueryBuilder mQb = new QueryBuilder();
-
-        private ProgressDialog mDialog;
-
-        @Override
-        protected void onPreExecute(){
-            super.onPreExecute();
-            mDialog = new ProgressDialog(EditRecipeActivity.this);
-            mDialog.setMessage("Updating Recipe...");
-            mDialog.setCancelable(false);
-            mDialog.setIndeterminate(false);
-            mDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            mDialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(String... params) {
-            if(mRecipe.isUserEdited()){
-                if(!mRecipe.getRecipeName().equals(params[0]) ||
-                        !mRecipe.getMealType().equals(params[1]) ||
-                        !mRecipe.getCuisineType().equals(params[2]) ||
-                        !mRecipe.getRecipeImage().equals(params[3])){
-                    mQb.updateUserEditRecipe(params[0], params[1], params[2], mSettings.getUser(), mRecipeKey);
-                }
-            }else{
-                int recipeEditKey = mQb.insertUserEditRecipe(mSettings.getUser(), mRecipeKey, params[0], params[1], params[2]);
-                mQb.updateUserRecipeEditKey(mSettings.getUser(), mRecipeKey, recipeEditKey);
-            }
-
-            if(!mRecipe.getRecipeImage().equals(mCurrentPhotoPath)){
-                mQb.updateRecipeImage(mCurrentPhotoPath, mRecipeKey);
-            }
-
-            JSONResult recipeIngredients = mQb.getRecipeIngredients(mRecipeKey);
-            recipeIngredients.addBooleanColumn("Delete", true);
-            JSONResult recipeEditIngredients = mQb.getUserRecipeIngredients(mSettings.getUser(), mRecipeKey);
-            recipeEditIngredients.addBooleanColumn("Delete", true);
-
-            for(int i = 0; i < mIngredientList.size(); i++){
-                int ingredientKey = mIngredientList.get(i).getIngredientKey();
-                double ingredientAmount = mIngredientList.get(i).getIngredientAmount();
-                String ingredientUnit = mIngredientList.get(i).getIngredientUnit();
-                //Update existing User Recipe Ingredients
-                if(recipeEditIngredients.findFirst("IngredientKey", ingredientKey)){
-                    recipeEditIngredients.putBoolean("Delete", false);
-                    if(recipeIngredients.findFirst("IngredientKey", ingredientKey)){
-                        recipeIngredients.putBoolean("Delete", false);
-                    }
-                    //update user recipe ingredient if different
-                    if(recipeEditIngredients.getDouble("IngredientAmount") != ingredientAmount ||
-                        !recipeEditIngredients.getString("IngredientUnit").equals(ingredientUnit)){
-                        mQb.updateUserRecipeToIngredient(mSettings.getUser(), mRecipeKey, ingredientKey, ingredientAmount, ingredientUnit, false);
-                    }
-                } else{
-                    //Add new User Recipe Ingredients
-                    if(recipeIngredients.findFirst("IngredientKey", ingredientKey)){
-                        recipeIngredients.putBoolean("Delete", false);
-                        //Check for differences and add user recipe ingredient
-                        if(recipeIngredients.getDouble("IngredientAmount") != ingredientAmount ||
-                                !recipeIngredients.getString("IngredientUnit").equals(ingredientUnit)){
-                            mQb.insertUserRecipeIngredient(mSettings.getUser(), mRecipeKey, ingredientKey, ingredientAmount, ingredientUnit, "", "", false, false);
-                        }
-                    } else{
-                        //add user recipe to ingredient
-                        if(ingredientKey == 0){
-                            if(mIngredientList.get(i).getIngredientType().equals("")){
-                                mIngredientList.get(i).setIngredientType("Uncategorized");
-                            }
-                            ingredientKey = mQb.insertIngredient(mIngredientList.get(i).getIngredientName(),
-                                    mIngredientList.get(i).getIngredientType(), mIngredientList.get(i).getShelfLife());
-                        }
-                        mQb.insertUserRecipeIngredient(mSettings.getUser(), mRecipeKey, ingredientKey, ingredientAmount, ingredientUnit, "", "", false, false);
-                    }
-                }
-            }
-
-            //Remove Recipe Ingredient from User Recipe
-            if(recipeIngredients.findFirst("Delete", true)){
-                do{
-                    if(recipeEditIngredients.findFirst("IngredientKey", recipeIngredients.getInt("IngredientKey"))){
-                        recipeEditIngredients.putBoolean("Delete", false);
-                        if(!recipeEditIngredients.getBoolean("RemoveIngredient")){
-                            //update existing recipe edit ingredient to remove
-                            mQb.updateUserRecipeToIngredientRemove(mSettings.getUser(), mRecipeKey, recipeIngredients.getInt("IngredientKey"), true);
-                        }
-                    } else{
-                        //add user recipe ingredient remove
-                        mQb.insertUserRecipeIngredient(mSettings.getUser(), mRecipeKey, recipeIngredients.getInt("IngredientKey"), 0, "", "", "", false, true);
-                    }
-                }while(recipeIngredients.findNext("Delete", true));
-            }
-
-            //Delete removed User Recipe Ingredients
-            if(recipeEditIngredients.findFirst("Delete", true)){
-                do{
-                    mQb.deleteUserRecipeToIngredient(mSettings.getUser(), mRecipeKey, recipeEditIngredients.getInt("IngredientKey"));
-                }while(recipeEditIngredients.findNext("Delete", true));
-            }
-
-            return null;
-        }
-
-        @Override
-        protected  void onPostExecute(Void result){
-            if(!mRecipe.getRecipeImage().equals(mCurrentPhotoPath)) {
-                ImageManager imageManager = new ImageManager();
-                try{
-                    File f = imageManager.createNewPhotoFile(EditRecipeActivity.this, mRecipeKey);
-                    if(f.isFile()) f.delete();
-                }catch(Exception e){ e.printStackTrace(); }
-            }
-            mDialog.dismiss();
-            finish();
-        }
-    }
-
-    private class GetRecipeInfo extends AsyncTask<Integer, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Integer... params) {
-            mRecipe = new Recipe(params[0], mSettings.getUser());
-            return null;
-        }
-
-        @Override
-        protected  void onPostExecute(Void result){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    setTitle(mRecipe.getRecipeName());
-
-                    mRecipeName.setText(mRecipe.getRecipeName());
-
-                    mCurrentPhotoPath = mRecipe.getRecipeImage();
-                    if(!mCurrentPhotoPath.equals("")){
-                        Picasso.with(EditRecipeActivity.this)
-                                .load(mCurrentPhotoPath)
-                                .fit()
-                                .centerCrop()
-                                .into(mRecipeImage);
-
-                    }
-
-
-                    final String [] cuisineTypes = getResources().getStringArray(R.array.cuisine_type);
-                    for(int i = 0; i < cuisineTypes.length; i++){
-                        if(cuisineTypes[i].equals(mRecipe.getCuisineType())) {
-                            mCuisineType.setSelection(i);
-                            break;
-                        }
-                    }
-
-                    final String [] mealTypes = getResources().getStringArray(R.array.meal_types);
-                    for(int i = 0; i < mealTypes.length; i++){
-                        if(mealTypes[i].equals(mRecipe.getMealType())){
-                            mMealType.setSelection(i);
-                            break;
-                        }
-                    }
-
-                    mIngredientList = mRecipe.getIngredients();
-                    mAdapter = new AddIngredientAdapter(EditRecipeActivity.this, mIngredientList);
-                    mIngredientListView.setAdapter(mAdapter);
-                }
-            });
-        }
     }
 }

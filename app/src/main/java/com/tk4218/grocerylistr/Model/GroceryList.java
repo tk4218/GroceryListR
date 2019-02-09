@@ -77,7 +77,7 @@ public class GroceryList {
         for(int i = 0; i < groceryListItems.getCount(); i++){
             mGroceryListItems.add(new GroceryListItem(groceryListItems.getInt(i,     "GroceryListItemKey"),
                                                       mGroceryListKey,
-                                                      groceryListItems.getInt(i,     "IngredientKey"),
+                                                      groceryListItems.getString(i,     "IngredientKey"),
                                                       groceryListItems.getDouble(i,  "IngredientAmount"),
                                                       groceryListItems.getString(i,  "IngredientUnit"),
                                                       groceryListItems.getBoolean(i, "AddedToCart")));
@@ -85,9 +85,9 @@ public class GroceryList {
         sortGroceryListItems();
     }
 
-    public void addGroceryListItem(int ingredientKey, double ingredientAmount, String ingredientUnit, boolean sortList){
+    public void addGroceryListItem(String ingredientKey, double ingredientAmount, String ingredientUnit, boolean sortList){
         for(GroceryListItem item : mGroceryListItems){
-            if(item.getIngredient().getIngredientKey() == ingredientKey){
+            if(item.getIngredient().getIngredientKey().equals(ingredientKey)){
                 if(item.addIngredientAmount(ingredientAmount, ingredientUnit))
                     return;
             }
@@ -96,9 +96,9 @@ public class GroceryList {
         if(sortList) sortGroceryListItems();
     }
 
-    public void addGroceryListItem(int groceryListItemKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean sortList){
+    public void addGroceryListItem(int groceryListItemKey, String ingredientKey, double ingredientAmount, String ingredientUnit, boolean sortList){
         for(GroceryListItem item : mGroceryListItems){
-            if(item.getIngredient().getIngredientKey() == ingredientKey){
+            if(item.getIngredient().getIngredientKey().equals(ingredientKey)){
                 if(item.addIngredientAmount(ingredientAmount, ingredientUnit))
                     return;
             }
@@ -174,7 +174,7 @@ public class GroceryList {
         }
 
         for (int i = 0; i < groceryListIngredients.getCount(); i++){
-            addGroceryListItem(groceryListIngredients.getInt(i, "IngredientKey"),
+            addGroceryListItem(groceryListIngredients.getString(i, "IngredientKey"),
                                groceryListIngredients.getDouble(i, "IngredientAmount"),
                                groceryListIngredients.getString(i, "IngredientUnit"), false);
         }
@@ -192,7 +192,7 @@ public class GroceryList {
                 int groceryListItemKey;
                 for(GroceryListItem item : mGroceryListItems){
                     groceryListItemKey = mQb.insertGroceryListItem(mGroceryListKey,
-                                                                   item.getIngredient().getIngredientKey(),
+                                                                   0,
                                                                    item.getIngredientAmount(),
                                                                    item.getIngredientUnit(),
                                                                    item.getAddedToCart());

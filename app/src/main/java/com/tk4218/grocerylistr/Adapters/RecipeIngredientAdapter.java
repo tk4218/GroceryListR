@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.tk4218.grocerylistr.Model.Ingredient;
+import com.tk4218.grocerylistr.Ingredient;
 import com.tk4218.grocerylistr.R;
 
 import java.util.ArrayList;

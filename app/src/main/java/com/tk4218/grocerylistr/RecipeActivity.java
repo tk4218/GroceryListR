@@ -4,11 +4,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.LayerDrawable;
-import android.media.Rating;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -18,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,23 +24,14 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.squareup.picasso.Picasso;
 import com.tk4218.grocerylistr.Adapters.RecipeIngredientAdapter;
 import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
 
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Image.ImageManager;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Recipe;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,7 +52,7 @@ public class RecipeActivity extends AppCompatActivity {
     private FloatingActionButton mEditRecipe;
 
     private String mUsername;
-    private int mRecipeKey;
+    private String mRecipeKey;
     private Recipe mRecipe;
     private Date mLastMade;
     private JSONResult mRecipeSchedule;
@@ -119,7 +106,7 @@ public class RecipeActivity extends AppCompatActivity {
         });
 
         if(extras != null){
-            mRecipeKey = extras.getInt("recipeKey");
+            mRecipeKey = extras.getString("recipeKey");
         }
 
         mFab = findViewById(R.id.fab);
@@ -130,7 +117,7 @@ public class RecipeActivity extends AppCompatActivity {
                     if(mRecipe.isUserRecipe()){
                         DialogFragment datePicker = new DatePickerFragment();
                         Bundle arguments = new Bundle();
-                        arguments.putInt("recipeKey", mRecipeKey);
+                        arguments.putString("recipeKey", mRecipeKey);
                         datePicker.setArguments(arguments);
                         datePicker.show(getSupportFragmentManager(), "datePicker");
                     }else{
@@ -368,11 +355,11 @@ public class RecipeActivity extends AppCompatActivity {
         }
     }
 
-    private class DeleteUserRecipe extends AsyncTask<Integer, Void, Void> {
+    private class DeleteUserRecipe extends AsyncTask<String, Void, Void> {
         private QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected Void doInBackground(Integer... params) {
+        protected Void doInBackground(String... params) {
             JSONResult userRecipe = mQb.getUserRecipe(mUsername, params[0]);
             mQb.deleteUserRecipe(mUsername, params[0]);
             if(userRecipe.getCount() > 0){
@@ -397,7 +384,7 @@ public class RecipeActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Object... params) {
             Date mealPlanDate = (Date) params[0];
-            int recipeKey = (int) params[1];
+            String recipeKey = (String) params[1];
 
             mQb.deleteCalendarRecipe(mUsername, mealPlanDate, recipeKey);
 

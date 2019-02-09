@@ -89,6 +89,7 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         }
 
         final CheckBox groceryListItem = convertView.findViewById(R.id.item_grocerylist_item);
+        final TextView groceryListItemAmount = convertView.findViewById(R.id.grocerylist_item_amount);
         groceryListItem.setTag(getChild(groupPosition, childPosition));
 
         /*------------------------------------------------------
@@ -98,14 +99,17 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         if(groceryListItem.isChecked()){
             groceryListItem.setTextColor(Color.LTGRAY);
             groceryListItem.setPaintFlags(groceryListItem.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            groceryListItemAmount.setPaintFlags(groceryListItemAmount.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }else {
             groceryListItem.setTextColor(Color.BLACK);
             groceryListItem.setPaintFlags(groceryListItem.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            groceryListItemAmount.setPaintFlags(groceryListItemAmount.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
         }
 
         GroceryListItem item = (GroceryListItem)groceryListItem.getTag();
-        String groceryListItemText = item.getFormattedIngredientAmount() + " " + item.getIngredientUnit() + " " + item.getIngredient().getIngredientName();
-        groceryListItem.setText(groceryListItemText);
+        String groceryListItemAmountText = item.getFormattedIngredientAmount() + " " + item.getIngredientUnit();
+        groceryListItem.setText(item.getIngredient().getIngredientName());
+        groceryListItemAmount.setText(groceryListItemAmountText);
 
 
         /*-----------------------------------------------------
@@ -119,9 +123,11 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
                 if(isChecked){
                     groceryListItem.setTextColor(Color.LTGRAY);
                     groceryListItem.setPaintFlags(groceryListItem.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                    groceryListItemAmount.setPaintFlags(groceryListItemAmount.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                 }else {
                     groceryListItem.setTextColor(Color.BLACK);
                     groceryListItem.setPaintFlags(groceryListItem.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                    groceryListItemAmount.setPaintFlags(groceryListItemAmount.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
                 }
             }
         });
@@ -179,7 +185,7 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
         }
     }
 
-    public void addGroceryListItem(int groceryListItemKey, int ingredientKey, double itemAmount, String itemUnit){
+    public void addGroceryListItem(int groceryListItemKey, String ingredientKey, double itemAmount, String itemUnit){
         mGroceryList.addGroceryListItem(groceryListItemKey, ingredientKey, itemAmount, itemUnit, true);
         mIngredientTypes = mGroceryList.getIngredientTypes();
     }

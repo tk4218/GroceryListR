@@ -1,39 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/edit_new_ingredient"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    xmlns:bind="http://schemas.android.com/apk/res/android">
+    <data>
+        <import type="java.lang.String"/>
+        <variable
+            name="ingredient"
+            type="com.tk4218.grocerylistr.Ingredient"/>
+        <variable
+            name="event"
+            type="com.tk4218.grocerylistr.AddIngredientAdapter.EventHandlers" />
+    </data>
 
-    <EditText
-        android:id="@+id/edit_ingredient_amount"
-        android:layout_width="15dp"
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/edit_new_ingredient"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:inputType="numberDecimal" />
+        android:orientation="horizontal">
 
-    <Spinner
-        android:id="@+id/edit_ingredient_measurement"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="3"
-        android:entries="@array/measurements" />
+        <EditText
+            android:id="@+id/edit_ingredient_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            app:layout_constraintStart_toEndOf="@+id/button2"
+            tools:layout_editor_absoluteY="53dp" />
 
-    <AutoCompleteTextView
-        android:id="@+id/edit_ingredient_name"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="5"
-        android:hint="Ingredient"
-        android:inputType="textCapWords" />
+        <Spinner
+            android:id="@+id/edit_ingredient_measurement"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:entries="@array/measurements"
+            android:selectedItemPosition="@={ingredient.ingredientUnitPosition}"
+            app:layout_constraintTop_toBottomOf="@+id/edit_ingredient_name"
+            tools:layout_editor_absoluteX="234dp" />
 
-    <ImageButton
-        android:id="@+id/edit_ingredient_delete"
-        android:layout_width="10dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:src="@android:drawable/ic_delete" />
-</LinearLayout>
+        <AutoCompleteTextView
+            android:id="@+id/edit_ingredient_name"
+            android:layout_width="355dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:hint="Ingredient"
+            android:inputType="textCapWords"
+            android:text="@={ingredient.ingredientName}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/edit_ingredient_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="24dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_delete"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/edit_ingredient_measurement"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            bind:id="@+id/button2"
+            bind:layout_width="wrap_content"
+            bind:layout_height="wrap_content"
+            bind:text="Button"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="45dp" />
+
+        <Button
+            bind:id="@+id/button3"
+            bind:layout_width="wrap_content"
+            bind:layout_height="wrap_content"
+            bind:text="Button"
+            tools:layout_editor_absoluteX="109dp"
+            tools:layout_editor_absoluteY="49dp" />
+    </android.support.constraint.ConstraintLayout>
+</layout>
+

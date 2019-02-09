@@ -65,6 +65,13 @@ public class ImageManager {
         return new File(photoPath);
     }
 
+    public File createNewPhotoFile(Context context, String recipeKey, boolean temp) throws IOException {
+        // Create an image file name
+        File storagePath = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        String photoPath = storagePath.getAbsolutePath() + "/" + recipeKey +(temp ? "_tmp" : "") +".jpg";
+        return new File(photoPath);
+    }
+
     public Bitmap setPic(String photoPath, int reqWidth, int reqHeight) {
         if(photoPath.equals(""))
             return null;

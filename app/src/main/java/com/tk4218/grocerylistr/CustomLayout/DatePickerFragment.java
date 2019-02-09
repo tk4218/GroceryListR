@@ -10,7 +10,7 @@ import android.widget.DatePicker;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.CalendarRecipes;
-import com.tk4218.grocerylistr.Model.Recipe;
+import com.tk4218.grocerylistr.Recipe;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -18,7 +18,7 @@ import java.util.Date;
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
     private ApplicationSettings mSettings;
-    private int mRecipeKey;
+    private String mRecipeKey;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -26,7 +26,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 
         Bundle arguments = getArguments();
         if(arguments != null)
-            mRecipeKey = arguments.getInt("recipeKey");
+            mRecipeKey = arguments.getString("recipeKey");
 
         // Use the current date as the default date in the picker
         final Calendar c = Calendar.getInstance();

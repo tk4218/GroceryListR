@@ -10,6 +10,7 @@ import com.pinterest.android.pdk.PDKPin;
 import com.pinterest.android.pdk.PDKResponse;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Ingredient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,15 +50,15 @@ public class UpdatePinterestRecipes extends AsyncTask<String, Void, Void> {
                             ArrayList<Ingredient> recipeIngredients = parser.getRecipeIngredients();
 
                             int recipeKey = mQb.insertRecipe(pinterestId, recipeName, "", "", recipeImage);
-                            mQb.insertUserRecipe(mUsername, recipeKey);
+                            mQb.insertUserRecipe(mUsername, recipeKey + "");
 
                             for(Ingredient ingredient : recipeIngredients){
                                 int ingredientKey = 0;
                                 Ingredient existingIngredient = new Ingredient(ingredient.getIngredientName());
-                                if(existingIngredient.getIngredientKey() == 0){
+                                if(existingIngredient.getIngredientKey() == null){
                                     ingredientKey = mQb.insertIngredient(ingredient.getIngredientName(), ingredient.getIngredientType(), 0);
                                 } else {
-                                    ingredientKey = existingIngredient.getIngredientKey();
+                                    //ingredientKey = existingIngredient.getIngredientKey();
                                 }
                                 mQb.insertRecipeToIngredient(recipeKey, ingredientKey, ingredient.getIngredientAmount(), ingredient.getIngredientUnit(), ingredient.getPreparation1(), "", false);
                             }

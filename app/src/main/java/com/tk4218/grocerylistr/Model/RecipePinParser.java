@@ -1,6 +1,8 @@
 package com.tk4218.grocerylistr.Model;
 import android.util.Log;
 
+import com.tk4218.grocerylistr.Ingredient;
+
 import java.util.ArrayList;
 import java.util.regex.*;
 
@@ -92,8 +94,8 @@ public class RecipePinParser {
                             unit = "count";
                         Log.d("PARSER", "Ingredient Unit: " + unit);
                     }
-                    if(!ingredientName.equals("") && amount != 0 && !unit.equals(""))
-                        recipeIngredients.add(new Ingredient(0, ingredientName, ingredientCategory, 0, amount, unit, preparation1, ""));
+                    if(!ingredientName.equals("") && amount != 0 && !unit.equals("")){}
+                        //recipeIngredients.add(new Ingredient(0, ingredientName, ingredientCategory, 0, amount, unit, preparation1, ""));
                 }
             }
         }

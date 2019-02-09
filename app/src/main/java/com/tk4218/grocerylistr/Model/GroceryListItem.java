@@ -2,6 +2,7 @@ package com.tk4218.grocerylistr.Model;
 
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.Ingredient;
 
 
 public class GroceryListItem {
@@ -18,14 +19,14 @@ public class GroceryListItem {
         if(groceryListItem.getCount() > 0){
             setGroceryListItemKey(groceryListItemKey);
             setGroceryListKey(groceryListItem.getInt("GroceryListKey"));
-            setIngredient(groceryListItem.getInt("IngredientKey"));
+            setIngredient(groceryListItem.getString("IngredientKey"));
             setIngredientUnit(groceryListItem.getString("IngredientUnit"));
             setIngredientAmount(groceryListItem.getDouble("IngredientAmount"));
             setAddedToCart(groceryListItem.getBoolean("AddedToCart"));
         }
     }
 
-    public GroceryListItem(int groceryListItemKey, int groceryListKey, int ingredientKey, double ingredientAmount, String ingredientUnit, boolean addedToCart){
+    public GroceryListItem(int groceryListItemKey, int groceryListKey, String ingredientKey, double ingredientAmount, String ingredientUnit, boolean addedToCart){
         setGroceryListItemKey(groceryListItemKey);
         setGroceryListKey(groceryListKey);
         setIngredient(ingredientKey);
@@ -40,7 +41,7 @@ public class GroceryListItem {
     public void setGroceryListKey(int groceryListKey){ mGroceryListKey = groceryListKey; }
     public int getGroceryListKey(){ return mGroceryListKey; }
 
-    public void setIngredient(int ingredientKey){ mIngredient = new Ingredient(ingredientKey); }
+    public void setIngredient(String ingredientKey){ mIngredient = new Ingredient(ingredientKey); }
     public Ingredient getIngredient(){ return mIngredient; }
 
     public void setIngredientAmount(double amount){

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.Recipe;
+import com.tk4218.grocerylistr.Recipe;
 import com.tk4218.grocerylistr.R;
 import com.tk4218.grocerylistr.RecipeActivity;
 
@@ -99,7 +99,7 @@ public class CalendarDayAdapter extends BaseAdapter {
         @Override
         protected Void doInBackground(Object... params) {
             Date mealPlanDate = (Date) params[0];
-            int recipeKey = (int) params[1];
+            String recipeKey = (String) params[1];
 
             mQb.deleteCalendarRecipe(mSettings.getUser(), mealPlanDate, recipeKey);
             return null;

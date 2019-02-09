@@ -19,7 +19,7 @@ import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
 import com.tk4218.grocerylistr.Model.CalendarRecipes;
-import com.tk4218.grocerylistr.Model.Recipe;
+import com.tk4218.grocerylistr.Recipe;
 import com.tk4218.grocerylistr.R;
 
 import java.text.SimpleDateFormat;
@@ -152,7 +152,7 @@ public  class CalendarFragment extends Fragment {
                 cells.add(new CalendarRecipes(mSettings.getUser(), calendar.getTime(), new ArrayList<Recipe>()));
                 if(calendarRecipes.findFirst("CalendarDate", calendar.getTime())){
                     do{
-                        cells.get(i).addRecipe(calendarRecipes.getInt("RecipeKey"), calendarRecipes.getString("RecipeName"), calendarRecipes.getString("MealType"));
+                        cells.get(i).addRecipe(calendarRecipes.getString("RecipeKey"), calendarRecipes.getString("RecipeName"), calendarRecipes.getString("MealType"));
                     } while (calendarRecipes.findNext("CalendarDate", calendar.getTime()));
                 }
                 calendar.add(Calendar.DAY_OF_MONTH, 1);
