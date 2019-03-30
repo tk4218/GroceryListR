@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -14,6 +16,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.tk4218.grocerylistr.Adapters.RecipeAdapter;
 import com.tk4218.grocerylistr.EditRecipeActivity;
 import com.tk4218.grocerylistr.Database.JSONResult;
@@ -73,6 +82,7 @@ public  class RecipeFragment extends Fragment{
         mRecyclerView.setLayoutManager(mLayoutManager);
         mAdapter = new RecipeAdapter(getContext(), mRecipes);
         mRecyclerView.setAdapter(mAdapter);
+
         mRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
@@ -85,8 +95,8 @@ public  class RecipeFragment extends Fragment{
                 boolean loadMore = (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold);
 
                 if(loadMore && !mLoadingRecipes && !mAllRecipesLoaded){
-                    mLoadingRecipes = true;
-                    new RetrieveRecipes().execute(false);
+                    retrieveRecipes(false);
+                    //new RetrieveRecipes().execute(false);
                 }
             }
         });
@@ -95,8 +105,8 @@ public  class RecipeFragment extends Fragment{
         mRefreshRecipes.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mLoadingRecipes = true;
-                new RetrieveRecipes().execute(true);
+                retrieveRecipes(true);
+                //new RetrieveRecipes().execute(true);
             }
         });
 
@@ -127,8 +137,8 @@ public  class RecipeFragment extends Fragment{
             updatePinterestRecipes.execute(mSettings.getUser());
         }
 
-        mLoadingRecipes = true;
-        new RetrieveRecipes().execute(true);
+        retrieveRecipes(true);
+       // new RetrieveRecipes().execute(true);
     }
 
     public void filterRecipes(String filterString){
@@ -145,10 +155,37 @@ public  class RecipeFragment extends Fragment{
         mShowFavorites = favorites;
         mRecipeSort = recipeSort;
         mLoading.setVisibility(View.VISIBLE);
-        mLoadingRecipes = true;
-        new RetrieveRecipes().execute(true);
+        retrieveRecipes(true);
+        //new RetrieveRecipes().execute(true);
     }
 
+    private void retrieveRecipes(boolean clearRecipes){
+        if(clearRecipes){
+            mRecipes.clear();
+            mAllRecipesLoaded = false;
+        }
+
+        mLoadingRecipes = true;
+        DatabaseReference recipeRef = FirebaseDatabase.getInstance().getReference();
+        Query recipes = recipeRef.child("recipe").limitToFirst(10).orderByChild("recipeName");
+        recipes.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getChildrenCount() < 10)
+                    mAllRecipesLoaded = true;
+
+                for (DataSnapshot recipe : dataSnapshot.getChildren()) {
+                    mRecipes.add(recipe.getValue(Recipe.class));
+                }
+            }
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+
+        mAdapter.notifyDataSetChanged();
+        mRefreshRecipes.setRefreshing(false);
+        mLoading.setVisibility(View.GONE);
+        mLoadingRecipes = false;
+    }
     private class RetrieveRecipes extends AsyncTask<Boolean, String, String>{
         QueryBuilder mQb = new QueryBuilder();
 

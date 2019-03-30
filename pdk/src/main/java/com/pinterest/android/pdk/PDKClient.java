@@ -2,6 +2,7 @@ package com.pinterest.android.pdk;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,7 +15,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -416,11 +416,17 @@ public class PDKClient {
 
     private void initiateWebLogin(Context c, List<String> permissions) {
         try {
-            List paramList = new LinkedList<BasicNameValuePair>();
-            paramList.add(new BasicNameValuePair("client_id", _clientId));
-            paramList.add(new BasicNameValuePair("scope",  TextUtils.join(",", permissions)));
-            paramList.add(new BasicNameValuePair("redirect_uri", "pdk" + _clientId + "://"));
-            paramList.add(new BasicNameValuePair("response_type", "token"));
+            //List paramList = new LinkedList<ContentValues>();
+            //paramList.add(new ContentValues("client_id", _clientId));
+            //paramList.add(new BasicNameValuePair("scope",  TextUtils.join(",", permissions)));
+            //paramList.add(new BasicNameValuePair("redirect_uri", "pdk" + _clientId + "://"));
+            //paramList.add(new BasicNameValuePair("response_type", "token"));
+            ContentValues paramList = new ContentValues();
+            paramList.put("client_id", _clientId);
+            paramList.put("scope",  TextUtils.join(",", permissions));
+            paramList.put("redirect_uri", "pdk" + _clientId + "://");
+            paramList.put("response_type", "token");
+
 
             String url =  Utils.getUrlWithQueryParams(PROD_WEB_OAUTH_URL, paramList);
             Intent oauthIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -599,11 +605,14 @@ public class PDKClient {
 
     private static Request getRequest(String url, HashMap<String, String> params, PDKCallback callback) {
         Utils.log("PDK GET: %s", url);
-        List paramList = new LinkedList<>();
-        paramList.add(new BasicNameValuePair("access_token", _accessToken));
+        //List paramList = new LinkedList<>();
+        //paramList.add(new BasicNameValuePair("access_token", _accessToken));
+        ContentValues paramList = new ContentValues();
+        paramList.put("access_token", _accessToken);
         if (!Utils.isEmpty(params)) {
             for (HashMap.Entry<String, String> e : params.entrySet()) {
-                paramList.add(new BasicNameValuePair(e.getKey(), e.getValue()));
+                //paramList.add(new BasicNameValuePair(e.getKey(), e.getValue()));
+                paramList.put(e.getKey(), e.getValue());
             }
         }
         url = Utils.getUrlWithQueryParams(url, paramList);
@@ -618,8 +627,10 @@ public class PDKClient {
         Utils.log(String.format("PDK POST: %s", url));
         if (params == null) params = new HashMap<String, String>();
 
-        List queryParams = new LinkedList<>();
-        queryParams.add(new BasicNameValuePair("access_token", _accessToken));
+        //List queryParams = new LinkedList<>();
+        //queryParams.add(new BasicNameValuePair("access_token", _accessToken));
+        ContentValues queryParams = new ContentValues();
+        queryParams.put("access_token", _accessToken);
         url = Utils.getUrlWithQueryParams(url, queryParams);
 
         if (callback == null) callback = new PDKCallback();
@@ -631,8 +642,10 @@ public class PDKClient {
     private static Request deleteRequest(String url, HashMap<String, String> params, PDKCallback callback) {
         Utils.log(String.format("PDK DELETE: %s", url));
 
-        List queryParams = new LinkedList<>();
-        queryParams.add(new BasicNameValuePair("access_token", _accessToken));
+        //List queryParams = new LinkedList<>();
+        //queryParams.add(new BasicNameValuePair("access_token", _accessToken));
+        ContentValues queryParams = new ContentValues();
+        queryParams.put("access_token", _accessToken);
         url = Utils.getUrlWithQueryParams(url, queryParams);
 
         if (callback == null) callback = new PDKCallback();
@@ -647,8 +660,10 @@ public class PDKClient {
         Utils.log(String.format("PDK PUT: %s", url));
         if (params == null) params = new HashMap<String, String>();
 
-        List queryParams = new LinkedList<>();
-        queryParams.add(new BasicNameValuePair("access_token", _accessToken));
+        //List queryParams = new LinkedList<>();
+        //queryParams.add(new BasicNameValuePair("access_token", _accessToken));
+        ContentValues queryParams = new ContentValues();
+        queryParams.put("access_token", _accessToken);
         url = Utils.getUrlWithQueryParams(url, queryParams);
 
         if (callback == null) callback = new PDKCallback();

@@ -1,15 +1,15 @@
 package com.pinterest.android.pdk;
 
+import android.content.ContentValues;
+import android.net.Uri;
 import android.util.Log;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+
 
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public class Utils {
@@ -55,7 +55,7 @@ public class Utils {
         return _dateFormat;
     }
 
-    public static String getUrlWithQueryParams(String url, List<NameValuePair> params) {
+    public static String getUrlWithQueryParams(String url, ContentValues params) {
         if (url == null) {
             return null;
         }
@@ -65,10 +65,16 @@ public class Utils {
         if(!url.endsWith("?"))
             url += "?";
 
+        Uri.Builder builder = new Uri.Builder();
+        builder.encodedPath(url);
         if (params != null && params.size() > 0) {
-            String paramString = URLEncodedUtils.format(params, "utf-8");
-            url += paramString;
+            for (String param : params.keySet()) {
+                builder.appendQueryParameter(param, params.getAsString(param));
+            }
+
+            //String paramString = URLEncodedUtils.parse(params, "utf-8");
+            //url += paramString;
         }
-        return url;
+        return builder.build().toString();
     }
 }

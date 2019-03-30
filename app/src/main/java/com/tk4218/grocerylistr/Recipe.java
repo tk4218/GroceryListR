@@ -4,11 +4,18 @@ import android.content.Context;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.ImageView;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -21,14 +28,14 @@ import java.util.Date;
  */
 @SuppressWarnings({"unused", "WeakerAccess", "SameParameterValue"})
 public class Recipe extends BaseObservable{
-    private String mRecipeKey;
-    private String mRecipeEditKey;
-    private String mPinterestId;
+    private String mRecipeKey = "";
+    private String mRecipeEditKey = "";
+    private String mPinterestId = "";
 
-    private String mRecipeName;
-    private static String mMealType;
-    private static String mCuisineType;
-    private String mRecipeImage;
+    private String mRecipeName = "";
+    private static String mMealType = "";
+    private static String mCuisineType = "";
+    private String mRecipeImage = "";
 
     private boolean mFavorite;
     private double mRating;
@@ -40,7 +47,6 @@ public class Recipe extends BaseObservable{
     private boolean mUserEdited;
 
     private ArrayList<Ingredient> mIngredients;
-
 
     private static int mMealTypeSpinnerPosition;
     private static String[] mealTypes;
@@ -155,7 +161,7 @@ public class Recipe extends BaseObservable{
     public void setRecipeImage(String recipeImage) {
         if(!recipeImage.equals(mRecipeImage)){
             mRecipeImage = recipeImage;
-            //notifyPropertyChanged(BR.recipeImage);
+            notifyPropertyChanged(BR.recipeImage);
         }
     }
 
@@ -243,6 +249,41 @@ public class Recipe extends BaseObservable{
                     .centerCrop()
                     .into(view);
         }
+    }
+
+    public static Recipe getRecipe(final String recipeKey){
+        final Recipe[] recipe = new Recipe[1];
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference recipeRef = database.getReference("recipe/" + recipeKey);
+        recipeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                 recipe[0] = dataSnapshot.getValue(Recipe.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Recipe Error", "Unable to Retrieve Recipe: " + recipeKey);
+            }
+        });
+        return recipe[0];
+    }
+
+    public static ArrayList<Recipe> getRecipeList(){
+        final ArrayList<Recipe> recipeList = new ArrayList<>();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference recipeRef = database.getReference("recipe");
+        recipeRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                recipeList.add(dataSnapshot.getValue(Recipe.class));
+            }
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
+            public void onCancelled(@NonNull DatabaseError databaseError) {  }
+        });
+        return recipeList;
     }
 
     public boolean save(){

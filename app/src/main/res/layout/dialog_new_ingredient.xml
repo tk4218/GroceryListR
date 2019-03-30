@@ -1,64 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <import type="java.lang.String"/>
+        <variable
+            name="ingredient"
+            type="com.tk4218.grocerylistr.Ingredient"/>
+    </data>
 
-        <EditText
-            android:id="@+id/new_ingredient_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textCapWords"
-            android:paddingLeft="8dp"
-            android:text="Name" />
-
-        <TextView
-            android:id="@+id/ingredient_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="8dp"
-            android:paddingTop="16dp"
-            android:text="Ingredient Type" />
-
-        <Spinner
-            android:id="@+id/new_ingredient_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:entries="@array/ingredient_type"
-            android:paddingTop="8dp" />
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/textView2"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="Expires"
+            app:layout_constraintBottom_toBottomOf="@+id/new_ingredient_exp_amount"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/new_ingredient_exp_amount" />
+
+        <EditText
+            android:id="@+id/new_ingredient_exp_amount"
+            android:layout_width="72dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:paddingTop="8dp"
+            android:text="@={ingredient.shelfLifeText}"
+            app:layout_constraintBottom_toBottomOf="@+id/new_ingredient_exp_interval"
+            app:layout_constraintStart_toEndOf="@+id/textView2"
+            app:layout_constraintTop_toTopOf="@+id/new_ingredient_exp_interval" />
+
+        <Spinner
+            android:id="@+id/new_ingredient_exp_interval"
+            android:layout_width="202dp"
+            android:layout_height="33dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight=".5"
+            android:entries="@array/expiration_interval"
+            android:paddingTop="8dp"
+            android:selectedItemPosition="@={ingredient.shelfLifeIntervalPosition}"
+            app:layout_constraintStart_toEndOf="@+id/new_ingredient_exp_amount"
+            app:layout_constraintTop_toBottomOf="@+id/new_ingredient_type" />
+
+        <Spinner
+            android:id="@+id/new_ingredient_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:entries="@array/ingredient_type"
+            android:paddingTop="8dp"
+            android:selectedItemPosition="@={ingredient.ingredientTypePosition}"
+            app:layout_constraintStart_toEndOf="@+id/ingredient_type"
+            app:layout_constraintTop_toBottomOf="@+id/new_ingredient_name" />
+
+        <EditText
+            android:id="@+id/new_ingredient_name"
+            android:layout_width="395dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:ems="10"
+            android:inputType="textCapWords"
             android:paddingLeft="8dp"
-            android:paddingTop="16dp"
-            android:text="Expires" />
+            android:text="@={ingredient.ingredientName}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/ingredient_type"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingLeft="8dp">
-
-            <EditText
-                android:id="@+id/new_ingredient_exp_amount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="number"
-                android:paddingTop="8dp" />
-
-            <Spinner
-                android:id="@+id/new_ingredient_exp_interval"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight=".5"
-                android:entries="@array/expiration_interval"
-                android:paddingTop="8dp" />
-        </LinearLayout>
-
-    </LinearLayout>
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="Ingredient Type"
+            app:layout_constraintBottom_toBottomOf="@+id/new_ingredient_type"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/new_ingredient_type" />
+    </android.support.constraint.ConstraintLayout>
 </layout>
 

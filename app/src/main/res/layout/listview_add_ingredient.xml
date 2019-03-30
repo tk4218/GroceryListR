@@ -5,10 +5,7 @@
         <import type="java.lang.String"/>
         <variable
             name="ingredient"
-            type="com.tk4218.grocerylistr.Ingredient"/>
-        <variable
-            name="event"
-            type="com.tk4218.grocerylistr.AddIngredientAdapter.EventHandlers" />
+            type="com.tk4218.grocerylistr.Ingredient"/>`
     </data>
 
     <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"

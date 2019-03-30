@@ -16,14 +16,18 @@ public class Ingredient extends BaseObservable{
     private String mIngredientKey;
     private String mIngredientName;
     private String mIngredientType;
-    private int mShelfLife;
+    private static int mShelfLife;
+    private int mShelfLifeInterval;
     private double mIngredientAmount;
     private static String mIngredientUnit;
     private String mPreparation1;
     private String mPreparation2;
 
     private static int mIngredientUnitPosition;
+    private static int mShelfLifeIntervalPosition;
+    private static int mIngredientTypePosition;
     private static String[] mIngredientUnits;
+    private static String[] mIngredientTypes;
 
     public Ingredient(){
 
@@ -31,6 +35,7 @@ public class Ingredient extends BaseObservable{
 
     public Ingredient(Context context){
         mIngredientUnits = context.getResources().getStringArray(R.array.measurements);
+        mIngredientTypes = context.getResources().getStringArray(R.array.ingredient_type);
     }
 
     public Ingredient(int ingredientKey){
@@ -89,7 +94,7 @@ public class Ingredient extends BaseObservable{
         return mIngredientName;
     }
     public void setIngredientName(String ingredientName){
-        if(!mIngredientName.equals(ingredientName)){
+        if(!ingredientName.equals(mIngredientName)){
             mIngredientName = ingredientName;
             notifyPropertyChanged(BR.ingredientName);
         }
@@ -100,10 +105,20 @@ public class Ingredient extends BaseObservable{
         return mIngredientType;
     }
     public void setIngredientType(String ingredientType){
-        if(!mIngredientType.equals(ingredientType)) {
+        if(!ingredientType.equals(mIngredientType)) {
             mIngredientType = ingredientType;
             notifyPropertyChanged(BR.ingredientType);
         }
+    }
+
+    @Bindable
+    public int getIngredientTypePosition() {
+        return mIngredientTypePosition;
+    }
+    public void setIngredientTypePosition(int position) {
+        mIngredientTypePosition = position;
+        //setIngredientType(mIngredientTypes[position]);
+        notifyPropertyChanged(BR.ingredientTypePosition);
     }
 
     @Bindable
@@ -115,6 +130,45 @@ public class Ingredient extends BaseObservable{
             mShelfLife = shelfLife;
             notifyPropertyChanged(BR.shelfLife);
         }
+    }
+
+    @Bindable
+    public void setShelfLifeText(String shelfLifeText){
+        if (shelfLifeText != null && !shelfLifeText.isEmpty() && Integer.parseInt(shelfLifeText) != mShelfLife) {
+            mShelfLife = Integer.parseInt(shelfLifeText);
+            notifyPropertyChanged(BR.shelfLifeText);
+        }
+    }
+    public String getShelfLifeText() {
+        return Integer.toString(mShelfLife);
+    }
+
+    public int getShelfLifeInterval(){
+        return mShelfLifeInterval;
+    }
+    public void setShelfLifeInterval(int interval){
+        mShelfLifeInterval = interval;
+    }
+
+    @Exclude
+    @Bindable
+    public int getShelfLifeIntervalPosition(){
+        return mShelfLifeIntervalPosition;
+    }
+    public void setShelfLifeIntervalPosition(int position){
+        mShelfLifeIntervalPosition = position;
+        switch(position){
+            case 0:
+                mShelfLifeInterval = 1;
+                break;
+            case 1:
+                mShelfLifeInterval = 7;
+                break;
+            case 2:
+                mShelfLifeInterval = 30;
+                break;
+        }
+        notifyPropertyChanged(BR.shelfLifeIntervalPosition);
     }
 
     @Bindable
@@ -136,7 +190,7 @@ public class Ingredient extends BaseObservable{
         return mIngredientUnit;
     }
     public void setIngredientUnit(String ingredientUnit){
-        if(!mIngredientUnit.equals(ingredientUnit)) {
+        if(!ingredientUnit.equals(mIngredientUnit)) {
             mIngredientUnit = ingredientUnit;
         }
     }
@@ -149,7 +203,7 @@ public class Ingredient extends BaseObservable{
     public void setIngredientUnitPosition(int ingredientUnitPosition){
         if(mIngredientUnitPosition != ingredientUnitPosition) {
             mIngredientUnitPosition = ingredientUnitPosition;
-            mIngredientUnit = mIngredientUnits[ingredientUnitPosition];
+            //mIngredientUnit = mIngredientUnits[ingredientUnitPosition];
             notifyPropertyChanged(BR.ingredientUnitPosition);
         }
     }

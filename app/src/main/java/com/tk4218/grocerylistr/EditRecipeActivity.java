@@ -9,7 +9,6 @@ import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -22,13 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.amazonaws.mobile.client.AWSMobileClient;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.tk4218.grocerylistr.Image.ImageManager;
 import com.tk4218.grocerylistr.Model.ApplicationSettings;
 
@@ -36,13 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.amazonaws.mobileconnectors.s3.transferutility.*;
 import com.tk4218.grocerylistr.databinding.ActivityEditRecipeBinding;
 
 public class EditRecipeActivity extends AppCompatActivity {
     ApplicationSettings mSettings;
 
-    private static final String AWS_S3_URL = "https://s3-us-west-1.amazonaws.com/elasticbeanstalk-us-west-1-185867131873/";
     private static final int REQUEST_PERMISSIONS = 100;
     String mCurrentPhotoPath = "";
     String mNewPhotoPath = "";
@@ -76,19 +66,7 @@ public class EditRecipeActivity extends AppCompatActivity {
         }
 
         if(mRecipeKey != null) {
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference recipeRef = database.getReference("recipe/" + mRecipeKey);
-            recipeRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    mRecipe = dataSnapshot.getValue(Recipe.class);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Log.e("Recipe Error", "Unable to Retrieve Recipe: " + mRecipeKey);
-                }
-            });
+            mRecipe = Recipe.getRecipe(mRecipeKey);
         } else {
             setTitle("Add New Recipe");
             mRecipe = new Recipe(this);
@@ -230,38 +208,6 @@ public class EditRecipeActivity extends AppCompatActivity {
                 break;
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         }
-    }
-    private void uploadImageToAWS(){
-        TransferUtility transferUtility =
-                TransferUtility.builder()
-                        .context(getApplicationContext())
-                        .awsConfiguration(AWSMobileClient.getInstance().getConfiguration())
-                        .s3Client(new AmazonS3Client(AWSMobileClient.getInstance().getCredentialsProvider()))
-                        .build();
-
-        final File newImage = new File(mNewPhotoPath);
-        mCurrentPhotoPath = "GroceryListR/Images/"+mSettings.getUser()+"/"+mRecipeKey+"."+android.webkit.MimeTypeMap.getFileExtensionFromUrl(mNewPhotoPath);
-        TransferObserver uploadObserver = transferUtility.upload(mCurrentPhotoPath, newImage);
-        mCurrentPhotoPath = AWS_S3_URL + mCurrentPhotoPath;
-        uploadObserver.setTransferListener(new TransferListener() {
-            @Override
-            public void onStateChanged(int id, TransferState state) {
-                if(TransferState.COMPLETED == state){
-                    if(mTempImage) { newImage.delete(); }
-                }
-            }
-
-            @Override
-            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-
-            }
-
-            @Override
-            public void onError(int id, Exception ex) {
-
-            }
-        });
     }
 }
