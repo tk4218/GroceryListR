@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -16,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -73,7 +71,7 @@ public  class RecipeFragment extends Fragment{
          *  Set recipes on grid view
          *--------------------------------*/
         mShowUserRecipes = true;
-        mRecipeSort = "";
+        mRecipeSort = "recipeName";
         mRecipes = new ArrayList<>();
         mLoading = rootView.findViewById(R.id.recipe_loading);
         mRefreshRecipes = rootView.findViewById(R.id.refresh_recipes);
@@ -167,7 +165,7 @@ public  class RecipeFragment extends Fragment{
 
         mLoadingRecipes = true;
         DatabaseReference recipeRef = FirebaseDatabase.getInstance().getReference();
-        Query recipes = recipeRef.child("recipe").limitToFirst(10).orderByChild("recipeName");
+        Query recipes = recipeRef.child("recipe").limitToFirst(10).orderByChild(mRecipeSort);
         recipes.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -177,14 +175,14 @@ public  class RecipeFragment extends Fragment{
                 for (DataSnapshot recipe : dataSnapshot.getChildren()) {
                     mRecipes.add(recipe.getValue(Recipe.class));
                 }
+
+                mAdapter.notifyDataSetChanged();
+                mRefreshRecipes.setRefreshing(false);
+                mLoading.setVisibility(View.GONE);
+                mLoadingRecipes = false;
             }
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
-
-        mAdapter.notifyDataSetChanged();
-        mRefreshRecipes.setRefreshing(false);
-        mLoading.setVisibility(View.GONE);
-        mLoadingRecipes = false;
     }
     private class RetrieveRecipes extends AsyncTask<Boolean, String, String>{
         QueryBuilder mQb = new QueryBuilder();

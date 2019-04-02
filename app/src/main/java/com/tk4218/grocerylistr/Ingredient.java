@@ -117,7 +117,7 @@ public class Ingredient extends BaseObservable{
     }
     public void setIngredientTypePosition(int position) {
         mIngredientTypePosition = position;
-        //setIngredientType(mIngredientTypes[position]);
+        if(mIngredientTypes != null) setIngredientType(mIngredientTypes[position]);
         notifyPropertyChanged(BR.ingredientTypePosition);
     }
 
@@ -203,7 +203,7 @@ public class Ingredient extends BaseObservable{
     public void setIngredientUnitPosition(int ingredientUnitPosition){
         if(mIngredientUnitPosition != ingredientUnitPosition) {
             mIngredientUnitPosition = ingredientUnitPosition;
-            //mIngredientUnit = mIngredientUnits[ingredientUnitPosition];
+            if(mIngredientUnits != null) setIngredientUnit(mIngredientUnits[ingredientUnitPosition]);
             notifyPropertyChanged(BR.ingredientUnitPosition);
         }
     }

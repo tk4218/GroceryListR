@@ -14,11 +14,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 
-import com.tk4218.grocerylistr.Adapters.IngredientDropdownAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.tk4218.grocerylistr.databinding.DialogNewIngredientBinding;
 import com.tk4218.grocerylistr.databinding.ListviewAddIngredientBinding;
 
@@ -29,6 +34,7 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<Ingredient> mIngredients;
+    private boolean mShowDropDown;
 
     AddIngredientAdapter(Context context, ArrayList<Ingredient> ingredients){
         mContext = context;
@@ -55,20 +61,53 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
         /*----------------------------------------------
          * Ingredient Name
          *----------------------------------------------*/
-        IngredientDropdownAdapter adapter = new IngredientDropdownAdapter(mContext, R.layout.dropdown_ingredient);
-        holder.mIngredientName.setAdapter(adapter);
+        holder.mIngredientName.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if(mShowDropDown && editable.toString().length() >= 3) {
+                    Query ingredientList = FirebaseDatabase.getInstance()
+                            .getReference().child("ingredient").orderByChild("ingredientName").startAt(editable.toString()).endAt(editable.toString() + "\uf8ff");
+
+                    ingredientList.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            ArrayList<String> ingredients = new ArrayList<>();
+                            for (DataSnapshot item : dataSnapshot.getChildren()) {
+                                Ingredient ingredient = item.getValue(Ingredient.class);
+                                if (ingredient != null)
+                                    ingredients.add(ingredient.getIngredientName());
+                            }
+                            ingredients.add("+ New Ingredient");
+                            ArrayAdapter<String> adapter = new ArrayAdapter<>(mContext, android.R.layout.simple_dropdown_item_1line, ingredients);
+                            holder.mIngredientName.setAdapter(adapter);
+                            holder.mIngredientName.showDropDown();
+                        }
+
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
+                    });
+                } else {
+                    holder.mIngredientName.dismissDropDown();
+                }
+                mShowDropDown = true;
+            }
+        });
 
         holder.mIngredientName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+                mShowDropDown = false;
                 String selectedIngredient = (String) parent.getAdapter().getItem(pos);
-
                 if(selectedIngredient.equals("+ New Ingredient")){
+                    holder.mIngredient.setIngredientName("");
                     showNewIngredientDialog(holder);
                 }else {
                     holder.mIngredient.setIngredientName(selectedIngredient);
-                    //new AddIngredient().execute(holder, false, selectedIngredient);
                 }
+                holder.mIngredientName.dismissDropDown();
             }
         });
 
@@ -103,14 +142,10 @@ public class AddIngredientAdapter extends RecyclerView.Adapter<AddIngredientAdap
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 holder.mIngredient.save();
-                //new AddIngredient().execute(holder, true, newIngredientName.getText().toString(), ingredientType, expiration);
             }
-        })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {}
-        })
-                .show();
+        }).show();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{
