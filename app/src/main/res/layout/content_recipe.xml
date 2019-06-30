@@ -86,12 +86,12 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recipe_ingredient_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingLeft="10dp">
-    </android.support.v7.widget.RecyclerView>
+    </androidx.recyclerview.widget.RecyclerView>
 
 
 </LinearLayout>

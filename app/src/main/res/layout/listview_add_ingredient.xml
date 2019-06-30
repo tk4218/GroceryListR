@@ -2,13 +2,12 @@
 <layout xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
-        <import type="java.lang.String"/>
         <variable
             name="ingredient"
-            type="com.tk4218.grocerylistr.Ingredient"/>`
+            type="com.tk4218.grocerylistr.model.Ingredient"/>
     </data>
 
-    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/edit_new_ingredient"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,7 +22,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
             android:inputType="numberDecimal"
-            android:text="1"
+            android:text="@={`` + ingredient.ingredientAmount}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edit_ingredient_name"
@@ -40,7 +39,7 @@
             android:entries="@array/measurements"
             android:selectedItemPosition="@={ingredient.ingredientUnitPosition}"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/button3"
+            app:layout_constraintStart_toEndOf="@+id/edit_amount_less"
             app:layout_constraintTop_toBottomOf="@+id/edit_ingredient_name" />
 
         <AutoCompleteTextView
@@ -74,7 +73,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/edit_amount_more"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginBottom="8dp"
@@ -88,7 +87,7 @@
             app:layout_constraintVertical_bias="0.466" />
 
         <Button
-            android:id="@+id/button3"
+            android:id="@+id/edit_amount_less"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginBottom="8dp"
@@ -97,9 +96,9 @@
             android:layout_marginTop="4dp"
             android:background="@mipmap/baseline_add_circle_outline_black_24"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/button2"
+            app:layout_constraintStart_toEndOf="@+id/edit_amount_more"
             app:layout_constraintTop_toBottomOf="@+id/edit_ingredient_name"
             app:layout_constraintVertical_bias="0.466" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
 

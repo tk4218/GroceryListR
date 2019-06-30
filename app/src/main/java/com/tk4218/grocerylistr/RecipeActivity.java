@@ -6,15 +6,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.fragment.app.DialogFragment;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,12 +25,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
-import com.tk4218.grocerylistr.Adapters.RecipeIngredientAdapter;
-import com.tk4218.grocerylistr.CustomLayout.DatePickerFragment;
+import com.tk4218.grocerylistr.adapters.RecipeIngredientAdapter;
+import com.tk4218.grocerylistr.customlayout.DatePickerFragment;
 
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Model.ApplicationSettings;
+import com.tk4218.grocerylistr.model.ApplicationSettings;
+import com.tk4218.grocerylistr.model.Recipe;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -239,7 +240,7 @@ public class RecipeActivity extends AppCompatActivity {
             mRecipeRating.setRating((float)mRecipe.getRating());
             mRecipeRating.setEnabled(false);
             mFab.setImageResource(android.R.drawable.ic_input_add);
-            mEditRecipe.setVisibility(View.GONE);
+            //mEditRecipe.setVisibility(View.GONE);
             mLastMadeLayout.setVisibility(View.GONE);
             invalidateOptionsMenu();
         } else{
@@ -249,7 +250,7 @@ public class RecipeActivity extends AppCompatActivity {
             else
                 mRecipeRating.setRating((float)mRecipe.getRating());
             mFab.setImageResource(android.R.drawable.ic_menu_today);
-            mEditRecipe.setVisibility(View.VISIBLE);
+            //mEditRecipe.setVisibility(View.VISIBLE);
             mLastMadeLayout.setVisibility(View.VISIBLE);
 
             if(mLastMade.getTime() == 0){
@@ -298,7 +299,7 @@ public class RecipeActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            mRecipe = new Recipe(mRecipeKey, mUsername);
+            mRecipe = Recipe.Companion.getRecipe(mRecipeKey);
             JSONResult recipeLastMade = mQb.getRecipeLastMade(mUsername, mRecipeKey);
             mLastMade = recipeLastMade.getDate("LastMade");
 

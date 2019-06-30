@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.tk4218.grocerylistr.GroceryListActivity">
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

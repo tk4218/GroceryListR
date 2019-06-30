@@ -5,18 +5,19 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -32,18 +33,13 @@ import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.amazonaws.mobile.client.AWSMobileClient;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Fragments.CalendarFragment;
-import com.tk4218.grocerylistr.Fragments.GroceryListFragment;
-import com.tk4218.grocerylistr.Fragments.RecipeFragment;
-import com.tk4218.grocerylistr.Model.ApplicationSettings;
-import com.tk4218.grocerylistr.Model.GroceryList;
+import com.tk4218.grocerylistr.fragments.CalendarFragment;
+import com.tk4218.grocerylistr.fragments.GroceryListFragment;
+import com.tk4218.grocerylistr.fragments.RecipeFragment;
+import com.tk4218.grocerylistr.model.ApplicationSettings;
+import com.tk4218.grocerylistr.model.GroceryList;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,6 +51,7 @@ import com.pinterest.android.pdk.PDKCallback;
 import com.pinterest.android.pdk.PDKClient;
 import com.pinterest.android.pdk.PDKException;
 import com.pinterest.android.pdk.PDKResponse;
+import com.tk4218.grocerylistr.model.User;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -118,15 +115,16 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        User user = User.Companion.currentUser(this);
         View header = navView.getHeaderView(0);
         mNavUsername = header.findViewById(R.id.navigation_username);
-        mNavUsername.setText(mSettings.getUserFirstName() + " " + mSettings.getUserLastName());
+        mNavUsername.setText(user.getFirstName() + " " + user.getLastName());
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        replaceFragment(CalendarFragment.newInstance());
+        replaceFragment(CalendarFragment.Companion.newInstance());
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -135,11 +133,11 @@ public class MainActivity extends AppCompatActivity
                 switch(item.getItemId()){
                     case R.id.action_calendar:
                         //mViewPager.setCurrentItem(0);
-                        replaceFragment(CalendarFragment.newInstance());
+                        replaceFragment(CalendarFragment.Companion.newInstance());
                         break;
                     case R.id.action_recipes:
                         //mViewPager.setCurrentItem(1);
-                        replaceFragment(RecipeFragment.newInstance());
+                        replaceFragment(RecipeFragment.Companion.newInstance());
                         break;
                     case R.id.action_grocerylist:
                         //mViewPager.setCurrentItem(2);
@@ -265,7 +263,7 @@ public class MainActivity extends AppCompatActivity
                 if(mSettings.isPinterestLoggedIn()){
                     mPDKClient.logout();
                 }
-                mSettings.logout();
+                User.Companion.logout(this);
                 AccessToken.setCurrentAccessToken(null);
                 Intent intent = new Intent(this, LoginActivity.class);
                 finish();
@@ -280,7 +278,7 @@ public class MainActivity extends AppCompatActivity
 
     private void replaceFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
 
         transaction.commit();

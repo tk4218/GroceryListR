@@ -3,13 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
-        <import type="java.lang.String"/>
         <variable
             name="ingredient"
-            type="com.tk4218.grocerylistr.Ingredient"/>
+            type="com.tk4218.grocerylistr.model.Ingredient"/>
     </data>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -92,6 +91,6 @@
             app:layout_constraintBottom_toBottomOf="@+id/new_ingredient_type"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/new_ingredient_type" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
 

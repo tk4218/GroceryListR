@@ -6,19 +6,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import com.tk4218.grocerylistr.Adapters.IngredientListAdapter;
+import com.tk4218.grocerylistr.adapters.IngredientListAdapter;
 import com.tk4218.grocerylistr.Database.JSONResult;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
+import com.tk4218.grocerylistr.model.Ingredient;
 
 import java.util.ArrayList;
 
@@ -74,11 +75,11 @@ public class IngredientListActivity extends AppCompatActivity {
 
             ArrayList<Ingredient> ingredientList = new ArrayList<>();
             for(int i = 0; i < ingredients.getCount(); i++){
-                ingredientList.add(new Ingredient(ingredients.getString(i, "IngredientKey"),
+                /*ingredientList.add(new Ingredient(ingredients.getString(i, "IngredientKey"),
                                                   ingredients.getString(i, "IngredientName"),
                                                   ingredients.getString(i, "IngredientType"),
                                                   ingredients.getInt(i, "ShelfLife"),
-                                                  0.0, "", "", ""));
+                                                  0.0, "", "", ""));*/
             }
             return ingredientList;
         }

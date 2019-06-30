@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#f44336</color>
-    <color name="colorPrimaryDark">#b71c1c</color>
-    <color name="colorAccent">#00b8d4</color>
+    <color name="colorPrimary">#d50000</color>
+    <color name="colorPrimaryDark">#9b0000</color>
+    <color name="colorPrimaryLight">#ff5131</color>
+    <color name="colorAccent">#00e5ff</color>
+    <color name="colorAccentDark">#00b2cc</color>
     <color name="colorTextAlternate">#4163fc</color>
     <color name="background_material_light">#fdfdfd</color>
     <color name="recipeGridBackground">#f4f3f3</color>

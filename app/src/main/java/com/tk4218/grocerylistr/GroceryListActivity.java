@@ -5,8 +5,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,11 +17,12 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.tk4218.grocerylistr.Adapters.GroceryListAdapter;
-import com.tk4218.grocerylistr.Adapters.IngredientDropdownAdapter;
+import com.tk4218.grocerylistr.adapters.GroceryListAdapter;
+import com.tk4218.grocerylistr.adapters.IngredientDropdownAdapter;
 import com.tk4218.grocerylistr.Database.QueryBuilder;
-import com.tk4218.grocerylistr.Model.GroceryList;
-import com.tk4218.grocerylistr.Model.GroceryListItem;
+import com.tk4218.grocerylistr.model.GroceryList;
+import com.tk4218.grocerylistr.model.GroceryListItem;
+import com.tk4218.grocerylistr.model.Ingredient;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -188,7 +189,7 @@ public class GroceryListActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Object... params) {
-            Ingredient ingredient = new Ingredient((String)params[0]);
+            Ingredient ingredient = Ingredient.Companion.getIngredient((String)params[0]);
             if(ingredient.getIngredientKey() == null)
                 mQb.insertIngredient((String)params[0], (String)params[1], (int)params[2]);
             return (String)params[0];
@@ -219,11 +220,11 @@ public class GroceryListActivity extends AppCompatActivity {
                 double newAmount = existingItem.getIngredientAmount() + itemAmount;
                 mQb.updateGroceryListItemAmount(groceryListItemKey, newAmount);
             } else {
-                Ingredient ingredient = new Ingredient(itemName);
-                ingredientKey = ingredient.getIngredientKey();
-                if(ingredientKey == null){
+                //Ingredient ingredient = new Ingredient(itemName);
+                //ingredientKey = ingredient.getIngredientKey();
+                //if(ingredientKey == null){
                     //ingredientKey  = mQb.insertIngredient(itemName, "Uncategorized", 0);
-                }
+                //}
 
                 //groceryListItemKey =  mQb.insertGroceryListItem(mGroceryListKey, ingredientKey, itemAmount, itemUnit, false);
             }
