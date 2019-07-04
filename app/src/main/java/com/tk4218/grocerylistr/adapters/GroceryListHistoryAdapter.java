@@ -82,7 +82,7 @@ public class GroceryListHistoryAdapter extends RecyclerView.Adapter<GroceryListH
         @Override
         public void onClick(View v) {
             if(groceryList != null){
-                if(groceryList.getGroceryListKey() != 0){
+                if(!groceryList.getGroceryListKey().isEmpty()){
                     Intent intent = new Intent(mContext, GroceryListActivity.class);
                     intent.putExtra("groceryListKey", groceryList.getGroceryListKey());
                     mContext.startActivity(intent);

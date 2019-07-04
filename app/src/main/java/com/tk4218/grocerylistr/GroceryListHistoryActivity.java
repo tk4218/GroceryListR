@@ -71,12 +71,12 @@ public class GroceryListHistoryActivity extends AppCompatActivity {
 
             if(groceryListHistory.getCount() != 0){
                 for(int i = 0; i < groceryListHistory.getCount(); i++){
-                    groceryList.add(new GroceryList(groceryListHistory.getInt(i, "GroceryListKey"),
+                    /*groceryList.add(new GroceryList(groceryListHistory.getInt(i, "GroceryListKey"),
                                                     groceryListHistory.getDate(i, "MealPlanDateStart"),
                                                     groceryListHistory.getDate(i, "MealPlanDateEnd"),
                                                     groceryListHistory.getBoolean(i, "GroceryListCompleted"),
                                                     groceryListHistory.getDate(i, "CompletedDate"),
-                                                    null));
+                                                    null));*/
                 }
             }
 

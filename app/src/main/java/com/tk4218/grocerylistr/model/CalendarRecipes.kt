@@ -25,7 +25,7 @@ data class CalendarRecipes(private var mUsername: String, var calendarDate: Date
                     if(dataSnapshot.value == null) return
 
                     val recipe = dataSnapshot.getValue(Recipe::class.java)
-                    val calendarRef = database.getReference("calendar/$userName/${dateFormat.format(calendarDate)}")
+                    val calendarRef = database.getReference("$userName/calendar/${dateFormat.format(calendarDate)}")
 
                     calendarRef.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -47,7 +47,7 @@ data class CalendarRecipes(private var mUsername: String, var calendarDate: Date
         }
 
         fun removeRecipe(userName: String, calendarDate: Date, recipeKey: String) {
-            val calendarRef = FirebaseDatabase.getInstance().getReference("calendar").child(userName).child(dateFormat.format(calendarDate)).child(recipeKey)
+            val calendarRef = FirebaseDatabase.getInstance().getReference(userName).child("calendar").child(dateFormat.format(calendarDate)).child(recipeKey)
             calendarRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     if(dataSnapshot.value != null)
@@ -60,18 +60,20 @@ data class CalendarRecipes(private var mUsername: String, var calendarDate: Date
         }
 
         fun getCalendar(userName: String, beginDate: Date, endDate: Date, calendarLoadedCallback: CalendarLoadedCallback){
+            val startDate = clearDateTime(beginDate)
+            val stopDate = clearDateTime(endDate)
             val calendarMap: HashMap<Date, CalendarRecipes> = HashMap()
             val date = Calendar.getInstance()
-            date.time = beginDate
-            while(date.time < endDate) {
+            date.time = startDate
+            while(date.time < stopDate) {
                 calendarMap[date.time] = CalendarRecipes(userName, date.time, ArrayList())
                 date.add(Calendar.DAY_OF_MONTH, 1)
             }
 
-            val calendarRef = FirebaseDatabase.getInstance().getReference("calendar/$userName")
+            val calendarRef = FirebaseDatabase.getInstance().getReference("$userName/calendar")
             val query = calendarRef.orderByKey()
-                            .startAt(dateFormat.format(beginDate))
-                            .endAt(dateFormat.format(endDate))
+                            .startAt(dateFormat.format(startDate))
+                            .endAt(dateFormat.format(stopDate))
             query.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     if(dataSnapshot.value != null){
@@ -87,6 +89,13 @@ data class CalendarRecipes(private var mUsername: String, var calendarDate: Date
                 override fun onCancelled(p0: DatabaseError) {
                 }
             })
+        }
+        private fun clearDateTime(date: Date): Date {
+            val calendar = Calendar.getInstance()
+            calendar.time = date
+            calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            return calendar.time
         }
     }
 }

@@ -29,7 +29,7 @@ import java.util.Locale;
 
 public class GroceryListActivity extends AppCompatActivity {
 
-    private int mGroceryListKey;
+    private String mGroceryListKey;
     private GroceryList mGroceryList;
 
     private ExpandableListView mGroceryListView;
@@ -49,7 +49,7 @@ public class GroceryListActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
 
         if(extras != null){
-            mGroceryListKey = extras.getInt("groceryListKey");
+            mGroceryListKey = extras.getString("groceryListKey");
             new GetGroceryList().execute();
         }
 
@@ -167,7 +167,7 @@ public class GroceryListActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            mGroceryList = new GroceryList(mGroceryListKey);
+           // mGroceryList = new GroceryList(mGroceryListKey);
             return null;
         }
 
@@ -210,7 +210,7 @@ public class GroceryListActivity extends AppCompatActivity {
             double itemAmount = (double)params[1];
             String itemUnit = (String)params[2];
 
-            int groceryListItemKey;
+            String groceryListItemKey;
             String ingredientKey;
 
             GroceryListItem existingItem = mGroceryList.findIngredient(itemName, itemUnit);
@@ -218,7 +218,7 @@ public class GroceryListActivity extends AppCompatActivity {
                 groceryListItemKey = existingItem.getGroceryListItemKey();
                 ingredientKey = existingItem.getIngredient().getIngredientKey();
                 double newAmount = existingItem.getIngredientAmount() + itemAmount;
-                mQb.updateGroceryListItemAmount(groceryListItemKey, newAmount);
+                //mQb.updateGroceryListItemAmount(groceryListItemKey, newAmount);
             } else {
                 //Ingredient ingredient = new Ingredient(itemName);
                 //ingredientKey = ingredient.getIngredientKey();

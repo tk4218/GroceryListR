@@ -47,4 +47,18 @@
         app:itemTextColor="#FFFFFF"
         app:menu="@menu/bottom_navigation_main" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="107dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="72dp"
+        android:background="#fd0000"
+        android:src="@android:drawable/ic_input_add"
+        android:visibility="invisible"
+        app:backgroundTint="#fb0303"
+        app:elevation="6dp"
+        app:layout_anchor="@+id/fragment_container"
+        app:layout_anchorGravity="end|bottom" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

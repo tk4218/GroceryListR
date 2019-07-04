@@ -1,6 +1,5 @@
 package com.tk4218.grocerylistr.fragments
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -15,7 +14,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.tk4218.grocerylistr.adapters.RecipeAdapter
-import com.tk4218.grocerylistr.EditRecipeActivity
 import com.tk4218.grocerylistr.model.ApplicationSettings
 import com.tk4218.grocerylistr.model.Recipe
 import com.tk4218.grocerylistr.model.UpdatePinterestRecipes
@@ -84,15 +82,6 @@ class RecipeFragment : Fragment() {
 
         refresh_recipes!!.setColorSchemeColors(Color.RED)
         refresh_recipes!!.setOnRefreshListener { retrieveRecipes(true) }
-
-        /*-----------------------------------
-         *Set floating action button action
-         *-----------------------------------*/
-        fab.setOnClickListener {
-            val intent = Intent(context, EditRecipeActivity::class.java)
-            activity!!.startActivity(intent)
-        }
-
         retrieveRecipes(true)
     }
 

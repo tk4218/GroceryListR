@@ -14,7 +14,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
-import com.tk4218.grocerylistr.Database.QueryBuilder;
 import com.tk4218.grocerylistr.model.GroceryList;
 import com.tk4218.grocerylistr.model.GroceryListItem;
 import com.tk4218.grocerylistr.R;
@@ -165,41 +164,36 @@ public class GroceryListAdapter extends BaseExpandableListAdapter {
     }
 
     private class UpdateAddedToCart extends AsyncTask<Object, Void, Void> {
-        private QueryBuilder mQb = new QueryBuilder();
+        //private QueryBuilder mQb = new QueryBuilder();
         @Override
         protected Void doInBackground(Object... params) {
 
             if(mGroceryList.getGroceryListItemsRemaining() == 0) {
                 mGroceryList.setGroceryListCompleted(true);
-                mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), true);
+                //mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), true);
             } else {
                 if(mGroceryList.getGroceryListCompleted()) {
                     mGroceryList.setGroceryListCompleted(false);
-                    mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), false);
+                    //mQb.updateGroceryListCompleted(mGroceryList.getGroceryListKey(), false);
                 }
             }
 
-            mQb.updateAddedToCart((int)params[0], (boolean)params[1]);
+            //mQb.updateAddedToCart((int)params[0], (boolean)params[1]);
 
             return null;
         }
     }
 
-    public void addGroceryListItem(int groceryListItemKey, String ingredientKey, double itemAmount, String itemUnit){
-        mGroceryList.addGroceryListItem(groceryListItemKey, ingredientKey, itemAmount, itemUnit, true);
-        mIngredientTypes = mGroceryList.getIngredientTypes();
-    }
-
-    private class RemoveGroceryListItem extends AsyncTask<Integer, Void, Void> {
-        private QueryBuilder mQb = new QueryBuilder();
+    private class RemoveGroceryListItem extends AsyncTask<String, Void, Void> {
+        //private QueryBuilder mQb = new QueryBuilder();
 
         @Override
-        protected Void doInBackground(Integer... params) {
-            boolean success = mQb.removeGroceryListItem(params[0]);
-            if(success){
-                mGroceryList.removeGroceryListItem(params[0]);
-                mIngredientTypes = mGroceryList.getIngredientTypes();
-            }
+        protected Void doInBackground(String... params) {
+            //boolean success = mQb.removeGroceryListItem(params[0]);
+            //if(success){
+            //    mGroceryList.removeGroceryListItem(params[0]);
+            //    mIngredientTypes = mGroceryList.getIngredientTypes();
+            //}
             return null;
         }
 

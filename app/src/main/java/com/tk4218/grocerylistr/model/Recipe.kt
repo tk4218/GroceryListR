@@ -3,21 +3,16 @@ package com.tk4218.grocerylistr.model
 import android.content.Context
 import androidx.databinding.BaseObservable
 import androidx.databinding.Bindable
-import androidx.databinding.BindingAdapter
 import android.util.Log
-import android.widget.ImageView
 
-import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.Exclude
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.squareup.picasso.Picasso
 import com.tk4218.grocerylistr.BR
 import com.tk4218.grocerylistr.R
 
-import java.io.File
 import java.util.ArrayList
 
 /*
@@ -135,18 +130,6 @@ class Recipe() : BaseObservable() {
     }
 
     companion object {
-
-        @BindingAdapter("android:imageUrl")
-        fun loadImage(view: ImageView, recipeImage: String?) {
-            if (recipeImage != null) {
-                Picasso.with(view.context)
-                        .load(File(recipeImage))
-                        .fit()
-                        .centerCrop()
-                        .into(view)
-            }
-        }
-
         fun getRecipe(recipeKey: String): Recipe {
             Log.i("Recipe", "Retrieving recipe: $recipeKey")
             val recipe = arrayOfNulls<Recipe>(1)
